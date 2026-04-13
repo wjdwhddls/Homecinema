@@ -1,0 +1,33 @@
+# Python
+*.pyc
+__pycache__/
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# FastAPI/Uvicorn
+*.log
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Upload/data
+tmp/uploads/*
+!tmp/uploads/.gitkeep
+data/jobs/*
+!data/jobs/.gitkeep
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
