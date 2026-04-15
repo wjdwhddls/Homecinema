@@ -1,0 +1,113 @@
+============================================================
+  AutoEQ 학습 프로세스 성능 비교 실험 목록
+  작성일: 2026-04-15
+  전제: LIRIS-ACCEDE 데이터로 baseline 학습 완료 후 진행
+============================================================
+
+[실험 1] Congruence Head Ablation (필수)
+------------------------------------------------------------
+목적: Congruence Head가 V/A 예측에 실제로 도움이 되는지 검증
+명세서 근거: Section 7-3
+
+  Variant A: Full model (V/A + Mood + Congruence + Gate entropy) — baseline
+  Variant B: lambda_cong=0.0 으로 설정하여 Congruence Head 비활성화
+
+비교 지표: val mean CCC, CCC_valence, CCC_arousal
+구현 비용: 0줄 (config 값만 변경)
+기대 효과: 설계 정당성 검증. Variant B가 더 높으면 congruence task 제거 검토.
+
+
+[실험 2] Multi-task Loss 자동 가중치 — Uncertainty Weighting
+------------------------------------------------------------
+목적: 고정 lambda vs 학습 가능 가중치 비교
+참고 논문: Kendall et al. (2018) "Multi-Task Learning Using Uncertainty to Weigh Losses"
+
+  Variant A: 고정 가중치 lambda_va=1.0, lambda_mood=0.5, lambda_cong=0.5 — baseline
+  Variant B: Uncertainty weighting (task별 log-variance 파라미터 학습)
+
+  Uncertainty weighting 수식:
+    L_total = (1/2*sigma^2_va)*L_va + (1/2*sigma^2_mood)*L_mood
+            + (1/2*sigma^2_cong)*L_cong + log(sigma_va) + log(sigma_mood) + log(sigma_cong)
+
+비교 지표: val mean CCC, 학습된 sigma 값 분석, grad norm 균형
+구현 비용: ~25줄 (losses.py에 UncertaintyWeighter 클래스 추가)
+기대 CCC 개선: 0.02~0.05
+
+
+[실험 3] Audio Encoder 교체 — PANNs CNN14 vs BEATs
+------------------------------------------------------------
+목적: frozen encoder 품질이 최종 성능에 미치는 영향 측정
+명세서 근거: Section 8-2 (한계), Section 9-2 (future work)
+
+  Variant A: PANNs CNN14 (2048-dim, 2019, CNN) — baseline
+  Variant B: BEATs (768-dim, 2022, Transformer, AudioSet mAP 0.498)
+
+  변경 사항:
+    - BEATs로 audio feature 재추출 (precompute)
+    - config.audio_raw_dim = 768 (PANNs 2048 -> BEATs 768)
+    - AudioProjection 입력 차원 자동 조정됨
+
+비교 지표: val mean CCC, CCC_valence, CCC_arousal
+구현 비용: feature 재추출 + config 변경
+기대 CCC 개선: 0.03~0.08 (가장 큰 레버)
+
+
+[실험 4] Feature-space Mixup
+------------------------------------------------------------
+목적: pre-computed feature에서 작동하는 데이터 증강 효과 검증
+
+  Variant A: augmentation 없음 — baseline
+  Variant B: 배치 내 feature mixup (Beta(0.4, 0.4) 분포)
+
+  Mixup 수식:
+    lam = Beta(0.4, 0.4).sample()
+    x_mix = lam * x_i + (1-lam) * x_j
+    y_va_mix = lam * y_va_i + (1-lam) * y_va_j
+
+  주의: Mood는 이산값이므로 V/A mixup 후 nearest-center로 재매핑
+
+비교 지표: val mean CCC, train/val CCC gap (과적합 정도)
+구현 비용: ~15줄
+기대 CCC 개선: 0.01~0.02
+
+
+[실험 5] Fusion 전략 비교 — Gating vs Cross-Attention
+------------------------------------------------------------
+목적: modality 융합 방식이 성능에 미치는 영향 측정
+
+  Variant A: Scalar gating [w_v, w_a] + weighted concat — baseline
+  Variant B: Single-head cross-attention (audio가 visual을 attend)
+
+  주의사항:
+    - 7,500개 학습 샘플에서 attention 파라미터 과적합 위험
+    - train/val CCC gap으로 과적합 여부 판단
+    - 과적합 시 attention head 차원 축소 또는 dropout 적용
+
+비교 지표: val mean CCC, train/val CCC gap, gate 가중치 분포
+구현 비용: ~50줄
+기대 CCC 개선: 불확실 (비교 자체가 학술적 기여)
+
+
+============================================================
+  실험 진행 순서 (권장)
+============================================================
+
+  1단계: LIRIS-ACCEDE로 baseline 학습 (현재 코드 그대로)
+  2단계: 실험 1 (Congruence ablation) — config만 변경, 즉시 가능
+  3단계: 실험 2 (Uncertainty weighting) — 코드 추가 후 비교
+  4단계: 실험 3 (BEATs encoder) — feature 재추출 필요
+  5단계: 실험 4 (Mixup) — 낮은 비용, baseline과 비교
+  6단계: 실험 5 (Cross-attention) — 가장 마지막, 위험 있음
+
+  * 모든 실험은 동일 seed, 동일 film-level split, 동일 epochs로 진행
+  * 비교 기준: val mean CCC (primary), CCC_valence, CCC_arousal (secondary)
+
+
+============================================================
+  권장하지 않는 실험 (참고용)
+============================================================
+
+  - Encoder 부분 fine-tuning: 7,500개 샘플로 ~230M params 일부를 풀면 과적합 위험 높음
+  - Temporal modeling (LSTM/Transformer): 아키텍처 재설계 필요, 일정상 비현실적
+  - Visual encoder 교체 (X-CLIP -> InternVideo2): audio 쪽이 ROI 높음
+  - GradNorm: Uncertainty weighting과 역할 중복, 구현 더 복잡
