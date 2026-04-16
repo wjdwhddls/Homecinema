@@ -1,0 +1,40 @@
+# =====================================================
+# Mood-EQ Worker — 1~3주차 의존성 (Ubuntu)
+# =====================================================
+# 설치: pip install -r requirements.txt
+# 가상환경 활성화 후 실행 권장.
+# =====================================================
+
+# --- 오디오 처리 ---
+pedalboard           # Spotify EQ 필터
+librosa              # 오디오 로딩/분석
+silero-vad           # 음성 감지 (VAD)
+torchlibrosa         # PANNs 의존성 (필수)
+
+# --- 영상/씬 분할 ---
+scenedetect[opencv]  # PySceneDetect + OpenCV
+opencv-python        # scene_splitter에서 직접 cv2 사용
+
+# --- ML 백본 ---
+torch                # PyTorch (PANNs, Silero, CLIP 모두 의존)
+transformers         # CLIP 제로샷 씬 분류 (작업 10-2.5)
+Pillow               # CLIP 키프레임 이미지 처리
+
+# --- 수치/데이터 처리 ---
+numpy
+scipy                # PSD 검증, 통계
+pandas               # MUSHRA 결과 분석
+
+# --- 시각화 ---
+matplotlib           # EQ 히트맵, 시계열, 스펙트로그램
+plotly               # 인터랙티브 차트 (선택)
+
+# --- webMUSHRA 설정 자동 생성 ---
+pyyaml               # YAML config 작성
+
+# --- 영상 다운로드 ---
+yt-dlp               # 트레일러 다운로드용
+
+# --- (선택) Jupyter 환경 ---
+# jupyter
+# ipykernel

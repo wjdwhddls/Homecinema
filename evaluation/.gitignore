@@ -1,0 +1,10 @@
+# webMUSHRA 본체는 별도 클론 (git submodule 안 씀)
+webmushra/
+
+# raw 결과 CSV (개별 평가자별 원본 — 용량/프라이버시)
+results/raw/
+
+# 분석 출력은 git에 보관 가능 (요약 CSV, 그래프)
+# results/mushra_summary.csv  ← 보관
+# results/mushra_bars.png     ← 보관
+# results/mushra_boxplot.png  ← 보관
