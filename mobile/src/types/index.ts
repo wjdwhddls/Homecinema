@@ -96,3 +96,14 @@ export interface LocalJobMeta {
   original_size_bytes: number;
   processed_size_bytes: number;
 }
+
+// RoomPlan 관련 타입은 src/native/RoomScanner.ts에서 직접 import해서 사용
+// 여기서는 재export만 제공
+export type {
+  CapturedRoom,
+  CapturedSurface,
+  CapturedObject,
+  SurfaceCategory,
+  ObjectCategory,
+  Confidence,
+} from '../native/RoomScanner';
