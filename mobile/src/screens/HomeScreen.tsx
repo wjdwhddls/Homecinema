@@ -34,7 +34,7 @@ export default function HomeScreen({navigation}: Props) {
 
           <TouchableOpacity
             style={[styles.button, styles.secondaryButton]}
-            onPress={() => navigation.navigate('SpeakerPlacement')}
+            onPress={() => navigation.navigate('SpeakerSize')}
             activeOpacity={0.8}>
             <Text style={styles.buttonText}>📍 스피커 위치 자동 배정</Text>
           </TouchableOpacity>
