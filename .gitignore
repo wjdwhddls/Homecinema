@@ -1,0 +1,46 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# 워커 산출물 (자동 생성, 재현 가능)
+outputs/
+
+# 입력 데이터 (용량 큼, yt-dlp로 재다운 가능)
+data/trailers/*.mp4
+data/trailers/*.webm
+data/trailers/*.wav
+!data/trailers/.gitkeep
+
+# 모델 자산 (용량 큼, 외부 다운로드)
+model/autoEQ/assets/*.pth
+model/autoEQ/assets/audioset_tagging_cnn/
+
+# 백엔드 jobs (사용자 업로드 데이터)
+backend/data/jobs/*/
+!backend/data/jobs/.gitkeep
+
+# 백엔드 임시 파일
+backend/tmp/uploads/*
+!backend/tmp/uploads/.gitkeep
+
+# 환경 파일
+.env
+.env.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Claude Code 로컬 세션 상태
+.claude/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 한국어 경로 이슈로 임시 생성된 OneDrive 잔존물 (있으면)
+*.tmp
