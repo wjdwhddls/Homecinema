@@ -4,3 +4,9 @@ python-multipart==0.0.12
 aiofiles==24.1.0
 pydantic==2.9.2
 pydantic-settings==2.6.0
+
+# Phase 2~3: 음향 시뮬레이션 + 최적 스피커 배치
+numpy>=1.24
+scipy>=1.11
+pyroomacoustics>=0.10.0
+shapely>=2.0

@@ -1,12 +1,22 @@
 // types/index.ts — 프로젝트 전역 타입 정의
+import type {OptimizeResponse} from '../api/optimization';
 
-// 네비게이션 (V3: Playback 추가)
+// 스피커 물리 치수 (사용자 입력, 단위: cm)
+export interface SpeakerDimensions {
+  width_cm: number;
+  height_cm: number;
+  depth_cm: number;
+}
+
+// 네비게이션 (V3: Playback 추가, Phase 3: OptimizationResult 추가)
 export type RootStackParamList = {
   Home: undefined;
   Upload: undefined;
   Result: {jobId: string};
   Playback: {jobId: string};
-  SpeakerPlacement: undefined;
+  SpeakerSize: undefined;
+  SpeakerPlacement: {speakerDimensions: SpeakerDimensions};
+  OptimizationResult: {result: OptimizeResponse};
 };
 
 // Job 상태 (V3: 분석 phase 확장)

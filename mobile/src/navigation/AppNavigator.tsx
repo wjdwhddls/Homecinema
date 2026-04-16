@@ -8,7 +8,9 @@ import HomeScreen from '../screens/HomeScreen';
 import UploadScreen from '../screens/UploadScreen';
 import ResultScreen from '../screens/ResultScreen';
 import PlaybackScreen from '../screens/PlaybackScreen';
+import SpeakerSizeScreen from '../screens/SpeakerSizeScreen';
 import SpeakerPlacementScreen from '../screens/SpeakerPlacementScreen';
+import OptimizationResultScreen from '../screens/OptimizationResultScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -52,9 +54,19 @@ export default function AppNavigator() {
         options={{title: '영상 재생'}}
       />
       <Stack.Screen
+        name="SpeakerSize"
+        component={SpeakerSizeScreen}
+        options={{title: '스피커 정보 입력'}}
+      />
+      <Stack.Screen
         name="SpeakerPlacement"
         component={SpeakerPlacementScreen}
         options={{title: '스피커 위치 자동 배정'}}
+      />
+      <Stack.Screen
+        name="OptimizationResult"
+        component={OptimizationResultScreen}
+        options={{title: '최적 배치 결과'}}
       />
     </Stack.Navigator>
   );
