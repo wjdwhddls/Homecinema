@@ -1,0 +1,644 @@
+{
+  "$schema_version": "1.1.0",
+  "last_updated": "2026-04-16",
+  "description": "Mood EQ 프로젝트용 하이브리드 흡음률 DB. PyRoomAcoustics 공식 Materials Database(Vorländer 2008 기반)를 1차 출처로, RoomPlan 가정용 카테고리 보완을 위해 Aural Exchange/ISO 354 자료를 2차 출처로 사용.",
+
+  "frequency_bands_hz": [125, 250, 500, 1000, 2000, 4000, 8000],
+  "pra_compatible_bands_hz": [125, 250, 500, 1000, 2000, 4000],
+  "band_note": "PyRoomAcoustics는 125~8000Hz의 7밴드를 지원하지만, 일부 재질은 8kHz 데이터 부재. 6밴드만 사용할 때는 8kHz 제외.",
+
+  "data_sources": {
+    "primary": {
+      "name": "PyRoomAcoustics Materials Database",
+      "version": "LCAV/pyroomacoustics (as of Nov 2024)",
+      "url": "https://github.com/LCAV/pyroomacoustics/blob/master/pyroomacoustics/data/materials.json",
+      "documentation": "https://pyroomacoustics.readthedocs.io/en/pypi-release/pyroomacoustics.materials.database.html",
+      "license": "MIT",
+      "academic_origin": {
+        "author": "Michael Vorländer",
+        "book": "Auralization: Fundamentals of Acoustics, Modelling, Simulation, Algorithms and Acoustic Virtual Reality",
+        "publisher": "Springer",
+        "year": 2008,
+        "edition": "1st (2nd ed. 2020)",
+        "note": "음향 시뮬레이션 학계의 표준 레퍼런스. PyRoomAcoustics가 이 책의 데이터를 구현."
+      },
+      "used_for": [
+        "벽 (wall)",
+        "바닥 (floor)",
+        "천장 (ceiling)",
+        "문 (door)",
+        "창문 (window)",
+        "커튼, 의자 표면 (chair, sofa 일부)"
+      ]
+    },
+    "secondary": {
+      "name": "Aural Exchange - List of Absorption Coefficients",
+      "url": "https://www.auralexchange.com/knowledgebase/list-of-absorbtion-coefficients/",
+      "standard_basis": "ISO 354:2003, ASTM C423-22 (잔향실 측정)",
+      "used_for": [
+        "침대 (bed) - PRA에 없음",
+        "수납장 (storage)",
+        "냉장고/가전 (refrigerator, stove, oven, dishwasher, washerDryer)",
+        "욕실 기구 (sink, toilet, bathtub)",
+        "TV (television)",
+        "벽난로 (fireplace)",
+        "계단 (stairs)"
+      ]
+    },
+    "tertiary_reference": {
+      "name": "Cox & D'Antonio - Acoustic Absorbers and Diffusers",
+      "publisher": "CRC Press",
+      "year": 2016,
+      "edition": "3rd",
+      "note": "일부 가구/가전 흡음률의 교차 검증에 사용. 직접 수치는 인용하지 않음."
+    }
+  },
+
+  "measurement_standards": {
+    "ISO 354:2003": "Acoustics — Measurement of sound absorption in a reverberation room",
+    "ASTM C423-22": "Standard Test Method for Sound Absorption and Sound Absorption Coefficients by the Reverberation Room Method",
+    "ISO 11654:1997": "Acoustics — Sound absorbers for use in buildings — Rating of sound absorption"
+  },
+
+  "confidence_levels": {
+    "high": "PyRoomAcoustics 공식 DB 직접 매핑 (Vorländer 책 기반). 학술적 표준.",
+    "medium_plus": "PyRoomAcoustics 공식 DB의 유사 재질을 채택한 경우.",
+    "medium": "ISO 354 측정값이지만 재질 가정에 의존 (Aural Exchange).",
+    "low": "유사 재질 기반 추정. Phase 4 실측 보정 권장.",
+    "physics": "물리 상수 (예: opening = 1.0)"
+  },
+
+  "usage_in_pyroomacoustics": {
+    "primary_method": "pra.Material(energy_absorption='<pra_keyword>')",
+    "example_code": "import pyroomacoustics as pra\\nwall_mat = pra.Material(energy_absorption='hard_surface')\\nroom = pra.ShoeBox([9,7,3], materials=wall_mat, fs=16000)",
+    "fallback_method": "pra_available가 false인 경우, absorption_7band 배열을 pra.Material의 custom dict에 주입",
+    "fallback_example": "pra.Material(energy_absorption={'coeffs': [0.44, 0.6, 0.77, 0.89, 0.82, 0.7], 'center_freqs': [125,250,500,1000,2000,4000]})"
+  },
+
+  "surfaces": {
+    "wall": {
+      "pra_keyword": "hard_surface",
+      "pra_available": true,
+      "pra_description": "Walls, hard surfaces average (brick walls, plaster, hard floors, etc.)",
+      "absorption_7band": [0.02, 0.02, 0.03, 0.03, 0.04, 0.05, 0.05],
+      "source": "PyRoomAcoustics official (Vorländer 2008)",
+      "confidence": "high",
+      "notes": "벽돌벽, 석고보드, 단단한 마감의 평균값. 가정용 벽지/페인트 마감 벽에 적합.",
+      "alternatives": {
+        "brickwork": {
+          "pra_keyword": "brickwork",
+          "pra_available": true,
+          "absorption_7band": [0.01, 0.02, 0.02, 0.03, 0.03, 0.04, 0.04],
+          "description": "노출 벽돌 (렌더링 마감)",
+          "source": "PyRoomAcoustics official"
+        },
+        "rough_concrete": {
+          "pra_keyword": "rough_concrete",
+          "pra_available": true,
+          "absorption_7band": [0.02, 0.03, 0.03, 0.03, 0.04, 0.07, 0.07],
+          "description": "거친 노출 콘크리트",
+          "source": "PyRoomAcoustics official"
+        },
+        "unpainted_concrete": {
+          "pra_keyword": "unpainted_concrete",
+          "pra_available": true,
+          "absorption_7band": [0.01, 0.01, 0.02, 0.02, 0.02, 0.05, 0.05],
+          "description": "매끈한 무도색 콘크리트",
+          "source": "PyRoomAcoustics official"
+        },
+        "plasterboard_with_mineral_wool": {
+          "pra_keyword": "plasterboard",
+          "pra_available": true,
+          "absorption_7band": [0.15, 0.10, 0.06, 0.04, 0.04, 0.05, 0.05],
+          "description": "2×13mm 석고보드 + 50mm 미네랄울 단열재 (저주파 흡수 큼)",
+          "source": "PyRoomAcoustics official"
+        },
+        "wooden_lining": {
+          "pra_keyword": "wooden_lining",
+          "pra_available": true,
+          "absorption_7band": [0.27, 0.23, 0.22, 0.15, 0.10, 0.07, 0.06],
+          "description": "목재 패널 마감 (12mm, 프레임 고정). 패널 진동으로 저주파 흡수 큼",
+          "source": "PyRoomAcoustics official"
+        },
+        "ceramic_tiles": {
+          "pra_keyword": "ceramic_tiles",
+          "pra_available": true,
+          "absorption_7band": [0.01, 0.01, 0.01, 0.02, 0.02, 0.02, 0.02],
+          "description": "세라믹 타일 (욕실, 주방 벽)",
+          "source": "PyRoomAcoustics official"
+        }
+      }
+    },
+
+    "floor": {
+      "pra_keyword": "wood_1.6cm",
+      "pra_available": true,
+      "pra_description": "Wood, 1.6 cm thick, on 4 cm wooden planks",
+      "absorption_7band": [0.18, 0.12, 0.10, 0.09, 0.08, 0.07, 0.07],
+      "source": "PyRoomAcoustics official (Vorländer 2008)",
+      "confidence": "high",
+      "notes": "원목 마루. 한국 아파트 거실/방에서 가장 흔한 바닥재.",
+      "alternatives": {
+        "marble_floor": {
+          "pra_keyword": "marble_floor",
+          "pra_available": true,
+          "absorption_7band": [0.01, 0.01, 0.01, 0.02, 0.02, 0.02, 0.02],
+          "description": "대리석/타일 바닥 (매우 반사적)",
+          "source": "PyRoomAcoustics official"
+        },
+        "concrete_floor": {
+          "pra_keyword": "concrete_floor",
+          "pra_available": true,
+          "absorption_7band": [0.01, 0.03, 0.05, 0.02, 0.02, 0.02, 0.02],
+          "description": "노출 콘크리트 바닥",
+          "source": "PyRoomAcoustics official"
+        },
+        "linoleum_vinyl": {
+          "pra_keyword": "linoleum_on_concrete",
+          "pra_available": true,
+          "absorption_7band": [0.02, 0.03, 0.03, 0.03, 0.03, 0.02, 0.02],
+          "description": "장판/비닐/리놀륨 바닥",
+          "source": "PyRoomAcoustics official"
+        },
+        "carpet_thin": {
+          "pra_keyword": "carpet_thin",
+          "pra_available": true,
+          "absorption_7band": [0.02, 0.04, 0.08, 0.20, 0.35, 0.40, 0.40],
+          "description": "얇은 카펫 (콘크리트 직접 부착)",
+          "source": "PyRoomAcoustics official"
+        },
+        "carpet_6mm_felt": {
+          "pra_keyword": "carpet_6mm_open_cell_foam",
+          "pra_available": true,
+          "absorption_7band": [0.03, 0.09, 0.20, 0.54, 0.70, 0.72, 0.72],
+          "description": "6mm 카펫 + 오픈셀 폼 언더레이",
+          "source": "PyRoomAcoustics official"
+        },
+        "carpet_9mm_felt": {
+          "pra_keyword": "carpet_tufted_9m",
+          "pra_available": true,
+          "absorption_7band": [0.08, 0.08, 0.30, 0.60, 0.75, 0.80, 0.80],
+          "description": "9mm 터프티드 카펫 + 펠트 언더레이 (중간 두께)",
+          "source": "PyRoomAcoustics official"
+        },
+        "carpet_soft_10mm": {
+          "pra_keyword": "carpet_soft_10mm",
+          "pra_available": true,
+          "absorption_7band": [0.09, 0.08, 0.21, 0.26, 0.27, 0.37, 0.37],
+          "description": "10mm 부드러운 카펫",
+          "source": "PyRoomAcoustics official"
+        },
+        "carpet_thick": {
+          "pra_keyword": "carpet_1.35_kg_m2",
+          "pra_available": true,
+          "absorption_7band": [0.08, 0.24, 0.57, 0.69, 0.71, 0.73, 0.73],
+          "description": "두꺼운 카펫 (1.35 kg/m², 헤어펠트 또는 폼러버 언더레이)",
+          "source": "PyRoomAcoustics official"
+        }
+      }
+    },
+
+    "ceiling": {
+      "pra_keyword": "ceiling_plasterboard",
+      "pra_available": true,
+      "pra_description": "Plasterboard ceiling on battens with large air-space above",
+      "absorption_7band": [0.20, 0.15, 0.10, 0.08, 0.04, 0.02, 0.02],
+      "source": "PyRoomAcoustics official (Vorländer 2008)",
+      "confidence": "high",
+      "notes": "가정에서 가장 흔한 천장 구조 (석고보드 + 공기층). 8kHz는 4kHz에서 외삽.",
+      "alternatives": {
+        "hard_surface": {
+          "pra_keyword": "hard_surface",
+          "pra_available": true,
+          "absorption_7band": [0.02, 0.02, 0.03, 0.03, 0.04, 0.05, 0.05],
+          "description": "노출 콘크리트 천장 또는 단단한 표면",
+          "source": "PyRoomAcoustics official"
+        },
+        "acoustic_tile_fissured": {
+          "pra_keyword": "ceiling_fissured_tile",
+          "pra_available": true,
+          "absorption_7band": [0.49, 0.53, 0.53, 0.75, 0.92, 0.99, 0.99],
+          "description": "흡음 천장 타일 (균열 무늬)",
+          "source": "PyRoomAcoustics official"
+        },
+        "acoustic_foam": {
+          "pra_keyword": "ceiling_melamine_foam",
+          "pra_available": true,
+          "absorption_7band": [0.12, 0.33, 0.83, 0.97, 0.98, 0.95, 0.95],
+          "description": "웨지 모양 멜라민 폼 천장 타일",
+          "source": "PyRoomAcoustics official"
+        }
+      }
+    },
+
+    "door": {
+      "pra_keyword": "wooden_door",
+      "pra_available": true,
+      "pra_description": "Solid wooden door",
+      "absorption_7band": [0.14, 0.10, 0.06, 0.08, 0.10, 0.10, 0.10],
+      "source": "PyRoomAcoustics official (Vorländer 2008)",
+      "confidence": "high",
+      "notes": "원목 솔리드 도어. 한국 가정용 방문 대부분에 적합.",
+      "alternatives": {
+        "hollowcore_door": {
+          "pra_keyword": null,
+          "pra_available": false,
+          "absorption_7band": [0.30, 0.25, 0.15, 0.10, 0.10, 0.07, 0.07],
+          "description": "합판 중공 도어 (얇고 가벼운 도어, 저주파 패널 진동 흡수)",
+          "source": "Aural Exchange (ISO 354)"
+        },
+        "metal_door": {
+          "pra_keyword": null,
+          "pra_available": false,
+          "absorption_7band": [0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05],
+          "description": "철제 현관문",
+          "source": "Aural Exchange (추정)"
+        }
+      }
+    },
+
+    "window": {
+      "pra_keyword": "glass_window",
+      "pra_available": true,
+      "pra_description": "Glass window, 0.68 kg/m²",
+      "absorption_7band": [0.10, 0.05, 0.04, 0.03, 0.03, 0.03, 0.03],
+      "source": "PyRoomAcoustics official (Vorländer 2008)",
+      "confidence": "high",
+      "notes": "일반 유리창. 저주파에서 약간의 패널 진동 흡수.",
+      "alternatives": {
+        "glass_3mm": {
+          "pra_keyword": "glass_3mm",
+          "pra_available": true,
+          "absorption_7band": [0.08, 0.04, 0.03, 0.03, 0.02, 0.02, 0.02],
+          "description": "3mm 단판 유리",
+          "source": "PyRoomAcoustics official"
+        },
+        "double_glazing_10mm": {
+          "pra_keyword": "double_glazing_10mm",
+          "pra_available": true,
+          "absorption_7band": [0.10, 0.07, 0.05, 0.03, 0.02, 0.02, 0.02],
+          "description": "복층 유리 (2~3mm × 2 + 10mm 공기층)",
+          "source": "PyRoomAcoustics official"
+        },
+        "double_glazing_30mm": {
+          "pra_keyword": "double_glazing_30mm",
+          "pra_available": true,
+          "absorption_7band": [0.15, 0.05, 0.03, 0.03, 0.02, 0.02, 0.02],
+          "description": "복층 유리 (>30mm 공기층, 한국 신축 아파트 표준)",
+          "source": "PyRoomAcoustics official"
+        }
+      }
+    },
+
+    "opening": {
+      "pra_keyword": null,
+      "pra_available": false,
+      "absorption_7band": [1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00],
+      "source": "Physical constant (open aperture)",
+      "confidence": "physics",
+      "notes": "문/벽 없는 개구부. 물리적으로 100% 흡수 (소리가 공간 밖으로 빠져나감). PRA에서는 wall을 추가하지 않는 방식으로 처리할 수도 있음.",
+      "alternatives": {}
+    }
+  },
+
+  "objects": {
+    "sofa": {
+      "pra_keyword": "chairs_upholstered_cloth",
+      "pra_available": true,
+      "pra_description": "Empty chairs, upholstered with cloth cover (2 seats per m²)",
+      "absorption_7band": [0.44, 0.60, 0.77, 0.89, 0.82, 0.70, 0.70],
+      "source": "PyRoomAcoustics official (Vorländer 2008)",
+      "confidence": "high",
+      "notes": "패브릭 소파. PRA의 '2 seats per m² 빈 패브릭 의자' 값과 동일. 방에서 가장 큰 흡음 요소.",
+      "pra_usage_warning": "PRA 데이터는 단위 면적(m²)당 기준이므로 실제 소파 크기에 맞춰 면적 가중 필요",
+      "alternatives": {
+        "leather_upholstered": {
+          "pra_keyword": "chairs_upholstered_leather",
+          "pra_available": true,
+          "absorption_7band": [0.40, 0.50, 0.58, 0.61, 0.58, 0.50, 0.50],
+          "description": "가죽 소파",
+          "source": "PyRoomAcoustics official"
+        },
+        "heavy_upholstered": {
+          "pra_keyword": "chairs_heavy_upholstered",
+          "pra_available": true,
+          "absorption_7band": [0.70, 0.76, 0.81, 0.84, 0.84, 0.81, 0.81],
+          "description": "극장식 두꺼운 패딩 소파 (매우 높은 흡수)",
+          "source": "PyRoomAcoustics official"
+        }
+      }
+    },
+
+    "chair": {
+      "pra_keyword": "chairs_wooden",
+      "pra_available": true,
+      "pra_description": "Wooden chairs without cushion (2 seats per m²)",
+      "absorption_7band": [0.05, 0.08, 0.10, 0.12, 0.12, 0.12, 0.12],
+      "source": "PyRoomAcoustics official (Vorländer 2008)",
+      "confidence": "high",
+      "notes": "쿠션 없는 목재/플라스틱 의자 (식탁 의자 등).",
+      "alternatives": {
+        "plastic_chair": {
+          "pra_keyword": "chairs_unoccupied_plastic",
+          "pra_available": true,
+          "absorption_7band": [0.06, 0.10, 0.10, 0.20, 0.30, 0.20, 0.20],
+          "description": "빈 플라스틱 의자",
+          "source": "PyRoomAcoustics official"
+        },
+        "upholstered_chair": {
+          "pra_keyword": "chairs_medium_upholstered",
+          "pra_available": true,
+          "absorption_7band": [0.49, 0.66, 0.80, 0.88, 0.82, 0.70, 0.70],
+          "description": "중간 두께 패딩 의자 (1인 소파, 암체어)",
+          "source": "PyRoomAcoustics official"
+        },
+        "leather_chair": {
+          "pra_keyword": "chairs_upholstered_leather",
+          "pra_available": true,
+          "absorption_7band": [0.40, 0.50, 0.58, 0.61, 0.58, 0.50, 0.50],
+          "description": "가죽 암체어",
+          "source": "PyRoomAcoustics official"
+        }
+      }
+    },
+
+    "table": {
+      "pra_keyword": "wood_1.6cm",
+      "pra_available": true,
+      "pra_description": "Wood, 1.6 cm thick (approximation for table surface)",
+      "absorption_7band": [0.18, 0.12, 0.10, 0.09, 0.08, 0.07, 0.07],
+      "source": "PyRoomAcoustics official (wood approximation)",
+      "confidence": "medium_plus",
+      "notes": "목재 탁자. PRA는 '바닥/패널용 나무'로 측정되었지만 탁자 상판도 동일 재질로 근사.",
+      "alternatives": {
+        "glass_table": {
+          "pra_keyword": "glass_window",
+          "pra_available": true,
+          "absorption_7band": [0.10, 0.05, 0.04, 0.03, 0.03, 0.03, 0.03],
+          "description": "유리 상판 테이블",
+          "source": "PyRoomAcoustics official"
+        },
+        "metal_table": {
+          "pra_keyword": null,
+          "pra_available": false,
+          "absorption_7band": [0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05],
+          "description": "금속 테이블 (거의 완전 반사)",
+          "source": "Aural Exchange (추정)"
+        }
+      }
+    },
+
+    "bed": {
+      "pra_keyword": "chairs_heavy_upholstered",
+      "pra_available": true,
+      "pra_description": "Heavily upholstered seats (matress approximation)",
+      "absorption_7band": [0.70, 0.76, 0.81, 0.84, 0.84, 0.81, 0.81],
+      "source": "PyRoomAcoustics official (heavy upholstery approximation)",
+      "confidence": "medium_plus",
+      "notes": "매트리스 + 침구. PRA의 '극장식 두꺼운 패딩 의자'와 음향적으로 유사 (두꺼운 섬유 구조). Aural Exchange의 mattress 값(0.15, 0.35, 0.55, 0.70, 0.75, 0.75)보다 더 높은 고주파 흡수를 보이는 이유는 PRA 값이 이불/베개 포함 가정.",
+      "alternatives": {
+        "bare_mattress": {
+          "pra_keyword": null,
+          "pra_available": false,
+          "absorption_7band": [0.15, 0.35, 0.55, 0.70, 0.75, 0.75, 0.75],
+          "description": "매트리스만 (이불 없음)",
+          "source": "Aural Exchange (ISO 354)"
+        }
+      }
+    },
+
+    "storage": {
+      "pra_keyword": "wooden_lining",
+      "pra_available": true,
+      "pra_description": "Wooden lining (cabinet wood approximation)",
+      "absorption_7band": [0.27, 0.23, 0.22, 0.15, 0.10, 0.07, 0.06],
+      "source": "PyRoomAcoustics official (wood panel approximation)",
+      "confidence": "medium_plus",
+      "notes": "목재 수납장/옷장/책장. PRA의 '12mm 목재 패널'과 동일한 패널 진동 특성. 저주파 흡수 상당함.",
+      "alternatives": {
+        "bookshelf_with_books": {
+          "pra_keyword": null,
+          "pra_available": false,
+          "absorption_7band": [0.10, 0.22, 0.35, 0.45, 0.42, 0.40, 0.40],
+          "description": "책이 가득 찬 책장 (책의 종이가 흡음)",
+          "source": "Aural Exchange (추정)"
+        },
+        "metal_cabinet": {
+          "pra_keyword": null,
+          "pra_available": false,
+          "absorption_7band": [0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05],
+          "description": "금속 캐비닛 (파일 캐비닛 등)",
+          "source": "Aural Exchange (추정)"
+        }
+      }
+    },
+
+    "refrigerator": {
+      "pra_keyword": "hard_surface",
+      "pra_available": true,
+      "pra_description": "Hard surface (metal appliance approximation)",
+      "absorption_7band": [0.02, 0.02, 0.03, 0.03, 0.04, 0.05, 0.05],
+      "source": "PyRoomAcoustics official (hard surface approximation)",
+      "confidence": "medium",
+      "notes": "대형 금속 가전. PRA에 직접 카테고리 없어 'hard_surface' 근사. Aural Exchange도 유사한 [0.05]*6 범위. 실제로는 냉장고 후면 공기층과 컴프레서 진동이 있으나 단순화.",
+      "alternatives": {}
+    },
+
+    "stove": {
+      "pra_keyword": "hard_surface",
+      "pra_available": true,
+      "absorption_7band": [0.02, 0.02, 0.03, 0.03, 0.04, 0.05, 0.05],
+      "source": "PyRoomAcoustics official (hard surface approximation)",
+      "confidence": "medium",
+      "notes": "가스레인지/인덕션. 금속 재질 근사.",
+      "alternatives": {}
+    },
+
+    "oven": {
+      "pra_keyword": "hard_surface",
+      "pra_available": true,
+      "absorption_7band": [0.02, 0.02, 0.03, 0.03, 0.04, 0.05, 0.05],
+      "source": "PyRoomAcoustics official (hard surface approximation)",
+      "confidence": "medium",
+      "notes": "오븐. 금속 재질 근사.",
+      "alternatives": {}
+    },
+
+    "dishwasher": {
+      "pra_keyword": "hard_surface",
+      "pra_available": true,
+      "absorption_7band": [0.02, 0.02, 0.03, 0.03, 0.04, 0.05, 0.05],
+      "source": "PyRoomAcoustics official (hard surface approximation)",
+      "confidence": "medium",
+      "notes": "식기세척기. 금속 재질 근사.",
+      "alternatives": {}
+    },
+
+    "washerDryer": {
+      "pra_keyword": "hard_surface",
+      "pra_available": true,
+      "absorption_7band": [0.02, 0.02, 0.03, 0.03, 0.04, 0.05, 0.05],
+      "source": "PyRoomAcoustics official (hard surface approximation)",
+      "confidence": "medium",
+      "notes": "세탁기/건조기. 금속 재질 근사.",
+      "alternatives": {}
+    },
+
+    "sink": {
+      "pra_keyword": "ceramic_tiles",
+      "pra_available": true,
+      "pra_description": "Ceramic tiles (sink surface approximation)",
+      "absorption_7band": [0.01, 0.01, 0.01, 0.02, 0.02, 0.02, 0.02],
+      "source": "PyRoomAcoustics official (ceramic approximation)",
+      "confidence": "medium",
+      "notes": "스테인리스 싱크대 또는 도자기 세면대. 매끈한 표면으로 거의 완전 반사.",
+      "alternatives": {}
+    },
+
+    "toilet": {
+      "pra_keyword": "ceramic_tiles",
+      "pra_available": true,
+      "absorption_7band": [0.01, 0.01, 0.01, 0.02, 0.02, 0.02, 0.02],
+      "source": "PyRoomAcoustics official (ceramic approximation)",
+      "confidence": "medium",
+      "notes": "도자기 변기. 매끈한 표면, 거의 완전 반사.",
+      "alternatives": {}
+    },
+
+    "bathtub": {
+      "pra_keyword": "ceramic_tiles",
+      "pra_available": true,
+      "absorption_7band": [0.01, 0.01, 0.01, 0.02, 0.02, 0.02, 0.02],
+      "source": "PyRoomAcoustics official (ceramic approximation)",
+      "confidence": "medium",
+      "notes": "아크릴/도자기 욕조. 매끈한 표면.",
+      "alternatives": {}
+    },
+
+    "fireplace": {
+      "pra_keyword": "brick_wall_rough",
+      "pra_available": true,
+      "pra_description": "Brick wall, stuccoed with a rough finish",
+      "absorption_7band": [0.03, 0.03, 0.03, 0.04, 0.05, 0.07, 0.07],
+      "source": "PyRoomAcoustics official (brick approximation)",
+      "confidence": "medium",
+      "notes": "벽돌/석재 벽난로 외장. PRA의 '거친 마감 벽돌'로 근사.",
+      "alternatives": {
+        "open_fireplace_cavity": {
+          "pra_keyword": null,
+          "pra_available": false,
+          "absorption_7band": [0.40, 0.60, 0.70, 0.80, 0.80, 0.80, 0.80],
+          "description": "열린 벽난로 내부 공간 (연통으로 소리 빠져나감)",
+          "source": "Aural Exchange (추정)"
+        }
+      }
+    },
+
+    "television": {
+      "pra_keyword": "glass_window",
+      "pra_available": true,
+      "pra_description": "Glass window (flat panel display approximation)",
+      "absorption_7band": [0.10, 0.05, 0.04, 0.03, 0.03, 0.03, 0.03],
+      "source": "PyRoomAcoustics official (glass approximation)",
+      "confidence": "medium",
+      "notes": "LCD/OLED 평면 디스플레이. PRA의 '유리창'으로 근사. 음향적으로 1차 반사면 역할.",
+      "alternatives": {}
+    },
+
+    "stairs": {
+      "pra_keyword": "wood_1.6cm",
+      "pra_available": true,
+      "absorption_7band": [0.18, 0.12, 0.10, 0.09, 0.08, 0.07, 0.07],
+      "source": "PyRoomAcoustics official (wood approximation)",
+      "confidence": "low",
+      "notes": "목재 계단. PRA '1.6cm 나무'로 근사. 실제로는 단차로 인한 확산 효과도 있으나 본 DB는 흡수만 모델링.",
+      "alternatives": {
+        "concrete_stairs": {
+          "pra_keyword": "rough_concrete",
+          "pra_available": true,
+          "absorption_7band": [0.02, 0.03, 0.03, 0.03, 0.04, 0.07, 0.07],
+          "description": "콘크리트 계단",
+          "source": "PyRoomAcoustics official"
+        },
+        "carpeted_stairs": {
+          "pra_keyword": "carpet_tufted_9m",
+          "pra_available": true,
+          "absorption_7band": [0.08, 0.08, 0.30, 0.60, 0.75, 0.80, 0.80],
+          "description": "카펫이 깔린 계단",
+          "source": "PyRoomAcoustics official"
+        }
+      }
+    },
+
+    "unknown": {
+      "pra_keyword": "hard_surface",
+      "pra_available": true,
+      "absorption_7band": [0.02, 0.02, 0.03, 0.03, 0.04, 0.05, 0.05],
+      "source": "PyRoomAcoustics official (safe default)",
+      "confidence": "low",
+      "notes": "RoomPlan 분류 실패 객체의 안전한 기본값. hard_surface로 처리해 시뮬레이션에 큰 영향 없도록 함.",
+      "alternatives": {}
+    }
+  },
+
+  "roomplan_category_mapping_strategy": {
+    "description": "RoomPlan 카테고리를 PyRoomAcoustics DB로 라우팅하는 전략",
+    "tier_1_direct_match": {
+      "description": "PRA DB에 RoomPlan 카테고리와 동일/유사한 키워드가 있는 경우. 최고 신뢰도.",
+      "examples": {
+        "wall -> hard_surface": "단단한 벽 평균값, 학술 표준",
+        "window -> glass_window": "일반 유리창",
+        "door -> wooden_door": "원목 도어",
+        "sofa -> chairs_upholstered_cloth": "패브릭 소파 = 2 seats/m²",
+        "chair -> chairs_wooden": "쿠션 없는 목재 의자",
+        "floor -> wood_1.6cm (또는 carpet_*)": "원목 또는 카펫"
+      }
+    },
+    "tier_2_pra_approximation": {
+      "description": "PRA DB에 직접 매칭은 없으나 음향적으로 유사한 재질 차용.",
+      "examples": {
+        "bed -> chairs_heavy_upholstered": "매트리스와 극장 의자는 음향적으로 유사 (두꺼운 섬유)",
+        "storage -> wooden_lining": "목재 가구는 목재 패널과 동일 특성",
+        "refrigerator -> hard_surface": "금속 가전 → 단단한 표면 평균값",
+        "television -> glass_window": "평면 디스플레이 → 유리창"
+      }
+    },
+    "tier_3_custom_values": {
+      "description": "PRA에 없고 Aural Exchange/기타 자료에서 가져온 값. Phase 4 실측 보정 필요.",
+      "examples": {
+        "opening": "물리 상수 (α=1.0)",
+        "bookshelf_with_books alternative": "책장은 ISO 354 측정값 기반",
+        "metal_door alternative": "철제 문은 Aural Exchange"
+      }
+    }
+  },
+
+  "data_validation_notes": {
+    "cross_check_example": {
+      "category": "sofa (패브릭)",
+      "pra_value": [0.44, 0.60, 0.77, 0.89, 0.82, 0.70],
+      "aural_exchange_value": [0.44, 0.60, 0.77, 0.89, 0.82, 0.70],
+      "result": "완벽히 일치. 두 출처 모두 같은 원전(Vorländer/ISO 354) 인용 가능성."
+    },
+    "discrepancy_example": {
+      "category": "bed",
+      "pra_approximation": [0.70, 0.76, 0.81, 0.84, 0.84, 0.81],
+      "aural_exchange_mattress": [0.15, 0.35, 0.55, 0.70, 0.75, 0.75],
+      "difference_reason": "PRA는 '이불 포함 두꺼운 패딩 가정', Aural Exchange는 '매트리스만'. 본 DB는 PRA를 기본값, Aural Exchange를 alternative로 제공."
+    }
+  },
+
+  "scattering_coefficients_note": {
+    "available_in_pra": ["rpg_skyline", "rpg_qrd", "theatre_audience", "classroom_tables"],
+    "usage": "Phase 3 고도화 단계에서 벽/천장의 확산(scattering) 효과를 반영할 때 사용.",
+    "mvp_recommendation": "MVP에서는 scattering 무시 (모든 표면을 거울반사로 취급). Phase 4 실측 결과에서 잔향 시간이 과대평가되면 추가."
+  },
+
+  "limitations_and_caveats": [
+    "PRA의 Seating 카테고리는 '2 seats per m²' 기준으로 측정됨. 단일 소파/의자에 적용 시 면적 가중치 필요.",
+    "RoomPlan은 재질을 구분하지 못하므로 기본값에 의존. 사용자 UI에서 재질 선택 옵션 제공 권장.",
+    "가전제품(냉장고, TV 등)은 PRA에 없어 근사치 사용. 실제로는 기기 후면 공기층/내부 구조로 실제 흡음이 약간 더 높을 수 있음.",
+    "8kHz 데이터가 없는 일부 재질은 4kHz 값을 그대로 복제하여 채움 (보수적 추정).",
+    "방의 실제 RT60을 Phase 4에서 측정한 뒤, 시뮬레이션 RT60과 비교하여 스케일 팩터로 보정하는 것이 가장 실용적."
+  ]
+}
