@@ -1,0 +1,113 @@
+testname: Mood-EQ Curated (6 scenes)
+testId: mood_eq_v1
+bufferSize: 2048
+stopOnErrors: true
+showButtonPreviousPage: true
+remoteService: service/write.php
+
+pages:
+  - type: generic
+    id: first_page
+    name: 환영합니다
+    content: |
+      <h1>Mood-EQ 청취 평가</h1>
+      <p>각 씬에 대해 4가지 버전(원본/V3.1/V3.2/Anchor)을 들어보고
+         <b>영상의 분위기와 가장 잘 맞는다고 느낀 정도</b>를 0~100점으로 평가해주세요.</p>
+      <ul><li>원본은 EQ가 없는 버전입니다.</li>
+          <li>Anchor는 의도적으로 저음을 줄인 저품질 기준입니다.</li></ul>
+
+  - type: mushra
+    id: scene_topgun_baseline
+    name: scene_topgun_baseline (baseline, density=0.0)
+    content: 분위기 적합도를 0~100점으로 평가하세요.
+    showWaveform: true
+    enableLooping: true
+    reference: configs/resources/audio/scene_topgun_baseline/original.wav
+    createAnchor35: false
+    createAnchor70: false
+    stimuli:
+      original_hidden: configs/resources/audio/scene_topgun_baseline/original.wav
+      v3_1: configs/resources/audio/scene_topgun_baseline/v3_1.wav
+      v3_2: configs/resources/audio/scene_topgun_baseline/v3_2.wav
+      anchor: configs/resources/audio/scene_topgun_baseline/anchor.wav
+
+  - type: mushra
+    id: scene_topgun_dialogue_protect
+    name: scene_topgun_dialogue_protect (dialogue_protect, density=0.0)
+    content: 분위기 적합도를 0~100점으로 평가하세요.
+    showWaveform: true
+    enableLooping: true
+    reference: configs/resources/audio/scene_topgun_dialogue_protect/original.wav
+    createAnchor35: false
+    createAnchor70: false
+    stimuli:
+      original_hidden: configs/resources/audio/scene_topgun_dialogue_protect/original.wav
+      v3_1: configs/resources/audio/scene_topgun_dialogue_protect/v3_1.wav
+      v3_2: configs/resources/audio/scene_topgun_dialogue_protect/v3_2.wav
+      anchor: configs/resources/audio/scene_topgun_dialogue_protect/anchor.wav
+
+  - type: mushra
+    id: scene_topgun_category_eq
+    name: scene_topgun_category_eq (category_eq, density=0.0)
+    content: 분위기 적합도를 0~100점으로 평가하세요.
+    showWaveform: true
+    enableLooping: true
+    reference: configs/resources/audio/scene_topgun_category_eq/original.wav
+    createAnchor35: false
+    createAnchor70: false
+    stimuli:
+      original_hidden: configs/resources/audio/scene_topgun_category_eq/original.wav
+      v3_1: configs/resources/audio/scene_topgun_category_eq/v3_1.wav
+      v3_2: configs/resources/audio/scene_topgun_category_eq/v3_2.wav
+      anchor: configs/resources/audio/scene_topgun_category_eq/anchor.wav
+
+  - type: mushra
+    id: scene_lalaland_baseline
+    name: scene_lalaland_baseline (baseline, density=0.0)
+    content: 분위기 적합도를 0~100점으로 평가하세요.
+    showWaveform: true
+    enableLooping: true
+    reference: configs/resources/audio/scene_lalaland_baseline/original.wav
+    createAnchor35: false
+    createAnchor70: false
+    stimuli:
+      original_hidden: configs/resources/audio/scene_lalaland_baseline/original.wav
+      v3_1: configs/resources/audio/scene_lalaland_baseline/v3_1.wav
+      v3_2: configs/resources/audio/scene_lalaland_baseline/v3_2.wav
+      anchor: configs/resources/audio/scene_lalaland_baseline/anchor.wav
+
+  - type: mushra
+    id: scene_lalaland_song_dialogue
+    name: scene_lalaland_song_dialogue (song_dialogue, density=0.0)
+    content: 분위기 적합도를 0~100점으로 평가하세요.
+    showWaveform: true
+    enableLooping: true
+    reference: configs/resources/audio/scene_lalaland_song_dialogue/original.wav
+    createAnchor35: false
+    createAnchor70: false
+    stimuli:
+      original_hidden: configs/resources/audio/scene_lalaland_song_dialogue/original.wav
+      v3_1: configs/resources/audio/scene_lalaland_song_dialogue/v3_1.wav
+      v3_2: configs/resources/audio/scene_lalaland_song_dialogue/v3_2.wav
+      anchor: configs/resources/audio/scene_lalaland_song_dialogue/anchor.wav
+
+  - type: mushra
+    id: scene_lalaland_wonder
+    name: scene_lalaland_wonder (wonder, density=0.0)
+    content: 분위기 적합도를 0~100점으로 평가하세요.
+    showWaveform: true
+    enableLooping: true
+    reference: configs/resources/audio/scene_lalaland_wonder/original.wav
+    createAnchor35: false
+    createAnchor70: false
+    stimuli:
+      original_hidden: configs/resources/audio/scene_lalaland_wonder/original.wav
+      v3_1: configs/resources/audio/scene_lalaland_wonder/v3_1.wav
+      v3_2: configs/resources/audio/scene_lalaland_wonder/v3_2.wav
+      anchor: configs/resources/audio/scene_lalaland_wonder/anchor.wav
+
+  - type: finish
+    name: 평가 완료
+    content: 감사합니다! 평가 결과가 저장되었습니다.
+    showResults: false
+    writeResults: true
