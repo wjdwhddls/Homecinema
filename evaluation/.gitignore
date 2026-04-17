@@ -1,5 +1,7 @@
 # webMUSHRA 본체는 별도 클론 (git submodule 안 씀)
-webmushra/
+webmushra/*
+# 예외: Plan B 단독 플레이어 (12s 제한 우회 솔루션)
+!webmushra/simple_player.html
 
 # raw 결과 CSV (개별 평가자별 원본 — 용량/프라이버시)
 results/raw/
