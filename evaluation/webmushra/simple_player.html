@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>Mood-EQ 청취 평가 (Plan B)</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    max-width: 980px;
+    margin: 24px auto;
+    padding: 0 20px;
+    background: #1a1a1a;
+    color: #e8e8e8;
+    line-height: 1.5;
+  }
+  h1 { color: #fff; margin-bottom: 8px; }
+  .subtitle { color: #999; margin-bottom: 24px; font-size: 14px; }
+  
+  .tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    border-bottom: 2px solid #333;
+  }
+  .tab {
+    padding: 10px 20px;
+    background: transparent;
+    border: none;
+    color: #999;
+    cursor: pointer;
+    font-size: 16px;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+  }
+  .tab.active {
+    color: #fff;
+    border-bottom-color: #4a90e2;
+  }
+  
+  .controls {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 12px;
+    background: #252525;
+    border-radius: 6px;
+  }
+  .toggle-blind {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .toggle-blind input { width: 18px; height: 18px; cursor: pointer; }
+  .toggle-blind label { cursor: pointer; user-select: none; }
+  
+  .clip-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .clip {
+    background: #252525;
+    border: 1px solid #383838;
+    border-radius: 8px;
+    padding: 16px;
+  }
+  .clip-label {
+    font-weight: 600;
+    margin-bottom: 4px;
+    color: #4a90e2;
+    font-size: 18px;
+  }
+  .clip-hint {
+    font-size: 12px;
+    color: #888;
+    margin-bottom: 12px;
+    min-height: 16px;
+  }
+  audio {
+    width: 100%;
+    margin-bottom: 12px;
+  }
+  .score-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .score-row label {
+    font-size: 13px;
+    color: #aaa;
+    min-width: 50px;
+  }
+  .score-input {
+    width: 80px;
+    padding: 6px 8px;
+    background: #1a1a1a;
+    border: 1px solid #444;
+    color: #fff;
+    border-radius: 4px;
+    font-size: 14px;
+  }
+  .score-slider {
+    flex: 1;
+    accent-color: #4a90e2;
+  }
+  
+  .notes-section {
+    margin-top: 24px;
+    padding: 16px;
+    background: #252525;
+    border-radius: 8px;
+  }
+  .notes-section h3 {
+    margin-top: 0;
+    color: #fff;
+    font-size: 16px;
+  }
+  textarea {
+    width: 100%;
+    min-height: 100px;
+    background: #1a1a1a;
+    color: #e8e8e8;
+    border: 1px solid #444;
+    border-radius: 4px;
+    padding: 10px;
+    font-family: inherit;
+    font-size: 14px;
+    resize: vertical;
+  }
+  
+  .actions {
+    margin-top: 24px;
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+  }
+  button.primary {
+    padding: 10px 20px;
+    background: #4a90e2;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+  }
+  button.primary:hover { background: #357abd; }
+  button.secondary {
+    padding: 10px 20px;
+    background: #383838;
+    color: #e8e8e8;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  button.secondary:hover { background: #444; }
+  
+  .anchor-note {
+    margin-top: 16px;
+    padding: 10px 12px;
+    background: #2a2418;
+    border-left: 3px solid #d4a647;
+    border-radius: 4px;
+    font-size: 13px;
+    color: #d4a647;
+  }
+  
+  .footer-info {
+    margin-top: 32px;
+    padding-top: 16px;
+    border-top: 1px solid #333;
+    font-size: 12px;
+    color: #666;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<h1>Mood-EQ 청취 평가</h1>
+<div class="subtitle">
+  원본 + 처리본 3종 (V3.1, V3.2, Anchor)을 비교 평가합니다.
+  점수: 0(매우 다름) ~ 100(원본과 동일)
+</div>
+
+<div class="tabs">
+  <button class="tab active" data-tab="topgun">탑건 (Top Gun)</button>
+  <button class="tab" data-tab="lalaland">라라랜드 (La La Land)</button>
+</div>
+
+<div class="controls">
+  <div class="toggle-blind">
+    <input type="checkbox" id="blindMode" checked>
+    <label for="blindMode">🔒 Blind 모드 (레이블 무작위 표시)</label>
+  </div>
+  <button class="secondary" onclick="reshuffleBlind()">🔀 다시 섞기</button>
+</div>
+
+<div id="clipContainer"></div>
+
+<div class="notes-section">
+  <h3>📝 평가 메모 (선택)</h3>
+  <textarea id="notes" placeholder="강사 코멘트, 인상 깊은 부분, 의견 등 자유 기록..."></textarea>
+</div>
+
+<div class="anchor-note">
+  💡 <strong>Anchor 안내</strong>: 4개 비교군 중 하나는 의도적으로 품질을 낮춘 anchor입니다.
+  진지한 평가의 sanity check 용도이며, anchor에 높은 점수가 나오면 평가 신뢰도 검토 필요.
+</div>
+
+<div class="actions">
+  <button class="secondary" onclick="resetScores()">점수 리셋</button>
+  <button class="primary" onclick="downloadResults()">💾 결과 다운로드 (JSON)</button>
+</div>
+
+<div class="footer-info">
+  Mood-EQ Plan B Player · webMUSHRA 12s 제한 우회용 비공식 데모
+</div>
+
+<script>
+// ============================================================
+// 설정
+// ============================================================
+const VIDEOS = {
+  topgun: {
+    title: '탑건 (Top Gun)',
+    audioBase: 'configs/resources/audio/trailer_topgun_full',
+    duration: 144.4,
+  },
+  lalaland: {
+    title: '라라랜드 (La La Land)',
+    audioBase: 'configs/resources/audio/trailer_lalaland_full',
+    duration: 131.2,
+  },
+};
+
+const CONDITIONS = [
+  { key: 'original', label: 'Original (원본)', file: 'original.wav' },
+  { key: 'v3_1',     label: 'V3.1 처리본',    file: 'v3_1.wav' },
+  { key: 'v3_2',     label: 'V3.2 처리본',    file: 'v3_2.wav' },
+  { key: 'anchor',   label: 'Anchor (저품질)', file: 'anchor.wav' },
+];
+
+// ============================================================
+// 상태
+// ============================================================
+let currentTab = 'topgun';
+let blindMode = true;
+let blindMaps = {}; // { topgun: ['B', 'A', 'D', 'C'], lalaland: [...] }
+const scores = {}; // { 'topgun_original': 75, ... }
+
+// ============================================================
+// Blind 무작위화
+// ============================================================
+function shuffleArray(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function reshuffleBlind() {
+  for (const videoKey of Object.keys(VIDEOS)) {
+    const labels = ['A', 'B', 'C', 'D'];
+    const shuffled = shuffleArray(labels);
+    blindMaps[videoKey] = {};
+    CONDITIONS.forEach((cond, i) => {
+      blindMaps[videoKey][cond.key] = shuffled[i];
+    });
+  }
+  renderClips();
+}
+
+// ============================================================
+// 렌더링
+// ============================================================
+function renderClips() {
+  const container = document.getElementById('clipContainer');
+  const video = VIDEOS[currentTab];
+  const map = blindMaps[currentTab];
+  
+  const sortedConditions = blindMode
+    ? [...CONDITIONS].sort((a, b) => map[a.key].localeCompare(map[b.key]))
+    : CONDITIONS;
+  
+  container.innerHTML = `
+    <div class="clip-grid">
+      ${sortedConditions.map(cond => {
+        const blindLabel = map[cond.key];
+        const displayLabel = blindMode ? `Condition ${blindLabel}` : cond.label;
+        const hint = blindMode 
+          ? '레이블 가려짐 (블라인드 평가 중)' 
+          : (cond.key === 'anchor' ? '의도적 저품질 (sanity check용)' : '');
+        const scoreKey = `${currentTab}_${cond.key}`;
+        const currentScore = scores[scoreKey] !== undefined ? scores[scoreKey] : 50;
+        return `
+          <div class="clip">
+            <div class="clip-label">${displayLabel}</div>
+            <div class="clip-hint">${hint}</div>
+            <audio controls preload="metadata"
+                   src="${video.audioBase}/${cond.file}"></audio>
+            <div class="score-row">
+              <label>점수:</label>
+              <input type="range" min="0" max="100" value="${currentScore}"
+                     class="score-slider"
+                     data-key="${scoreKey}"
+                     oninput="updateScore('${scoreKey}', this.value)">
+              <input type="number" min="0" max="100" value="${currentScore}"
+                     class="score-input"
+                     data-key="${scoreKey}"
+                     oninput="updateScoreFromInput('${scoreKey}', this.value)">
+            </div>
+          </div>
+        `;
+      }).join('')}
+    </div>
+  `;
+}
+
+function updateScore(key, value) {
+  scores[key] = parseInt(value, 10);
+  // 같은 키의 number input 동기화
+  const numInput = document.querySelector(`input.score-input[data-key="${key}"]`);
+  if (numInput) numInput.value = value;
+}
+
+function updateScoreFromInput(key, value) {
+  const v = parseInt(value, 10);
+  if (isNaN(v)) return;
+  scores[key] = Math.max(0, Math.min(100, v));
+  const slider = document.querySelector(`input.score-slider[data-key="${key}"]`);
+  if (slider) slider.value = scores[key];
+}
+
+// ============================================================
+// 탭 전환
+// ============================================================
+document.querySelectorAll('.tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentTab = btn.dataset.tab;
+    renderClips();
+  });
+});
+
+document.getElementById('blindMode').addEventListener('change', (e) => {
+  blindMode = e.target.checked;
+  renderClips();
+});
+
+// ============================================================
+// 결과 다운로드
+// ============================================================
+function downloadResults() {
+  const result = {
+    metadata: {
+      session_id: `mood_eq_planb_${new Date().toISOString().replace(/[:.]/g, '-')}`,
+      timestamp: new Date().toISOString(),
+      mode: 'plan_b_html_player',
+      blind_mode_used: blindMode,
+    },
+    blind_maps: blindMaps,
+    scores: scores,
+    notes: document.getElementById('notes').value,
+  };
+  
+  const blob = new Blob([JSON.stringify(result, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${result.metadata.session_id}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  
+  alert('결과가 다운로드 폴더에 저장되었습니다.\n파일명: ' + a.download);
+}
+
+function resetScores() {
+  if (!confirm('현재 입력한 점수를 모두 초기화합니다. 진행할까요?')) return;
+  for (const k of Object.keys(scores)) delete scores[k];
+  renderClips();
+}
+
+// ============================================================
+// 초기화
+// ============================================================
+reshuffleBlind();  // 첫 무작위 배정
+</script>
+
+</body>
+</html>

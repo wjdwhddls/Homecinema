@@ -1,0 +1,3230 @@
+{
+  "metadata": {
+    "trailer": "topgun",
+    "video_key": "trailer_topgun",
+    "candidate_labels": [
+      "a photo of a text logo on black background with no people",
+      "a photo of a pilot in a cockpit wearing a helmet and oxygen mask",
+      "a photo of a fighter jet flying through clouds or sky",
+      "a photo of fighter jets in close combat maneuvers",
+      "a photo of a fighter jet on an aircraft carrier deck",
+      "a photo of two people talking face to face in close-up",
+      "a photo of a person with a serious emotional expression",
+      "a photo of an explosion or fireball",
+      "a photo of military personnel in uniform walking or running"
+    ],
+    "candidate_short_names": [
+      "Title",
+      "Cockpit",
+      "Flight",
+      "Dogfight",
+      "Carrier",
+      "Dialogue",
+      "Emotional",
+      "Explosion",
+      "Ground"
+    ],
+    "topk": 5,
+    "total_scenes": 42,
+    "processed_scenes": 42,
+    "skipped_missing_frame": [],
+    "processing_errors": [],
+    "auto_source": "scene_labels_topgun_auto.json",
+    "created_at": "2026-04-17T01:23:37+00:00",
+    "note": "CLIP re-run on review_frames_*/scene_NNN.jpg (q:v 3). Minor numeric drift vs scene_labeler.py original (q:v 2) possible; top-1 label is expected to match in ≥~95% of high-confidence scenes."
+  },
+  "scenes": [
+    {
+      "idx": 0,
+      "start_sec": 0.0,
+      "end_sec": 3.92,
+      "frame": "review_frames_topgun/scene_000.jpg",
+      "top1": {
+        "label": "Dogfight",
+        "prompt": "a photo of fighter jets in close combat maneuvers",
+        "prob": 0.8016
+      },
+      "top_k": [
+        {
+          "label": "Dogfight",
+          "prompt": "a photo of fighter jets in close combat maneuvers",
+          "prob": 0.8016
+        },
+        {
+          "label": "Ground",
+          "prompt": "a photo of military personnel in uniform walking or running",
+          "prob": 0.0647
+        },
+        {
+          "label": "Dialogue",
+          "prompt": "a photo of two people talking face to face in close-up",
+          "prob": 0.0317
+        },
+        {
+          "label": "Explosion",
+          "prompt": "a photo of an explosion or fireball",
+          "prob": 0.0289
+        },
+        {
+          "label": "Emotional",
+          "prompt": "a photo of a person with a serious emotional expression",
+          "prob": 0.0275
+        }
+      ],
+      "full_probs": [
+        {
+          "label": "Title",
+          "prob": 0.0127
+        },
+        {
+          "label": "Cockpit",
+          "prob": 0.0015
+        },
+        {
+          "label": "Flight",
+          "prob": 0.0106
+        },
+        {
+          "label": "Dogfight",
+          "prob": 0.8016
+        },
+        {
+          "label": "Carrier",
+          "prob": 0.0208
+        },
+        {
+          "label": "Dialogue",
+          "prob": 0.0317
+        },
+        {
+          "label": "Emotional",
+          "prob": 0.0275
+        },
+        {
+          "label": "Explosion",
+          "prob": 0.0289
+        },
+        {
+          "label": "Ground",
+          "prob": 0.0647
+        }
+      ]
+    },
+    {
+      "idx": 1,
+      "start_sec": 3.92,
+      "end_sec": 6.51,
+      "frame": "review_frames_topgun/scene_001.jpg",
+      "top1": {
+        "label": "Dogfight",
+        "prompt": "a photo of fighter jets in close combat maneuvers",
+        "prob": 0.8218
+      },
+      "top_k": [
+        {
+          "label": "Dogfight",
+          "prompt": "a photo of fighter jets in close combat maneuvers",
+          "prob": 0.8218
+        },
+        {
+          "label": "Flight",
+          "prompt": "a photo of a fighter jet flying through clouds or sky",
+          "prob": 0.1606
+        },
+        {
+          "label": "Cockpit",
+          "prompt": "a photo of a pilot in a cockpit wearing a helmet and oxygen mask",
+          "prob": 0.0049
+        },
+        {
+          "label": "Explosion",
+          "prompt": "a photo of an explosion or fireball",
+          "prob": 0.0043
+        },
+        {
+          "label": "Dialogue",
+          "prompt": "a photo of two people talking face to face in close-up",
+          "prob": 0.0027
+        }
+      ],
+      "full_probs": [
+        {
+          "label": "Title",
+          "prob": 0.0005
+        },
+        {
+          "label": "Cockpit",
+          "prob": 0.0049
+        },
+        {
+          "label": "Flight",
+          "prob": 0.1606
+        },
+        {
+          "label": "Dogfight",
+          "prob": 0.8218
+        },
+        {
+          "label": "Carrier",
+          "prob": 0.0026
+        },
+        {
+          "label": "Dialogue",
+          "prob": 0.0027
+        },
+        {
+          "label": "Emotional",
+          "prob": 0.0015
+        },
+        {
+          "label": "Explosion",
+          "prob": 0.0043
+        },
+        {
+          "label": "Ground",
+          "prob": 0.0011
+        }
+      ]
+    },
+    {
+      "idx": 2,
+      "start_sec": 6.51,
+      "end_sec": 8.97,
+      "frame": "review_frames_topgun/scene_002.jpg",
+      "top1": {
+        "label": "Title",
+        "prompt": "a photo of a text logo on black background with no people",
+        "prob": 0.2733
+      },
+      "top_k": [
+        {
+          "label": "Title",
+          "prompt": "a photo of a text logo on black background with no people",
+          "prob": 0.2733
+        },
+        {
+          "label": "Ground",
+          "prompt": "a photo of military personnel in uniform walking or running",
+          "prob": 0.2105
+        },
+        {
+          "label": "Emotional",
+          "prompt": "a photo of a person with a serious emotional expression",
+          "prob": 0.1766
+        },
+        {
+          "label": "Dialogue",
+          "prompt": "a photo of two people talking face to face in close-up",
+          "prob": 0.1709
+        },
+        {
+          "label": "Dogfight",
+          "prompt": "a photo of fighter jets in close combat maneuvers",
+          "prob": 0.0765
+        }
+      ],
+      "full_probs": [
+        {
+          "label": "Title",
+          "prob": 0.2733
+        },
+        {
+          "label": "Cockpit",
+          "prob": 0.0054
+        },
+        {
+          "label": "Flight",
+          "prob": 0.0003
+        },
+        {
+          "label": "Dogfight",
+          "prob": 0.0765
+        },
+        {
+          "label": "Carrier",
+          "prob": 0.0435
+        },
+        {
+          "label": "Dialogue",
+          "prob": 0.1709
+        },
+        {
+          "label": "Emotional",
+          "prob": 0.1766
+        },
+        {
+          "label": "Explosion",
+          "prob": 0.0431
+        },
+        {
+          "label": "Ground",
+          "prob": 0.2105
+        }
+      ]
+    },
+    {
+      "idx": 3,
+      "start_sec": 8.97,
+      "end_sec": 11.05,
+      "frame": "review_frames_topgun/scene_003.jpg",
+      "top1": {
+        "label": "Emotional",
+        "prompt": "a photo of a person with a serious emotional expression",
+        "prob": 0.9337
+      },
+      "top_k": [
+        {
+          "label": "Emotional",
+          "prompt": "a photo of a person with a serious emotional expression",
+          "prob": 0.9337
+        },
+        {
+          "label": "Dialogue",
+          "prompt": "a photo of two people talking face to face in close-up",
+          "prob": 0.0434
+        },
+        {
+          "label": "Dogfight",
+          "prompt": "a photo of fighter jets in close combat maneuvers",
+          "prob": 0.0084
+        },
+        {
+          "label": "Explosion",
+          "prompt": "a photo of an explosion or fireball",
+          "prob": 0.0047
+        },
+        {
+          "label": "Title",
+          "prompt": "a photo of a text logo on black background with no people",
+          "prob": 0.0046
+        }
+      ],
+      "full_probs": [
+        {
+          "label": "Title",
+          "prob": 0.0046
+        },
+        {
+          "label": "Cockpit",
+          "prob": 0.0009
+        },
+        {
+          "label": "Flight",
+          "prob": 0.0
+        },
+        {
+          "label": "Dogfight",
+          "prob": 0.0084
+        },
+        {
+          "label": "Carrier",
+          "prob": 0.001
+        },
+        {
+          "label": "Dialogue",
+          "prob": 0.0434
+        },
+        {
+          "label": "Emotional",
+          "prob": 0.9337
+        },
+        {
+          "label": "Explosion",
+          "prob": 0.0047
+        },
+        {
+          "label": "Ground",
+          "prob": 0.0033
+        }
+      ]
+    },
+    {
+      "idx": 4,
+      "start_sec": 11.05,
+      "end_sec": 14.22,
+      "frame": "review_frames_topgun/scene_004.jpg",
+      "top1": {
+        "label": "Ground",
+        "prompt": "a photo of military personnel in uniform walking or running",
+        "prob": 0.8084
+      },
+      "top_k": [
+        {
+          "label": "Ground",
+          "prompt": "a photo of military personnel in uniform walking or running",
+          "prob": 0.8084
+        },
+        {
+          "label": "Dialogue",
+          "prompt": "a photo of two people talking face to face in close-up",
+          "prob": 0.1042
+        },
+        {
+          "label": "Emotional",
+          "prompt": "a photo of a person with a serious emotional expression",
+          "prob": 0.064
+        },
+        {
+          "label": "Title",
+          "prompt": "a photo of a text logo on black background with no people",
+          "prob": 0.0142
+        },
+        {
+          "label": "Carrier",
+          "prompt": "a photo of a fighter jet on an aircraft carrier deck",
+          "prob": 0.0043
+        }
+      ],
+      "full_probs": [
+        {
+          "label": "Title",
+          "prob": 0.0142
+        },
+        {
+          "label": "Cockpit",
+          "prob": 0.0015
+        },
+        {
+          "label": "Flight",
+          "prob": 0.0
+        },
+        {
+          "label": "Dogfight",
+          "prob": 0.0029
+        },
+        {
+          "label": "Carrier",
+          "prob": 0.0043
+        },
+        {
+          "label": "Dialogue",
+          "prob": 0.1042
+        },
+        {
+          "label": "Emotional",
+          "prob": 0.064
+        },
+        {
+          "label": "Explosion",
+          "prob": 0.0004
+        },
+        {
+          "label": "Ground",
+          "prob": 0.8084
+        }
+      ]
+    },
+    {
+      "idx": 5,
+      "start_sec": 14.22,
+      "end_sec": 16.81,
+      "frame": "review_frames_topgun/scene_005.jpg",
+      "top1": {
+        "label": "Dialogue",
+        "prompt": "a photo of two people talking face to face in close-up",
+        "prob": 0.7989
+      },
+      "top_k": [
+        {
+          "label": "Dialogue",
+          "prompt": "a photo of two people talking face to face in close-up",
+          "prob": 0.7989
+        },
+        {
+          "label": "Emotional",
+          "prompt": "a photo of a person with a serious emotional expression",
+          "prob": 0.1984
+        },
+        {
+          "label": "Title",
+          "prompt": "a photo of a text logo on black background with no people",
+          "prob": 0.0014
+        },
+        {
+          "label": "Ground",
+          "prompt": "a photo of military personnel in uniform walking or running",
+          "prob": 0.0008
+        },
+        {
+          "label": "Explosion",
+          "prompt": "a photo of an explosion or fireball",
+          "prob": 0.0003
+        }
+      ],
+      "full_probs": [
+        {
+          "label": "Title",
+          "prob": 0.0014
+        },
+        {
+          "label": "Cockpit",
+          "prob": 0.0
+        },
+        {
+          "label": "Flight",
+          "prob": 0.0
+        },
+        {
+          "label": "Dogfight",
+          "prob": 0.0001
+        },
+        {
+          "label": "Carrier",
+          "prob": 0.0002
+        },
+        {
+          "label": "Dialogue",
+          "prob": 0.7989
+        },
+        {
+          "label": "Emotional",
+          "prob": 0.1984
+        },
+        {
+          "label": "Explosion",
+          "prob": 0.0003
+        },
+        {
+          "label": "Ground",
+          "prob": 0.0008
+        }
+      ]
+    },
+    {
+      "idx": 6,
+      "start_sec": 16.81,
+      "end_sec": 20.4,
+      "frame": "review_frames_topgun/scene_006.jpg",
+      "top1": {
+        "label": "Cockpit",
+        "prompt": "a photo of a pilot in a cockpit wearing a helmet and oxygen mask",
+        "prob": 0.4846
+      },
+      "top_k": [
+        {
+          "label": "Cockpit",
+          "prompt": "a photo of a pilot in a cockpit wearing a helmet and oxygen mask",
+          "prob": 0.4846
+        },
+        {
+          "label": "Dogfight",
+          "prompt": "a photo of fighter jets in close combat maneuvers",
+          "prob": 0.3058
+        },
+        {
+          "label": "Flight",
+          "prompt": "a photo of a fighter jet flying through clouds or sky",
+          "prob": 0.185
+        },
+        {
+          "label": "Carrier",
+          "prompt": "a photo of a fighter jet on an aircraft carrier deck",
+          "prob": 0.0216
+        },
+        {
+          "label": "Explosion",
+          "prompt": "a photo of an explosion or fireball",
+          "prob": 0.0015
+        }
+      ],
+      "full_probs": [
+        {
+          "label": "Title",
+          "prob": 0.0001
+        },
+        {
+          "label": "Cockpit",
+          "prob": 0.4846
+        },
+        {
+          "label": "Flight",
+          "prob": 0.185
+        },
+        {
+          "label": "Dogfight",
+          "prob": 0.3058
+        },
+        {
+          "label": "Carrier",
+          "prob": 0.0216
+        },
+        {
+          "label": "Dialogue",
+          "prob": 0.001
+        },
+        {
+          "label": "Emotional",
+          "prob": 0.0003
+        },
+        {
+          "label": "Explosion",
+          "prob": 0.0015
+        },
+        {
+          "label": "Ground",
+          "prob": 0.0001
+        }
+      ]
+    },
+    {
+      "idx": 7,
+      "start_sec": 20.4,
+      "end_sec": 24.15,
+      "frame": "review_frames_topgun/scene_007.jpg",
+      "top1": {
+        "label": "Ground",
+        "prompt": "a photo of military personnel in uniform walking or running",
+        "prob": 0.8345
+      },
+      "top_k": [
+        {
+          "label": "Ground",
+          "prompt": "a photo of military personnel in uniform walking or running",
+          "prob": 0.8345
+        },
+        {
+          "label": "Title",
+          "prompt": "a photo of a text logo on black background with no people",
+          "prob": 0.0699
+        },
+        {
+          "label": "Dogfight",
+          "prompt": "a photo of fighter jets in close combat maneuvers",
+          "prob": 0.0473
+        },
+        {
+          "label": "Emotional",
+          "prompt": "a photo of a person with a serious emotional expression",
+          "prob": 0.019
+        },
+        {
+          "label": "Carrier",
+          "prompt": "a photo of a fighter jet on an aircraft carrier deck",
+          "prob": 0.0129
+        }
+      ],
+      "full_probs": [
+        {
+          "label": "Title",
+          "prob": 0.0699
+        },
+        {
+          "label": "Cockpit",
+          "prob": 0.0036
+        },
+        {
+          "label": "Flight",
+          "prob": 0.0
+        },
+        {
+          "label": "Dogfight",
+          "prob": 0.0473
+        },
+        {
+          "label": "Carrier",
+          "prob": 0.0129
+        },
+        {
+          "label": "Dialogue",
+          "prob": 0.0023
+        },
+        {
+          "label": "Emotional",
+          "prob": 0.019
+        },
+        {
+          "label": "Explosion",
+          "prob": 0.0104
+        },
+        {
+          "label": "Ground",
+          "prob": 0.8345
+        }
+      ]
+    },
+    {
+      "idx": 8,
+      "start_sec": 24.15,
+      "end_sec": 26.57,
+      "frame": "review_frames_topgun/scene_008.jpg",
+      "top1": {
+        "label": "Emotional",
+        "prompt": "a photo of a person with a serious emotional expression",
+        "prob": 0.8138
+      },
+      "top_k": [
+        {
+          "label": "Emotional",
+          "prompt": "a photo of a person with a serious emotional expression",
+          "prob": 0.8138
+        },
+        {
+          "label": "Dialogue",
+          "prompt": "a photo of two people talking face to face in close-up",
+          "prob": 0.1705
+        },
+        {
+          "label": "Ground",
+          "prompt": "a photo of military personnel in uniform walking or running",
+          "prob": 0.0142
+        },
+        {
+          "label": "Title",
+          "prompt": "a photo of a text logo on black background with no people",
+          "prob": 0.0009
+        },
+        {
+          "label": "Dogfight",
+          "prompt": "a photo of fighter jets in close combat maneuvers",
+          "prob": 0.0002
+        }
+      ],
+      "full_probs": [
+        {
+          "label": "Title",
+          "prob": 0.0009
+        },
+        {
+          "label": "Cockpit",
+          "prob": 0.0
+        },
+        {
+          "label": "Flight",
+          "prob": 0.0
+        },
+        {
+          "label": "Dogfight",
+          "prob": 0.0002
+        },
+        {
+          "label": "Carrier",
+          "prob": 0.0002
+        },
+        {
+          "label": "Dialogue",
+          "prob": 0.1705
+        },
+        {
+          "label": "Emotional",
+          "prob": 0.8138
+        },
+        {
+          "label": "Explosion",
+          "prob": 0.0002
+        },
+        {
+          "label": "Ground",
+          "prob": 0.0142
+        }
+      ]
+    },
+    {
+      "idx": 9,
+      "start_sec": 26.57,
+      "end_sec": 31.49,
+      "frame": "review_frames_topgun/scene_009.jpg",
+      "top1": {
+        "label": "Title",
+        "prompt": "a photo of a text logo on black background with no people",
+        "prob": 0.9891
+      },
+      "top_k": [
+        {
+          "label": "Title",
+          "prompt": "a photo of a text logo on black background with no people",
+          "prob": 0.9891
+        },
+        {
+          "label": "Dogfight",
+          "prompt": "a photo of fighter jets in close combat maneuvers",
+          "prob": 0.0045
+        },
+        {
+          "label": "Flight",
+          "prompt": "a photo of a fighter jet flying through clouds or sky",
+          "prob": 0.0042
+        },
+        {
+          "label": "Dialogue",
+          "prompt": "a photo of two people talking face to face in close-up",
+          "prob": 0.0012
+        },
+        {
+          "label": "Emotional",
+          "prompt": "a photo of a person with a serious emotional expression",
+          "prob": 0.0005
+        }
+      ],
+      "full_probs": [
+        {
+          "label": "Title",
+          "prob": 0.9891
+        },
+        {
+          "label": "Cockpit",
+          "prob": 0.0
+        },
+        {
+          "label": "Flight",
+          "prob": 0.0042
+        },
+        {
+          "label": "Dogfight",
+          "prob": 0.0045
+        },
+        {
+          "label": "Carrier",
+          "prob": 0.0
+        },
+        {
+          "label": "Dialogue",
+          "prob": 0.0012
+        },
+        {
+          "label": "Emotional",
+          "prob": 0.0005
+        },
+        {
+          "label": "Explosion",
+          "prob": 0.0
+        },
+        {
+          "label": "Ground",
+          "prob": 0.0004
+        }
+      ]
+    },
+    {
+      "idx": 10,
+      "start_sec": 31.49,
+      "end_sec": 34.91,
+      "frame": "review_frames_topgun/scene_010.jpg",
+      "top1": {
+        "label": "Emotional",
+        "prompt": "a photo of a person with a serious emotional expression",
+        "prob": 0.4296
+      },
+      "top_k": [
+        {
+          "label": "Emotional",
+          "prompt": "a photo of a person with a serious emotional expression",
+          "prob": 0.4296
+        },
+        {
+          "label": "Dialogue",
+          "prompt": "a photo of two people talking face to face in close-up",
+          "prob": 0.3414
+        },
+        {
+          "label": "Ground",
+          "prompt": "a photo of military personnel in uniform walking or running",
+          "prob": 0.1886
+        },
+        {
+          "label": "Dogfight",
+          "prompt": "a photo of fighter jets in close combat maneuvers",
+          "prob": 0.0191
+        },
+        {
+          "label": "Title",
+          "prompt": "a photo of a text logo on black background with no people",
+          "prob": 0.008
+        }
+      ],
+      "full_probs": [
+        {
+          "label": "Title",
+          "prob": 0.008
+        },
+        {
+          "label": "Cockpit",
+          "prob": 0.0024
+        },
+        {
+          "label": "Flight",
+          "prob": 0.0
+        },
+        {
+          "label": "Dogfight",
+          "prob": 0.0191
+        },
+        {
+          "label": "Carrier",
+          "prob": 0.0079
+        },
+        {
+          "label": "Dialogue",
+          "prob": 0.3414
+        },
+        {
+          "label": "Emotional",
+          "prob": 0.4296
+        },
+        {
+          "label": "Explosion",
+          "prob": 0.0029
+        },
+        {
+          "label": "Ground",
+          "prob": 0.1886
+        }
+      ]
+    },
+    {
+      "idx": 11,
+      "start_sec": 34.91,
+      "end_sec": 38.54,
+      "frame": "review_frames_topgun/scene_011.jpg",
+      "top1": {
+        "label": "Carrier",
+        "prompt": "a photo of a fighter jet on an aircraft carrier deck",
+        "prob": 0.6741
+      },
+      "top_k": [
+        {
+          "label": "Carrier",
+          "prompt": "a photo of a fighter jet on an aircraft carrier deck",
+          "prob": 0.6741
+        },
+        {
+          "label": "Dogfight",
+          "prompt": "a photo of fighter jets in close combat maneuvers",
+          "prob": 0.2162
+        },
+        {
+          "label": "Ground",
+          "prompt": "a photo of military personnel in uniform walking or running",
+          "prob": 0.0609
+        },
+        {
+          "label": "Cockpit",
+          "prompt": "a photo of a pilot in a cockpit wearing a helmet and oxygen mask",
+          "prob": 0.0327
+        },
+        {
+          "label": "Emotional",
+          "prompt": "a photo of a person with a serious emotional expression",
+          "prob": 0.0076
+        }
+      ],
+      "full_probs": [
+        {
+          "label": "Title",
+          "prob": 0.0045
+        },
+        {
+          "label": "Cockpit",
+          "prob": 0.0327
+        },
+        {
+          "label": "Flight",
+          "prob": 0.0018
+        },
+        {
+          "label": "Dogfight",
+          "prob": 0.2162
+        },
+        {
+          "label": "Carrier",
+          "prob": 0.6741
+        },
+        {
+          "label": "Dialogue",
+          "prob": 0.0003
+        },
+        {
+          "label": "Emotional",
+          "prob": 0.0076
+        },
+        {
+          "label": "Explosion",
+          "prob": 0.0018
+        },
+        {
+          "label": "Ground",
+          "prob": 0.0609
+        }
+      ]
+    },
+    {
+      "idx": 12,
+      "start_sec": 38.54,
+      "end_sec": 43.54,
+      "frame": "review_frames_topgun/scene_012.jpg",
+      "top1": {
+        "label": "Dialogue",
+        "prompt": "a photo of two people talking face to face in close-up",
+        "prob": 0.4376
+      },
+      "top_k": [
+        {
+          "label": "Dialogue",
+          "prompt": "a photo of two people talking face to face in close-up",
+          "prob": 0.4376
+        },
+        {
+          "label": "Emotional",
+          "prompt": "a photo of a person with a serious emotional expression",
+          "prob": 0.2803
+        },
+        {
+          "label": "Ground",
+          "prompt": "a photo of military personnel in uniform walking or running",
+          "prob": 0.2399
+        },
+        {
+          "label": "Title",
+          "prompt": "a photo of a text logo on black background with no people",
+          "prob": 0.0195
+        },
+        {
+          "label": "Dogfight",
+          "prompt": "a photo of fighter jets in close combat maneuvers",
+          "prob": 0.016
+        }
+      ],
+      "full_probs": [
+        {
+          "label": "Title",
+          "prob": 0.0195
+        },
+        {
+          "label": "Cockpit",
+          "prob": 0.0012
+        },
+        {
+          "label": "Flight",
+          "prob": 0.0
+        },
+        {
+          "label": "Dogfight",
+          "prob": 0.016
+        },
+        {
+          "label": "Carrier",
+          "prob": 0.0044
+        },
+        {
+          "label": "Dialogue",
+          "prob": 0.4376
+        },
+        {
+          "label": "Emotional",
+          "prob": 0.2803
+        },
+        {
+          "label": "Explosion",
+          "prob": 0.001
+        },
+        {
+          "label": "Ground",
+          "prob": 0.2399
+        }
+      ]
+    },
+    {
+      "idx": 13,
+      "start_sec": 43.54,
+      "end_sec": 47.05,
+      "frame": "review_frames_topgun/scene_013.jpg",
+      "top1": {
+        "label": "Ground",
+        "prompt": "a photo of military personnel in uniform walking or running",
+        "prob": 0.495
+      },
+      "top_k": [
+        {
+          "label": "Ground",
+          "prompt": "a photo of military personnel in uniform walking or running",
+          "prob": 0.495
+        },
+        {
+          "label": "Carrier",
+          "prompt": "a photo of a fighter jet on an aircraft carrier deck",
+          "prob": 0.4685
+        },
+        {
+          "label": "Dogfight",
+          "prompt": "a photo of fighter jets in close combat maneuvers",
+          "prob": 0.0162
+        },
+        {
+          "label": "Emotional",
+          "prompt": "a photo of a person with a serious emotional expression",
+          "prob": 0.0153
+        },
+        {
+          "label": "Title",
+          "prompt": "a photo of a text logo on black background with no people",
+          "prob": 0.0026
+        }
+      ],
+      "full_probs": [
+        {
+          "label": "Title",
+          "prob": 0.0026
+        },
+        {
+          "label": "Cockpit",
+          "prob": 0.0001
+        },
+        {
+          "label": "Flight",
+          "prob": 0.0
+        },
+        {
+          "label": "Dogfight",
+          "prob": 0.0162
+        },
+        {
+          "label": "Carrier",
+          "prob": 0.4685
+        },
+        {
+          "label": "Dialogue",
+          "prob": 0.0008
+        },
+        {
+          "label": "Emotional",
+          "prob": 0.0153
+        },
+        {
+          "label": "Explosion",
+          "prob": 0.0015
+        },
+        {
+          "label": "Ground",
+          "prob": 0.495
+        }
+      ]
+    },
+    {
+      "idx": 14,
+      "start_sec": 47.05,
+      "end_sec": 50.47,
+      "frame": "review_frames_topgun/scene_014.jpg",
+      "top1": {
+        "label": "Cockpit",
+        "prompt": "a photo of a pilot in a cockpit wearing a helmet and oxygen mask",
+        "prob": 0.7618
+      },
+      "top_k": [
+        {
+          "label": "Cockpit",
+          "prompt": "a photo of a pilot in a cockpit wearing a helmet and oxygen mask",
+          "prob": 0.7618
+        },
+        {
+          "label": "Dogfight",
+          "prompt": "a photo of fighter jets in close combat maneuvers",
+          "prob": 0.1488
+        },
+        {
+          "label": "Carrier",
+          "prompt": "a photo of a fighter jet on an aircraft carrier deck",
+          "prob": 0.068
+        },
+        {
+          "label": "Flight",
+          "prompt": "a photo of a fighter jet flying through clouds or sky",
+          "prob": 0.0191
+        },
+        {
+          "label": "Emotional",
+          "prompt": "a photo of a person with a serious emotional expression",
+          "prob": 0.0015
+        }
+      ],
+      "full_probs": [
+        {
+          "label": "Title",
+          "prob": 0.0
+        },
+        {
+          "label": "Cockpit",
+          "prob": 0.7618
+        },
+        {
+          "label": "Flight",
+          "prob": 0.0191
+        },
+        {
+          "label": "Dogfight",
+          "prob": 0.1488
+        },
+        {
+          "label": "Carrier",
+          "prob": 0.068
+        },
+        {
+          "label": "Dialogue",
+          "prob": 0.0007
+        },
+        {
+          "label": "Emotional",
+          "prob": 0.0015
+        },
+        {
+          "label": "Explosion",
+          "prob": 0.0
+        },
+        {
+          "label": "Ground",
+          "prob": 0.0
+        }
+      ]
+    },
+    {
+      "idx": 15,
+      "start_sec": 50.47,
+      "end_sec": 53.39,
+      "frame": "review_frames_topgun/scene_015.jpg",
+      "top1": {
+        "label": "Cockpit",
+        "prompt": "a photo of a pilot in a cockpit wearing a helmet and oxygen mask",
+        "prob": 0.9809
+      },
+      "top_k": [
+        {
+          "label": "Cockpit",
+          "prompt": "a photo of a pilot in a cockpit wearing a helmet and oxygen mask",
+          "prob": 0.9809
+        },
+        {
+          "label": "Dogfight",
+          "prompt": "a photo of fighter jets in close combat maneuvers",
+          "prob": 0.0094
+        },
+        {
+          "label": "Emotional",
+          "prompt": "a photo of a person with a serious emotional expression",
+          "prob": 0.0033
+        },
+        {
+          "label": "Dialogue",
+          "prompt": "a photo of two people talking face to face in close-up",
+          "prob": 0.0028
+        },
+        {
+          "label": "Carrier",
+          "prompt": "a photo of a fighter jet on an aircraft carrier deck",
+          "prob": 0.0024
+        }
+      ],
+      "full_probs": [
+        {
+          "label": "Title",
+          "prob": 0.0
+        },
+        {
+          "label": "Cockpit",
+          "prob": 0.9809
+        },
+        {
+          "label": "Flight",
+          "prob": 0.0002
+        },
+        {
+          "label": "Dogfight",
+          "prob": 0.0094
+        },
+        {
+          "label": "Carrier",
+          "prob": 0.0024
+        },
+        {
+          "label": "Dialogue",
+          "prob": 0.0028
+        },
+        {
+          "label": "Emotional",
+          "prob": 0.0033
+        },
+        {
+          "label": "Explosion",
+          "prob": 0.0
+        },
+        {
+          "label": "Ground",
+          "prob": 0.0009
+        }
+      ]
+    },
+    {
+      "idx": 16,
+      "start_sec": 53.39,
+      "end_sec": 56.47,
+      "frame": "review_frames_topgun/scene_016.jpg",
+      "top1": {
+        "label": "Emotional",
+        "prompt": "a photo of a person with a serious emotional expression",
+        "prob": 0.8134
+      },
+      "top_k": [
+        {
+          "label": "Emotional",
+          "prompt": "a photo of a person with a serious emotional expression",
+          "prob": 0.8134
+        },
+        {
+          "label": "Ground",
+          "prompt": "a photo of military personnel in uniform walking or running",
+          "prob": 0.1114
+        },
+        {
+          "label": "Dialogue",
+          "prompt": "a photo of two people talking face to face in close-up",
+          "prob": 0.0548
+        },
+        {
+          "label": "Dogfight",
+          "prompt": "a photo of fighter jets in close combat maneuvers",
+          "prob": 0.0099
+        },
+        {
+          "label": "Title",
+          "prompt": "a photo of a text logo on black background with no people",
+          "prob": 0.005
+        }
+      ],
+      "full_probs": [
+        {
+          "label": "Title",
+          "prob": 0.005
+        },
+        {
+          "label": "Cockpit",
+          "prob": 0.0009
+        },
+        {
+          "label": "Flight",
+          "prob": 0.0
+        },
+        {
+          "label": "Dogfight",
+          "prob": 0.0099
+        },
+        {
+          "label": "Carrier",
+          "prob": 0.0021
+        },
+        {
+          "label": "Dialogue",
+          "prob": 0.0548
+        },
+        {
+          "label": "Emotional",
+          "prob": 0.8134
+        },
+        {
+          "label": "Explosion",
+          "prob": 0.0026
+        },
+        {
+          "label": "Ground",
+          "prob": 0.1114
+        }
+      ]
+    },
+    {
+      "idx": 17,
+      "start_sec": 56.47,
+      "end_sec": 59.14,
+      "frame": "review_frames_topgun/scene_017.jpg",
+      "top1": {
+        "label": "Dogfight",
+        "prompt": "a photo of fighter jets in close combat maneuvers",
+        "prob": 0.9806
+      },
+      "top_k": [
+        {
+          "label": "Dogfight",
+          "prompt": "a photo of fighter jets in close combat maneuvers",
+          "prob": 0.9806
+        },
+        {
+          "label": "Carrier",
+          "prompt": "a photo of a fighter jet on an aircraft carrier deck",
+          "prob": 0.0132
+        },
+        {
+          "label": "Flight",
+          "prompt": "a photo of a fighter jet flying through clouds or sky",
+          "prob": 0.0058
+        },
+        {
+          "label": "Dialogue",
+          "prompt": "a photo of two people talking face to face in close-up",
+          "prob": 0.0002
+        },
+        {
+          "label": "Explosion",
+          "prompt": "a photo of an explosion or fireball",
+          "prob": 0.0001
+        }
+      ],
+      "full_probs": [
+        {
+          "label": "Title",
+          "prob": 0.0
+        },
+        {
+          "label": "Cockpit",
+          "prob": 0.0001
+        },
+        {
+          "label": "Flight",
+          "prob": 0.0058
+        },
+        {
+          "label": "Dogfight",
+          "prob": 0.9806
+        },
+        {
+          "label": "Carrier",
+          "prob": 0.0132
+        },
+        {
+          "label": "Dialogue",
+          "prob": 0.0002
+        },
+        {
+          "label": "Emotional",
+          "prob": 0.0
+        },
+        {
+          "label": "Explosion",
+          "prob": 0.0001
+        },
+        {
+          "label": "Ground",
+          "prob": 0.0001
+        }
+      ]
+    },
+    {
+      "idx": 18,
+      "start_sec": 59.14,
+      "end_sec": 62.27,
+      "frame": "review_frames_topgun/scene_018.jpg",
+      "top1": {
+        "label": "Dogfight",
+        "prompt": "a photo of fighter jets in close combat maneuvers",
+        "prob": 0.9113
+      },
+      "top_k": [
+        {
+          "label": "Dogfight",
+          "prompt": "a photo of fighter jets in close combat maneuvers",
+          "prob": 0.9113
+        },
+        {
+          "label": "Cockpit",
+          "prompt": "a photo of a pilot in a cockpit wearing a helmet and oxygen mask",
+          "prob": 0.0424
+        },
+        {
+          "label": "Carrier",
+          "prompt": "a photo of a fighter jet on an aircraft carrier deck",
+          "prob": 0.035
+        },
+        {
+          "label": "Flight",
+          "prompt": "a photo of a fighter jet flying through clouds or sky",
+          "prob": 0.0053
+        },
+        {
+          "label": "Ground",
+          "prompt": "a photo of military personnel in uniform walking or running",
+          "prob": 0.003
+        }
+      ],
+      "full_probs": [
+        {
+          "label": "Title",
+          "prob": 0.0003
+        },
+        {
+          "label": "Cockpit",
+          "prob": 0.0424
+        },
+        {
+          "label": "Flight",
+          "prob": 0.0053
+        },
+        {
+          "label": "Dogfight",
+          "prob": 0.9113
+        },
+        {
+          "label": "Carrier",
+          "prob": 0.035
+        },
+        {
+          "label": "Dialogue",
+          "prob": 0.0006
+        },
+        {
+          "label": "Emotional",
+          "prob": 0.0009
+        },
+        {
+          "label": "Explosion",
+          "prob": 0.0011
+        },
+        {
+          "label": "Ground",
+          "prob": 0.003
+        }
+      ]
+    },
+    {
+      "idx": 19,
+      "start_sec": 62.27,
+      "end_sec": 66.86,
+      "frame": "review_frames_topgun/scene_019.jpg",
+      "top1": {
+        "label": "Cockpit",
+        "prompt": "a photo of a pilot in a cockpit wearing a helmet and oxygen mask",
+        "prob": 0.8716
+      },
+      "top_k": [
+        {
+          "label": "Cockpit",
+          "prompt": "a photo of a pilot in a cockpit wearing a helmet and oxygen mask",
+          "prob": 0.8716
+        },
+        {
+          "label": "Dogfight",
+          "prompt": "a photo of fighter jets in close combat maneuvers",
+          "prob": 0.084
+        },
+        {
+          "label": "Dialogue",
+          "prompt": "a photo of two people talking face to face in close-up",
+          "prob": 0.0213
+        },
+        {
+          "label": "Emotional",
+          "prompt": "a photo of a person with a serious emotional expression",
+          "prob": 0.0157
+        },
+        {
+          "label": "Ground",
+          "prompt": "a photo of military personnel in uniform walking or running",
+          "prob": 0.0048
+        }
+      ],
+      "full_probs": [
+        {
+          "label": "Title",
+          "prob": 0.0
+        },
+        {
+          "label": "Cockpit",
+          "prob": 0.8716
+        },
+        {
+          "label": "Flight",
+          "prob": 0.0009
+        },
+        {
+          "label": "Dogfight",
+          "prob": 0.084
+        },
+        {
+          "label": "Carrier",
+          "prob": 0.0015
+        },
+        {
+          "label": "Dialogue",
+          "prob": 0.0213
+        },
+        {
+          "label": "Emotional",
+          "prob": 0.0157
+        },
+        {
+          "label": "Explosion",
+          "prob": 0.0002
+        },
+        {
+          "label": "Ground",
+          "prob": 0.0048
+        }
+      ]
+    },
+    {
+      "idx": 20,
+      "start_sec": 66.86,
+      "end_sec": 71.53,
+      "frame": "review_frames_topgun/scene_020.jpg",
+      "top1": {
+        "label": "Emotional",
+        "prompt": "a photo of a person with a serious emotional expression",
+        "prob": 0.6513
+      },
+      "top_k": [
+        {
+          "label": "Emotional",
+          "prompt": "a photo of a person with a serious emotional expression",
+          "prob": 0.6513
+        },
+        {
+          "label": "Dialogue",
+          "prompt": "a photo of two people talking face to face in close-up",
+          "prob": 0.1191
+        },
+        {
+          "label": "Carrier",
+          "prompt": "a photo of a fighter jet on an aircraft carrier deck",
+          "prob": 0.0881
+        },
+        {
+          "label": "Dogfight",
+          "prompt": "a photo of fighter jets in close combat maneuvers",
+          "prob": 0.0707
+        },
+        {
+          "label": "Title",
+          "prompt": "a photo of a text logo on black background with no people",
+          "prob": 0.0346
+        }
+      ],
+      "full_probs": [
+        {
+          "label": "Title",
+          "prob": 0.0346
+        },
+        {
+          "label": "Cockpit",
+          "prob": 0.0066
+        },
+        {
+          "label": "Flight",
+          "prob": 0.0001
+        },
+        {
+          "label": "Dogfight",
+          "prob": 0.0707
+        },
+        {
+          "label": "Carrier",
+          "prob": 0.0881
+        },
+        {
+          "label": "Dialogue",
+          "prob": 0.1191
+        },
+        {
+          "label": "Emotional",
+          "prob": 0.6513
+        },
+        {
+          "label": "Explosion",
+          "prob": 0.0009
+        },
+        {
+          "label": "Ground",
+          "prob": 0.0288
+        }
+      ]
+    },
+    {
+      "idx": 21,
+      "start_sec": 71.53,
+      "end_sec": 74.45,
+      "frame": "review_frames_topgun/scene_021.jpg",
+      "top1": {
+        "label": "Cockpit",
+        "prompt": "a photo of a pilot in a cockpit wearing a helmet and oxygen mask",
+        "prob": 0.9919
+      },
+      "top_k": [
+        {
+          "label": "Cockpit",
+          "prompt": "a photo of a pilot in a cockpit wearing a helmet and oxygen mask",
+          "prob": 0.9919
+        },
+        {
+          "label": "Dogfight",
+          "prompt": "a photo of fighter jets in close combat maneuvers",
+          "prob": 0.0044
+        },
+        {
+          "label": "Emotional",
+          "prompt": "a photo of a person with a serious emotional expression",
+          "prob": 0.0016
+        },
+        {
+          "label": "Dialogue",
+          "prompt": "a photo of two people talking face to face in close-up",
+          "prob": 0.0009
+        },
+        {
+          "label": "Carrier",
+          "prompt": "a photo of a fighter jet on an aircraft carrier deck",
+          "prob": 0.0008
+        }
+      ],
+      "full_probs": [
+        {
+          "label": "Title",
+          "prob": 0.0
+        },
+        {
+          "label": "Cockpit",
+          "prob": 0.9919
+        },
+        {
+          "label": "Flight",
+          "prob": 0.0001
+        },
+        {
+          "label": "Dogfight",
+          "prob": 0.0044
+        },
+        {
+          "label": "Carrier",
+          "prob": 0.0008
+        },
+        {
+          "label": "Dialogue",
+          "prob": 0.0009
+        },
+        {
+          "label": "Emotional",
+          "prob": 0.0016
+        },
+        {
+          "label": "Explosion",
+          "prob": 0.0
+        },
+        {
+          "label": "Ground",
+          "prob": 0.0003
+        }
+      ]
+    },
+    {
+      "idx": 22,
+      "start_sec": 74.45,
+      "end_sec": 77.83,
+      "frame": "review_frames_topgun/scene_022.jpg",
+      "top1": {
+        "label": "Cockpit",
+        "prompt": "a photo of a pilot in a cockpit wearing a helmet and oxygen mask",
+        "prob": 0.9646
+      },
+      "top_k": [
+        {
+          "label": "Cockpit",
+          "prompt": "a photo of a pilot in a cockpit wearing a helmet and oxygen mask",
+          "prob": 0.9646
+        },
+        {
+          "label": "Dogfight",
+          "prompt": "a photo of fighter jets in close combat maneuvers",
+          "prob": 0.0269
+        },
+        {
+          "label": "Dialogue",
+          "prompt": "a photo of two people talking face to face in close-up",
+          "prob": 0.0045
+        },
+        {
+          "label": "Emotional",
+          "prompt": "a photo of a person with a serious emotional expression",
+          "prob": 0.0025
+        },
+        {
+          "label": "Carrier",
+          "prompt": "a photo of a fighter jet on an aircraft carrier deck",
+          "prob": 0.0009
+        }
+      ],
+      "full_probs": [
+        {
+          "label": "Title",
+          "prob": 0.0
+        },
+        {
+          "label": "Cockpit",
+          "prob": 0.9646
+        },
+        {
+          "label": "Flight",
+          "prob": 0.0002
+        },
+        {
+          "label": "Dogfight",
+          "prob": 0.0269
+        },
+        {
+          "label": "Carrier",
+          "prob": 0.0009
+        },
+        {
+          "label": "Dialogue",
+          "prob": 0.0045
+        },
+        {
+          "label": "Emotional",
+          "prob": 0.0025
+        },
+        {
+          "label": "Explosion",
+          "prob": 0.0003
+        },
+        {
+          "label": "Ground",
+          "prob": 0.0001
+        }
+      ]
+    },
+    {
+      "idx": 23,
+      "start_sec": 77.83,
+      "end_sec": 81.04,
+      "frame": "review_frames_topgun/scene_023.jpg",
+      "top1": {
+        "label": "Carrier",
+        "prompt": "a photo of a fighter jet on an aircraft carrier deck",
+        "prob": 0.7476
+      },
+      "top_k": [
+        {
+          "label": "Carrier",
+          "prompt": "a photo of a fighter jet on an aircraft carrier deck",
+          "prob": 0.7476
+        },
+        {
+          "label": "Dogfight",
+          "prompt": "a photo of fighter jets in close combat maneuvers",
+          "prob": 0.1573
+        },
+        {
+          "label": "Cockpit",
+          "prompt": "a photo of a pilot in a cockpit wearing a helmet and oxygen mask",
+          "prob": 0.0917
+        },
+        {
+          "label": "Flight",
+          "prompt": "a photo of a fighter jet flying through clouds or sky",
+          "prob": 0.0032
+        },
+        {
+          "label": "Emotional",
+          "prompt": "a photo of a person with a serious emotional expression",
+          "prob": 0.0001
+        }
+      ],
+      "full_probs": [
+        {
+          "label": "Title",
+          "prob": 0.0
+        },
+        {
+          "label": "Cockpit",
+          "prob": 0.0917
+        },
+        {
+          "label": "Flight",
+          "prob": 0.0032
+        },
+        {
+          "label": "Dogfight",
+          "prob": 0.1573
+        },
+        {
+          "label": "Carrier",
+          "prob": 0.7476
+        },
+        {
+          "label": "Dialogue",
+          "prob": 0.0
+        },
+        {
+          "label": "Emotional",
+          "prob": 0.0001
+        },
+        {
+          "label": "Explosion",
+          "prob": 0.0
+        },
+        {
+          "label": "Ground",
+          "prob": 0.0001
+        }
+      ]
+    },
+    {
+      "idx": 24,
+      "start_sec": 81.04,
+      "end_sec": 83.96,
+      "frame": "review_frames_topgun/scene_024.jpg",
+      "top1": {
+        "label": "Dogfight",
+        "prompt": "a photo of fighter jets in close combat maneuvers",
+        "prob": 0.7225
+      },
+      "top_k": [
+        {
+          "label": "Dogfight",
+          "prompt": "a photo of fighter jets in close combat maneuvers",
+          "prob": 0.7225
+        },
+        {
+          "label": "Title",
+          "prompt": "a photo of a text logo on black background with no people",
+          "prob": 0.1431
+        },
+        {
+          "label": "Carrier",
+          "prompt": "a photo of a fighter jet on an aircraft carrier deck",
+          "prob": 0.0866
+        },
+        {
+          "label": "Ground",
+          "prompt": "a photo of military personnel in uniform walking or running",
+          "prob": 0.0264
+        },
+        {
+          "label": "Explosion",
+          "prompt": "a photo of an explosion or fireball",
+          "prob": 0.0105
+        }
+      ],
+      "full_probs": [
+        {
+          "label": "Title",
+          "prob": 0.1431
+        },
+        {
+          "label": "Cockpit",
+          "prob": 0.0058
+        },
+        {
+          "label": "Flight",
+          "prob": 0.0009
+        },
+        {
+          "label": "Dogfight",
+          "prob": 0.7225
+        },
+        {
+          "label": "Carrier",
+          "prob": 0.0866
+        },
+        {
+          "label": "Dialogue",
+          "prob": 0.0022
+        },
+        {
+          "label": "Emotional",
+          "prob": 0.002
+        },
+        {
+          "label": "Explosion",
+          "prob": 0.0105
+        },
+        {
+          "label": "Ground",
+          "prob": 0.0264
+        }
+      ]
+    },
+    {
+      "idx": 25,
+      "start_sec": 83.96,
+      "end_sec": 86.13,
+      "frame": "review_frames_topgun/scene_025.jpg",
+      "top1": {
+        "label": "Dogfight",
+        "prompt": "a photo of fighter jets in close combat maneuvers",
+        "prob": 0.3863
+      },
+      "top_k": [
+        {
+          "label": "Dogfight",
+          "prompt": "a photo of fighter jets in close combat maneuvers",
+          "prob": 0.3863
+        },
+        {
+          "label": "Ground",
+          "prompt": "a photo of military personnel in uniform walking or running",
+          "prob": 0.3015
+        },
+        {
+          "label": "Emotional",
+          "prompt": "a photo of a person with a serious emotional expression",
+          "prob": 0.163
+        },
+        {
+          "label": "Cockpit",
+          "prompt": "a photo of a pilot in a cockpit wearing a helmet and oxygen mask",
+          "prob": 0.0754
+        },
+        {
+          "label": "Dialogue",
+          "prompt": "a photo of two people talking face to face in close-up",
+          "prob": 0.0389
+        }
+      ],
+      "full_probs": [
+        {
+          "label": "Title",
+          "prob": 0.021
+        },
+        {
+          "label": "Cockpit",
+          "prob": 0.0754
+        },
+        {
+          "label": "Flight",
+          "prob": 0.0001
+        },
+        {
+          "label": "Dogfight",
+          "prob": 0.3863
+        },
+        {
+          "label": "Carrier",
+          "prob": 0.005
+        },
+        {
+          "label": "Dialogue",
+          "prob": 0.0389
+        },
+        {
+          "label": "Emotional",
+          "prob": 0.163
+        },
+        {
+          "label": "Explosion",
+          "prob": 0.0089
+        },
+        {
+          "label": "Ground",
+          "prob": 0.3015
+        }
+      ]
+    },
+    {
+      "idx": 26,
+      "start_sec": 86.13,
+      "end_sec": 89.13,
+      "frame": "review_frames_topgun/scene_026.jpg",
+      "top1": {
+        "label": "Dogfight",
+        "prompt": "a photo of fighter jets in close combat maneuvers",
+        "prob": 0.9614
+      },
+      "top_k": [
+        {
+          "label": "Dogfight",
+          "prompt": "a photo of fighter jets in close combat maneuvers",
+          "prob": 0.9614
+        },
+        {
+          "label": "Explosion",
+          "prompt": "a photo of an explosion or fireball",
+          "prob": 0.0273
+        },
+        {
+          "label": "Carrier",
+          "prompt": "a photo of a fighter jet on an aircraft carrier deck",
+          "prob": 0.0051
+        },
+        {
+          "label": "Ground",
+          "prompt": "a photo of military personnel in uniform walking or running",
+          "prob": 0.005
+        },
+        {
+          "label": "Emotional",
+          "prompt": "a photo of a person with a serious emotional expression",
+          "prob": 0.001
+        }
+      ],
+      "full_probs": [
+        {
+          "label": "Title",
+          "prob": 0.0
+        },
+        {
+          "label": "Cockpit",
+          "prob": 0.0
+        },
+        {
+          "label": "Flight",
+          "prob": 0.0
+        },
+        {
+          "label": "Dogfight",
+          "prob": 0.9614
+        },
+        {
+          "label": "Carrier",
+          "prob": 0.0051
+        },
+        {
+          "label": "Dialogue",
+          "prob": 0.0001
+        },
+        {
+          "label": "Emotional",
+          "prob": 0.001
+        },
+        {
+          "label": "Explosion",
+          "prob": 0.0273
+        },
+        {
+          "label": "Ground",
+          "prob": 0.005
+        }
+      ]
+    },
+    {
+      "idx": 27,
+      "start_sec": 89.13,
+      "end_sec": 93.3,
+      "frame": "review_frames_topgun/scene_027.jpg",
+      "top1": {
+        "label": "Ground",
+        "prompt": "a photo of military personnel in uniform walking or running",
+        "prob": 0.7775
+      },
+      "top_k": [
+        {
+          "label": "Ground",
+          "prompt": "a photo of military personnel in uniform walking or running",
+          "prob": 0.7775
+        },
+        {
+          "label": "Dogfight",
+          "prompt": "a photo of fighter jets in close combat maneuvers",
+          "prob": 0.2066
+        },
+        {
+          "label": "Carrier",
+          "prompt": "a photo of a fighter jet on an aircraft carrier deck",
+          "prob": 0.0069
+        },
+        {
+          "label": "Emotional",
+          "prompt": "a photo of a person with a serious emotional expression",
+          "prob": 0.0062
+        },
+        {
+          "label": "Dialogue",
+          "prompt": "a photo of two people talking face to face in close-up",
+          "prob": 0.0013
+        }
+      ],
+      "full_probs": [
+        {
+          "label": "Title",
+          "prob": 0.0002
+        },
+        {
+          "label": "Cockpit",
+          "prob": 0.0003
+        },
+        {
+          "label": "Flight",
+          "prob": 0.0001
+        },
+        {
+          "label": "Dogfight",
+          "prob": 0.2066
+        },
+        {
+          "label": "Carrier",
+          "prob": 0.0069
+        },
+        {
+          "label": "Dialogue",
+          "prob": 0.0013
+        },
+        {
+          "label": "Emotional",
+          "prob": 0.0062
+        },
+        {
+          "label": "Explosion",
+          "prob": 0.0011
+        },
+        {
+          "label": "Ground",
+          "prob": 0.7775
+        }
+      ]
+    },
+    {
+      "idx": 28,
+      "start_sec": 93.3,
+      "end_sec": 95.85,
+      "frame": "review_frames_topgun/scene_028.jpg",
+      "top1": {
+        "label": "Cockpit",
+        "prompt": "a photo of a pilot in a cockpit wearing a helmet and oxygen mask",
+        "prob": 0.7052
+      },
+      "top_k": [
+        {
+          "label": "Cockpit",
+          "prompt": "a photo of a pilot in a cockpit wearing a helmet and oxygen mask",
+          "prob": 0.7052
+        },
+        {
+          "label": "Title",
+          "prompt": "a photo of a text logo on black background with no people",
+          "prob": 0.1457
+        },
+        {
+          "label": "Dogfight",
+          "prompt": "a photo of fighter jets in close combat maneuvers",
+          "prob": 0.0553
+        },
+        {
+          "label": "Dialogue",
+          "prompt": "a photo of two people talking face to face in close-up",
+          "prob": 0.0496
+        },
+        {
+          "label": "Emotional",
+          "prompt": "a photo of a person with a serious emotional expression",
+          "prob": 0.0233
+        }
+      ],
+      "full_probs": [
+        {
+          "label": "Title",
+          "prob": 0.1457
+        },
+        {
+          "label": "Cockpit",
+          "prob": 0.7052
+        },
+        {
+          "label": "Flight",
+          "prob": 0.0002
+        },
+        {
+          "label": "Dogfight",
+          "prob": 0.0553
+        },
+        {
+          "label": "Carrier",
+          "prob": 0.0065
+        },
+        {
+          "label": "Dialogue",
+          "prob": 0.0496
+        },
+        {
+          "label": "Emotional",
+          "prob": 0.0233
+        },
+        {
+          "label": "Explosion",
+          "prob": 0.0132
+        },
+        {
+          "label": "Ground",
+          "prob": 0.0011
+        }
+      ]
+    },
+    {
+      "idx": 29,
+      "start_sec": 95.85,
+      "end_sec": 100.02,
+      "frame": "review_frames_topgun/scene_029.jpg",
+      "top1": {
+        "label": "Title",
+        "prompt": "a photo of a text logo on black background with no people",
+        "prob": 0.9541
+      },
+      "top_k": [
+        {
+          "label": "Title",
+          "prompt": "a photo of a text logo on black background with no people",
+          "prob": 0.9541
+        },
+        {
+          "label": "Explosion",
+          "prompt": "a photo of an explosion or fireball",
+          "prob": 0.0192
+        },
+        {
+          "label": "Dogfight",
+          "prompt": "a photo of fighter jets in close combat maneuvers",
+          "prob": 0.0152
+        },
+        {
+          "label": "Dialogue",
+          "prompt": "a photo of two people talking face to face in close-up",
+          "prob": 0.0066
+        },
+        {
+          "label": "Emotional",
+          "prompt": "a photo of a person with a serious emotional expression",
+          "prob": 0.003
+        }
+      ],
+      "full_probs": [
+        {
+          "label": "Title",
+          "prob": 0.9541
+        },
+        {
+          "label": "Cockpit",
+          "prob": 0.0005
+        },
+        {
+          "label": "Flight",
+          "prob": 0.0001
+        },
+        {
+          "label": "Dogfight",
+          "prob": 0.0152
+        },
+        {
+          "label": "Carrier",
+          "prob": 0.0007
+        },
+        {
+          "label": "Dialogue",
+          "prob": 0.0066
+        },
+        {
+          "label": "Emotional",
+          "prob": 0.003
+        },
+        {
+          "label": "Explosion",
+          "prob": 0.0192
+        },
+        {
+          "label": "Ground",
+          "prob": 0.0006
+        }
+      ]
+    },
+    {
+      "idx": 30,
+      "start_sec": 100.02,
+      "end_sec": 102.23,
+      "frame": "review_frames_topgun/scene_030.jpg",
+      "top1": {
+        "label": "Emotional",
+        "prompt": "a photo of a person with a serious emotional expression",
+        "prob": 0.6025
+      },
+      "top_k": [
+        {
+          "label": "Emotional",
+          "prompt": "a photo of a person with a serious emotional expression",
+          "prob": 0.6025
+        },
+        {
+          "label": "Dialogue",
+          "prompt": "a photo of two people talking face to face in close-up",
+          "prob": 0.3794
+        },
+        {
+          "label": "Title",
+          "prompt": "a photo of a text logo on black background with no people",
+          "prob": 0.0083
+        },
+        {
+          "label": "Ground",
+          "prompt": "a photo of military personnel in uniform walking or running",
+          "prob": 0.0058
+        },
+        {
+          "label": "Dogfight",
+          "prompt": "a photo of fighter jets in close combat maneuvers",
+          "prob": 0.002
+        }
+      ],
+      "full_probs": [
+        {
+          "label": "Title",
+          "prob": 0.0083
+        },
+        {
+          "label": "Cockpit",
+          "prob": 0.0009
+        },
+        {
+          "label": "Flight",
+          "prob": 0.0
+        },
+        {
+          "label": "Dogfight",
+          "prob": 0.002
+        },
+        {
+          "label": "Carrier",
+          "prob": 0.0003
+        },
+        {
+          "label": "Dialogue",
+          "prob": 0.3794
+        },
+        {
+          "label": "Emotional",
+          "prob": 0.6025
+        },
+        {
+          "label": "Explosion",
+          "prob": 0.0008
+        },
+        {
+          "label": "Ground",
+          "prob": 0.0058
+        }
+      ]
+    },
+    {
+      "idx": 31,
+      "start_sec": 102.23,
+      "end_sec": 105.52,
+      "frame": "review_frames_topgun/scene_031.jpg",
+      "top1": {
+        "label": "Title",
+        "prompt": "a photo of a text logo on black background with no people",
+        "prob": 0.9918
+      },
+      "top_k": [
+        {
+          "label": "Title",
+          "prompt": "a photo of a text logo on black background with no people",
+          "prob": 0.9918
+        },
+        {
+          "label": "Emotional",
+          "prompt": "a photo of a person with a serious emotional expression",
+          "prob": 0.0035
+        },
+        {
+          "label": "Dogfight",
+          "prompt": "a photo of fighter jets in close combat maneuvers",
+          "prob": 0.0024
+        },
+        {
+          "label": "Dialogue",
+          "prompt": "a photo of two people talking face to face in close-up",
+          "prob": 0.0009
+        },
+        {
+          "label": "Ground",
+          "prompt": "a photo of military personnel in uniform walking or running",
+          "prob": 0.0007
+        }
+      ],
+      "full_probs": [
+        {
+          "label": "Title",
+          "prob": 0.9918
+        },
+        {
+          "label": "Cockpit",
+          "prob": 0.0
+        },
+        {
+          "label": "Flight",
+          "prob": 0.0
+        },
+        {
+          "label": "Dogfight",
+          "prob": 0.0024
+        },
+        {
+          "label": "Carrier",
+          "prob": 0.0001
+        },
+        {
+          "label": "Dialogue",
+          "prob": 0.0009
+        },
+        {
+          "label": "Emotional",
+          "prob": 0.0035
+        },
+        {
+          "label": "Explosion",
+          "prob": 0.0004
+        },
+        {
+          "label": "Ground",
+          "prob": 0.0007
+        }
+      ]
+    },
+    {
+      "idx": 32,
+      "start_sec": 105.52,
+      "end_sec": 108.98,
+      "frame": "review_frames_topgun/scene_032.jpg",
+      "top1": {
+        "label": "Cockpit",
+        "prompt": "a photo of a pilot in a cockpit wearing a helmet and oxygen mask",
+        "prob": 0.9775
+      },
+      "top_k": [
+        {
+          "label": "Cockpit",
+          "prompt": "a photo of a pilot in a cockpit wearing a helmet and oxygen mask",
+          "prob": 0.9775
+        },
+        {
+          "label": "Dogfight",
+          "prompt": "a photo of fighter jets in close combat maneuvers",
+          "prob": 0.0164
+        },
+        {
+          "label": "Carrier",
+          "prompt": "a photo of a fighter jet on an aircraft carrier deck",
+          "prob": 0.0037
+        },
+        {
+          "label": "Flight",
+          "prompt": "a photo of a fighter jet flying through clouds or sky",
+          "prob": 0.0018
+        },
+        {
+          "label": "Dialogue",
+          "prompt": "a photo of two people talking face to face in close-up",
+          "prob": 0.0004
+        }
+      ],
+      "full_probs": [
+        {
+          "label": "Title",
+          "prob": 0.0
+        },
+        {
+          "label": "Cockpit",
+          "prob": 0.9775
+        },
+        {
+          "label": "Flight",
+          "prob": 0.0018
+        },
+        {
+          "label": "Dogfight",
+          "prob": 0.0164
+        },
+        {
+          "label": "Carrier",
+          "prob": 0.0037
+        },
+        {
+          "label": "Dialogue",
+          "prob": 0.0004
+        },
+        {
+          "label": "Emotional",
+          "prob": 0.0001
+        },
+        {
+          "label": "Explosion",
+          "prob": 0.0
+        },
+        {
+          "label": "Ground",
+          "prob": 0.0001
+        }
+      ]
+    },
+    {
+      "idx": 33,
+      "start_sec": 108.98,
+      "end_sec": 113.57,
+      "frame": "review_frames_topgun/scene_033.jpg",
+      "top1": {
+        "label": "Ground",
+        "prompt": "a photo of military personnel in uniform walking or running",
+        "prob": 0.5802
+      },
+      "top_k": [
+        {
+          "label": "Ground",
+          "prompt": "a photo of military personnel in uniform walking or running",
+          "prob": 0.5802
+        },
+        {
+          "label": "Emotional",
+          "prompt": "a photo of a person with a serious emotional expression",
+          "prob": 0.2543
+        },
+        {
+          "label": "Title",
+          "prompt": "a photo of a text logo on black background with no people",
+          "prob": 0.1234
+        },
+        {
+          "label": "Explosion",
+          "prompt": "a photo of an explosion or fireball",
+          "prob": 0.0248
+        },
+        {
+          "label": "Dogfight",
+          "prompt": "a photo of fighter jets in close combat maneuvers",
+          "prob": 0.0139
+        }
+      ],
+      "full_probs": [
+        {
+          "label": "Title",
+          "prob": 0.1234
+        },
+        {
+          "label": "Cockpit",
+          "prob": 0.0
+        },
+        {
+          "label": "Flight",
+          "prob": 0.0
+        },
+        {
+          "label": "Dogfight",
+          "prob": 0.0139
+        },
+        {
+          "label": "Carrier",
+          "prob": 0.0005
+        },
+        {
+          "label": "Dialogue",
+          "prob": 0.0029
+        },
+        {
+          "label": "Emotional",
+          "prob": 0.2543
+        },
+        {
+          "label": "Explosion",
+          "prob": 0.0248
+        },
+        {
+          "label": "Ground",
+          "prob": 0.5802
+        }
+      ]
+    },
+    {
+      "idx": 34,
+      "start_sec": 113.57,
+      "end_sec": 117.37,
+      "frame": "review_frames_topgun/scene_034.jpg",
+      "top1": {
+        "label": "Cockpit",
+        "prompt": "a photo of a pilot in a cockpit wearing a helmet and oxygen mask",
+        "prob": 0.7969
+      },
+      "top_k": [
+        {
+          "label": "Cockpit",
+          "prompt": "a photo of a pilot in a cockpit wearing a helmet and oxygen mask",
+          "prob": 0.7969
+        },
+        {
+          "label": "Emotional",
+          "prompt": "a photo of a person with a serious emotional expression",
+          "prob": 0.0768
+        },
+        {
+          "label": "Dogfight",
+          "prompt": "a photo of fighter jets in close combat maneuvers",
+          "prob": 0.0707
+        },
+        {
+          "label": "Ground",
+          "prompt": "a photo of military personnel in uniform walking or running",
+          "prob": 0.0366
+        },
+        {
+          "label": "Carrier",
+          "prompt": "a photo of a fighter jet on an aircraft carrier deck",
+          "prob": 0.0078
+        }
+      ],
+      "full_probs": [
+        {
+          "label": "Title",
+          "prob": 0.0008
+        },
+        {
+          "label": "Cockpit",
+          "prob": 0.7969
+        },
+        {
+          "label": "Flight",
+          "prob": 0.0013
+        },
+        {
+          "label": "Dogfight",
+          "prob": 0.0707
+        },
+        {
+          "label": "Carrier",
+          "prob": 0.0078
+        },
+        {
+          "label": "Dialogue",
+          "prob": 0.0072
+        },
+        {
+          "label": "Emotional",
+          "prob": 0.0768
+        },
+        {
+          "label": "Explosion",
+          "prob": 0.002
+        },
+        {
+          "label": "Ground",
+          "prob": 0.0366
+        }
+      ]
+    },
+    {
+      "idx": 35,
+      "start_sec": 117.37,
+      "end_sec": 119.83,
+      "frame": "review_frames_topgun/scene_035.jpg",
+      "top1": {
+        "label": "Ground",
+        "prompt": "a photo of military personnel in uniform walking or running",
+        "prob": 0.8337
+      },
+      "top_k": [
+        {
+          "label": "Ground",
+          "prompt": "a photo of military personnel in uniform walking or running",
+          "prob": 0.8337
+        },
+        {
+          "label": "Title",
+          "prompt": "a photo of a text logo on black background with no people",
+          "prob": 0.078
+        },
+        {
+          "label": "Emotional",
+          "prompt": "a photo of a person with a serious emotional expression",
+          "prob": 0.035
+        },
+        {
+          "label": "Dogfight",
+          "prompt": "a photo of fighter jets in close combat maneuvers",
+          "prob": 0.0321
+        },
+        {
+          "label": "Dialogue",
+          "prompt": "a photo of two people talking face to face in close-up",
+          "prob": 0.0138
+        }
+      ],
+      "full_probs": [
+        {
+          "label": "Title",
+          "prob": 0.078
+        },
+        {
+          "label": "Cockpit",
+          "prob": 0.0001
+        },
+        {
+          "label": "Flight",
+          "prob": 0.0
+        },
+        {
+          "label": "Dogfight",
+          "prob": 0.0321
+        },
+        {
+          "label": "Carrier",
+          "prob": 0.0003
+        },
+        {
+          "label": "Dialogue",
+          "prob": 0.0138
+        },
+        {
+          "label": "Emotional",
+          "prob": 0.035
+        },
+        {
+          "label": "Explosion",
+          "prob": 0.007
+        },
+        {
+          "label": "Ground",
+          "prob": 0.8337
+        }
+      ]
+    },
+    {
+      "idx": 36,
+      "start_sec": 119.83,
+      "end_sec": 123.92,
+      "frame": "review_frames_topgun/scene_036.jpg",
+      "top1": {
+        "label": "Dogfight",
+        "prompt": "a photo of fighter jets in close combat maneuvers",
+        "prob": 0.9067
+      },
+      "top_k": [
+        {
+          "label": "Dogfight",
+          "prompt": "a photo of fighter jets in close combat maneuvers",
+          "prob": 0.9067
+        },
+        {
+          "label": "Carrier",
+          "prompt": "a photo of a fighter jet on an aircraft carrier deck",
+          "prob": 0.047
+        },
+        {
+          "label": "Explosion",
+          "prompt": "a photo of an explosion or fireball",
+          "prob": 0.039
+        },
+        {
+          "label": "Flight",
+          "prompt": "a photo of a fighter jet flying through clouds or sky",
+          "prob": 0.0053
+        },
+        {
+          "label": "Ground",
+          "prompt": "a photo of military personnel in uniform walking or running",
+          "prob": 0.0009
+        }
+      ],
+      "full_probs": [
+        {
+          "label": "Title",
+          "prob": 0.0007
+        },
+        {
+          "label": "Cockpit",
+          "prob": 0.0
+        },
+        {
+          "label": "Flight",
+          "prob": 0.0053
+        },
+        {
+          "label": "Dogfight",
+          "prob": 0.9067
+        },
+        {
+          "label": "Carrier",
+          "prob": 0.047
+        },
+        {
+          "label": "Dialogue",
+          "prob": 0.0001
+        },
+        {
+          "label": "Emotional",
+          "prob": 0.0002
+        },
+        {
+          "label": "Explosion",
+          "prob": 0.039
+        },
+        {
+          "label": "Ground",
+          "prob": 0.0009
+        }
+      ]
+    },
+    {
+      "idx": 37,
+      "start_sec": 123.92,
+      "end_sec": 127.21,
+      "frame": "review_frames_topgun/scene_037.jpg",
+      "top1": {
+        "label": "Cockpit",
+        "prompt": "a photo of a pilot in a cockpit wearing a helmet and oxygen mask",
+        "prob": 0.9903
+      },
+      "top_k": [
+        {
+          "label": "Cockpit",
+          "prompt": "a photo of a pilot in a cockpit wearing a helmet and oxygen mask",
+          "prob": 0.9903
+        },
+        {
+          "label": "Dogfight",
+          "prompt": "a photo of fighter jets in close combat maneuvers",
+          "prob": 0.0065
+        },
+        {
+          "label": "Carrier",
+          "prompt": "a photo of a fighter jet on an aircraft carrier deck",
+          "prob": 0.0025
+        },
+        {
+          "label": "Dialogue",
+          "prompt": "a photo of two people talking face to face in close-up",
+          "prob": 0.0004
+        },
+        {
+          "label": "Emotional",
+          "prompt": "a photo of a person with a serious emotional expression",
+          "prob": 0.0002
+        }
+      ],
+      "full_probs": [
+        {
+          "label": "Title",
+          "prob": 0.0
+        },
+        {
+          "label": "Cockpit",
+          "prob": 0.9903
+        },
+        {
+          "label": "Flight",
+          "prob": 0.0001
+        },
+        {
+          "label": "Dogfight",
+          "prob": 0.0065
+        },
+        {
+          "label": "Carrier",
+          "prob": 0.0025
+        },
+        {
+          "label": "Dialogue",
+          "prob": 0.0004
+        },
+        {
+          "label": "Emotional",
+          "prob": 0.0002
+        },
+        {
+          "label": "Explosion",
+          "prob": 0.0
+        },
+        {
+          "label": "Ground",
+          "prob": 0.0
+        }
+      ]
+    },
+    {
+      "idx": 38,
+      "start_sec": 127.21,
+      "end_sec": 130.34,
+      "frame": "review_frames_topgun/scene_038.jpg",
+      "top1": {
+        "label": "Emotional",
+        "prompt": "a photo of a person with a serious emotional expression",
+        "prob": 0.5003
+      },
+      "top_k": [
+        {
+          "label": "Emotional",
+          "prompt": "a photo of a person with a serious emotional expression",
+          "prob": 0.5003
+        },
+        {
+          "label": "Dialogue",
+          "prompt": "a photo of two people talking face to face in close-up",
+          "prob": 0.2905
+        },
+        {
+          "label": "Dogfight",
+          "prompt": "a photo of fighter jets in close combat maneuvers",
+          "prob": 0.0818
+        },
+        {
+          "label": "Ground",
+          "prompt": "a photo of military personnel in uniform walking or running",
+          "prob": 0.0319
+        },
+        {
+          "label": "Title",
+          "prompt": "a photo of a text logo on black background with no people",
+          "prob": 0.0303
+        }
+      ],
+      "full_probs": [
+        {
+          "label": "Title",
+          "prob": 0.0303
+        },
+        {
+          "label": "Cockpit",
+          "prob": 0.0278
+        },
+        {
+          "label": "Flight",
+          "prob": 0.0
+        },
+        {
+          "label": "Dogfight",
+          "prob": 0.0818
+        },
+        {
+          "label": "Carrier",
+          "prob": 0.0157
+        },
+        {
+          "label": "Dialogue",
+          "prob": 0.2905
+        },
+        {
+          "label": "Emotional",
+          "prob": 0.5003
+        },
+        {
+          "label": "Explosion",
+          "prob": 0.0218
+        },
+        {
+          "label": "Ground",
+          "prob": 0.0319
+        }
+      ]
+    },
+    {
+      "idx": 39,
+      "start_sec": 130.34,
+      "end_sec": 134.63,
+      "frame": "review_frames_topgun/scene_039.jpg",
+      "top1": {
+        "label": "Cockpit",
+        "prompt": "a photo of a pilot in a cockpit wearing a helmet and oxygen mask",
+        "prob": 0.7616
+      },
+      "top_k": [
+        {
+          "label": "Cockpit",
+          "prompt": "a photo of a pilot in a cockpit wearing a helmet and oxygen mask",
+          "prob": 0.7616
+        },
+        {
+          "label": "Carrier",
+          "prompt": "a photo of a fighter jet on an aircraft carrier deck",
+          "prob": 0.1456
+        },
+        {
+          "label": "Dogfight",
+          "prompt": "a photo of fighter jets in close combat maneuvers",
+          "prob": 0.0776
+        },
+        {
+          "label": "Dialogue",
+          "prompt": "a photo of two people talking face to face in close-up",
+          "prob": 0.0063
+        },
+        {
+          "label": "Emotional",
+          "prompt": "a photo of a person with a serious emotional expression",
+          "prob": 0.0031
+        }
+      ],
+      "full_probs": [
+        {
+          "label": "Title",
+          "prob": 0.0016
+        },
+        {
+          "label": "Cockpit",
+          "prob": 0.7616
+        },
+        {
+          "label": "Flight",
+          "prob": 0.0
+        },
+        {
+          "label": "Dogfight",
+          "prob": 0.0776
+        },
+        {
+          "label": "Carrier",
+          "prob": 0.1456
+        },
+        {
+          "label": "Dialogue",
+          "prob": 0.0063
+        },
+        {
+          "label": "Emotional",
+          "prob": 0.0031
+        },
+        {
+          "label": "Explosion",
+          "prob": 0.0013
+        },
+        {
+          "label": "Ground",
+          "prob": 0.0028
+        }
+      ]
+    },
+    {
+      "idx": 40,
+      "start_sec": 134.63,
+      "end_sec": 137.68,
+      "frame": "review_frames_topgun/scene_040.jpg",
+      "top1": {
+        "label": "Cockpit",
+        "prompt": "a photo of a pilot in a cockpit wearing a helmet and oxygen mask",
+        "prob": 0.9873
+      },
+      "top_k": [
+        {
+          "label": "Cockpit",
+          "prompt": "a photo of a pilot in a cockpit wearing a helmet and oxygen mask",
+          "prob": 0.9873
+        },
+        {
+          "label": "Dogfight",
+          "prompt": "a photo of fighter jets in close combat maneuvers",
+          "prob": 0.008
+        },
+        {
+          "label": "Carrier",
+          "prompt": "a photo of a fighter jet on an aircraft carrier deck",
+          "prob": 0.0045
+        },
+        {
+          "label": "Flight",
+          "prompt": "a photo of a fighter jet flying through clouds or sky",
+          "prob": 0.0001
+        },
+        {
+          "label": "Emotional",
+          "prompt": "a photo of a person with a serious emotional expression",
+          "prob": 0.0001
+        }
+      ],
+      "full_probs": [
+        {
+          "label": "Title",
+          "prob": 0.0
+        },
+        {
+          "label": "Cockpit",
+          "prob": 0.9873
+        },
+        {
+          "label": "Flight",
+          "prob": 0.0001
+        },
+        {
+          "label": "Dogfight",
+          "prob": 0.008
+        },
+        {
+          "label": "Carrier",
+          "prob": 0.0045
+        },
+        {
+          "label": "Dialogue",
+          "prob": 0.0001
+        },
+        {
+          "label": "Emotional",
+          "prob": 0.0001
+        },
+        {
+          "label": "Explosion",
+          "prob": 0.0
+        },
+        {
+          "label": "Ground",
+          "prob": 0.0
+        }
+      ]
+    },
+    {
+      "idx": 41,
+      "start_sec": 137.68,
+      "end_sec": 144.39,
+      "frame": "review_frames_topgun/scene_041.jpg",
+      "top1": {
+        "label": "Title",
+        "prompt": "a photo of a text logo on black background with no people",
+        "prob": 0.9595
+      },
+      "top_k": [
+        {
+          "label": "Title",
+          "prompt": "a photo of a text logo on black background with no people",
+          "prob": 0.9595
+        },
+        {
+          "label": "Dogfight",
+          "prompt": "a photo of fighter jets in close combat maneuvers",
+          "prob": 0.0291
+        },
+        {
+          "label": "Ground",
+          "prompt": "a photo of military personnel in uniform walking or running",
+          "prob": 0.0035
+        },
+        {
+          "label": "Emotional",
+          "prompt": "a photo of a person with a serious emotional expression",
+          "prob": 0.0024
+        },
+        {
+          "label": "Dialogue",
+          "prompt": "a photo of two people talking face to face in close-up",
+          "prob": 0.0019
+        }
+      ],
+      "full_probs": [
+        {
+          "label": "Title",
+          "prob": 0.9595
+        },
+        {
+          "label": "Cockpit",
+          "prob": 0.0003
+        },
+        {
+          "label": "Flight",
+          "prob": 0.0013
+        },
+        {
+          "label": "Dogfight",
+          "prob": 0.0291
+        },
+        {
+          "label": "Carrier",
+          "prob": 0.0015
+        },
+        {
+          "label": "Dialogue",
+          "prob": 0.0019
+        },
+        {
+          "label": "Emotional",
+          "prob": 0.0024
+        },
+        {
+          "label": "Explosion",
+          "prob": 0.0005
+        },
+        {
+          "label": "Ground",
+          "prob": 0.0035
+        }
+      ]
+    }
+  ]
+}

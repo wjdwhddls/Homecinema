@@ -1,0 +1,1052 @@
+[
+  {
+    "start_sec": 0.0,
+    "end_sec": 3.92,
+    "scene_name_clip": "Dogfight",
+    "clip_confidence": 0.817,
+    "audio_scene_hint": "Music",
+    "audio_top_tags": [
+      [
+        "Music",
+        0.236
+      ],
+      [
+        "Vehicle",
+        0.223
+      ],
+      [
+        "Whoosh, swoosh, swish",
+        0.222
+      ]
+    ],
+    "audio_consistent": true,
+    "scene_name_auto": "Dogfight",
+    "auto_confidence": "high",
+    "needs_review": false
+  },
+  {
+    "start_sec": 3.92,
+    "end_sec": 6.51,
+    "scene_name_clip": "Dogfight",
+    "clip_confidence": 0.858,
+    "audio_scene_hint": "Music",
+    "audio_top_tags": [
+      [
+        "Music",
+        0.324
+      ],
+      [
+        "Boom",
+        0.177
+      ],
+      [
+        "Artillery fire",
+        0.143
+      ]
+    ],
+    "audio_consistent": true,
+    "scene_name_auto": "Dogfight",
+    "auto_confidence": "high",
+    "needs_review": false
+  },
+  {
+    "start_sec": 6.51,
+    "end_sec": 8.97,
+    "scene_name_clip": "Emotional",
+    "clip_confidence": 0.211,
+    "audio_scene_hint": "Music",
+    "audio_top_tags": [
+      [
+        "Music",
+        0.63
+      ],
+      [
+        "Scary music",
+        0.157
+      ],
+      [
+        "Boom",
+        0.118
+      ]
+    ],
+    "audio_consistent": true,
+    "scene_name_auto": "Emotional?",
+    "auto_confidence": "low",
+    "needs_review": true
+  },
+  {
+    "start_sec": 8.97,
+    "end_sec": 11.05,
+    "scene_name_clip": "Emotional",
+    "clip_confidence": 0.944,
+    "audio_scene_hint": "Dialogue",
+    "audio_top_tags": [
+      [
+        "Speech",
+        0.849
+      ],
+      [
+        "Music",
+        0.369
+      ],
+      [
+        "Male speech, man speaking",
+        0.103
+      ]
+    ],
+    "audio_consistent": true,
+    "scene_name_auto": "Emotional",
+    "auto_confidence": "high",
+    "needs_review": false
+  },
+  {
+    "start_sec": 11.05,
+    "end_sec": 14.22,
+    "scene_name_clip": "Ground",
+    "clip_confidence": 0.822,
+    "audio_scene_hint": "Dialogue",
+    "audio_top_tags": [
+      [
+        "Speech",
+        0.855
+      ],
+      [
+        "Female speech, woman speaking",
+        0.178
+      ],
+      [
+        "Conversation",
+        0.102
+      ]
+    ],
+    "audio_consistent": true,
+    "scene_name_auto": "Ground",
+    "auto_confidence": "high",
+    "needs_review": false
+  },
+  {
+    "start_sec": 14.22,
+    "end_sec": 16.81,
+    "scene_name_clip": "Dialogue",
+    "clip_confidence": 0.743,
+    "audio_scene_hint": "Dialogue",
+    "audio_top_tags": [
+      [
+        "Speech",
+        0.891
+      ],
+      [
+        "Inside, small room",
+        0.107
+      ],
+      [
+        "Male speech, man speaking",
+        0.101
+      ]
+    ],
+    "audio_consistent": true,
+    "scene_name_auto": "Dialogue",
+    "auto_confidence": "high",
+    "needs_review": false
+  },
+  {
+    "start_sec": 16.81,
+    "end_sec": 20.4,
+    "scene_name_clip": "Cockpit",
+    "clip_confidence": 0.518,
+    "audio_scene_hint": "Music",
+    "audio_top_tags": [
+      [
+        "Music",
+        0.313
+      ],
+      [
+        "Speech",
+        0.117
+      ],
+      [
+        "Boom",
+        0.113
+      ]
+    ],
+    "audio_consistent": true,
+    "scene_name_auto": "Cockpit",
+    "auto_confidence": "high",
+    "needs_review": false
+  },
+  {
+    "start_sec": 20.4,
+    "end_sec": 24.15,
+    "scene_name_clip": "Ground",
+    "clip_confidence": 0.867,
+    "audio_scene_hint": "Dialogue",
+    "audio_top_tags": [
+      [
+        "Speech",
+        0.639
+      ],
+      [
+        "Music",
+        0.588
+      ],
+      [
+        "Boom",
+        0.093
+      ]
+    ],
+    "audio_consistent": true,
+    "scene_name_auto": "Ground",
+    "auto_confidence": "high",
+    "needs_review": false
+  },
+  {
+    "start_sec": 24.15,
+    "end_sec": 26.57,
+    "scene_name_clip": "Emotional",
+    "clip_confidence": 0.777,
+    "audio_scene_hint": "Dialogue",
+    "audio_top_tags": [
+      [
+        "Speech",
+        0.773
+      ],
+      [
+        "Music",
+        0.52
+      ],
+      [
+        "Vehicle",
+        0.127
+      ]
+    ],
+    "audio_consistent": true,
+    "scene_name_auto": "Emotional",
+    "auto_confidence": "high",
+    "needs_review": false
+  },
+  {
+    "start_sec": 26.57,
+    "end_sec": 31.49,
+    "scene_name_clip": "Title",
+    "clip_confidence": 0.989,
+    "audio_scene_hint": "Music",
+    "audio_top_tags": [
+      [
+        "Music",
+        0.852
+      ],
+      [
+        "New-age music",
+        0.139
+      ],
+      [
+        "Background music",
+        0.112
+      ]
+    ],
+    "audio_consistent": true,
+    "scene_name_auto": "Title",
+    "auto_confidence": "high",
+    "needs_review": false
+  },
+  {
+    "start_sec": 31.49,
+    "end_sec": 34.91,
+    "scene_name_clip": "Emotional",
+    "clip_confidence": 0.388,
+    "audio_scene_hint": "Music",
+    "audio_top_tags": [
+      [
+        "Music",
+        0.797
+      ],
+      [
+        "Speech",
+        0.762
+      ],
+      [
+        "Background music",
+        0.085
+      ]
+    ],
+    "audio_consistent": true,
+    "scene_name_auto": "Emotional?",
+    "auto_confidence": "low",
+    "needs_review": true
+  },
+  {
+    "start_sec": 34.91,
+    "end_sec": 38.54,
+    "scene_name_clip": "Carrier",
+    "clip_confidence": 0.703,
+    "audio_scene_hint": "Dialogue",
+    "audio_top_tags": [
+      [
+        "Speech",
+        0.714
+      ],
+      [
+        "Car",
+        0.624
+      ],
+      [
+        "Music",
+        0.587
+      ]
+    ],
+    "audio_consistent": false,
+    "scene_name_auto": "Carrier",
+    "auto_confidence": "high",
+    "needs_review": false
+  },
+  {
+    "start_sec": 38.54,
+    "end_sec": 43.54,
+    "scene_name_clip": "Dialogue",
+    "clip_confidence": 0.446,
+    "audio_scene_hint": "Music",
+    "audio_top_tags": [
+      [
+        "Music",
+        0.862
+      ],
+      [
+        "Speech",
+        0.851
+      ],
+      [
+        "Musical instrument",
+        0.065
+      ]
+    ],
+    "audio_consistent": true,
+    "scene_name_auto": "Dialogue",
+    "auto_confidence": "medium",
+    "needs_review": true
+  },
+  {
+    "start_sec": 43.54,
+    "end_sec": 47.05,
+    "scene_name_clip": "Carrier",
+    "clip_confidence": 0.49,
+    "audio_scene_hint": "Dialogue",
+    "audio_top_tags": [
+      [
+        "Speech",
+        0.838
+      ],
+      [
+        "Music",
+        0.772
+      ],
+      [
+        "Narration, monologue",
+        0.105
+      ]
+    ],
+    "audio_consistent": false,
+    "scene_name_auto": "Carrier",
+    "auto_confidence": "medium",
+    "needs_review": true
+  },
+  {
+    "start_sec": 47.05,
+    "end_sec": 50.47,
+    "scene_name_clip": "Cockpit",
+    "clip_confidence": 0.725,
+    "audio_scene_hint": "Music",
+    "audio_top_tags": [
+      [
+        "Music",
+        0.688
+      ],
+      [
+        "Boom",
+        0.301
+      ],
+      [
+        "Artillery fire",
+        0.107
+      ]
+    ],
+    "audio_consistent": true,
+    "scene_name_auto": "Cockpit",
+    "auto_confidence": "high",
+    "needs_review": false
+  },
+  {
+    "start_sec": 50.47,
+    "end_sec": 53.39,
+    "scene_name_clip": "Cockpit",
+    "clip_confidence": 0.975,
+    "audio_scene_hint": "Music",
+    "audio_top_tags": [
+      [
+        "Music",
+        0.814
+      ],
+      [
+        "Speech",
+        0.782
+      ],
+      [
+        "Theme music",
+        0.127
+      ]
+    ],
+    "audio_consistent": true,
+    "scene_name_auto": "Cockpit",
+    "auto_confidence": "high",
+    "needs_review": false
+  },
+  {
+    "start_sec": 53.39,
+    "end_sec": 56.47,
+    "scene_name_clip": "Emotional",
+    "clip_confidence": 0.839,
+    "audio_scene_hint": "Music",
+    "audio_top_tags": [
+      [
+        "Music",
+        0.799
+      ],
+      [
+        "Speech",
+        0.795
+      ],
+      [
+        "Musical instrument",
+        0.054
+      ]
+    ],
+    "audio_consistent": true,
+    "scene_name_auto": "Emotional",
+    "auto_confidence": "high",
+    "needs_review": false
+  },
+  {
+    "start_sec": 56.47,
+    "end_sec": 59.14,
+    "scene_name_clip": "Dogfight",
+    "clip_confidence": 0.988,
+    "audio_scene_hint": "Music",
+    "audio_top_tags": [
+      [
+        "Boom",
+        0.108
+      ],
+      [
+        "Music",
+        0.084
+      ],
+      [
+        "Fusillade",
+        0.065
+      ]
+    ],
+    "audio_consistent": true,
+    "scene_name_auto": "Dogfight",
+    "auto_confidence": "high",
+    "needs_review": false
+  },
+  {
+    "start_sec": 59.14,
+    "end_sec": 62.27,
+    "scene_name_clip": "Dogfight",
+    "clip_confidence": 0.923,
+    "audio_scene_hint": "Dialogue",
+    "audio_top_tags": [
+      [
+        "Speech",
+        0.585
+      ],
+      [
+        "Artillery fire",
+        0.223
+      ],
+      [
+        "Gunshot, gunfire",
+        0.208
+      ]
+    ],
+    "audio_consistent": false,
+    "scene_name_auto": "Dogfight",
+    "auto_confidence": "high",
+    "needs_review": false
+  },
+  {
+    "start_sec": 62.27,
+    "end_sec": 66.86,
+    "scene_name_clip": "Cockpit",
+    "clip_confidence": 0.885,
+    "audio_scene_hint": "Dialogue",
+    "audio_top_tags": [
+      [
+        "Speech",
+        0.652
+      ],
+      [
+        "Music",
+        0.349
+      ],
+      [
+        "Boom",
+        0.311
+      ]
+    ],
+    "audio_consistent": true,
+    "scene_name_auto": "Cockpit",
+    "auto_confidence": "high",
+    "needs_review": false
+  },
+  {
+    "start_sec": 66.86,
+    "end_sec": 71.53,
+    "scene_name_clip": "Emotional",
+    "clip_confidence": 0.728,
+    "audio_scene_hint": "Dialogue",
+    "audio_top_tags": [
+      [
+        "Speech",
+        0.658
+      ],
+      [
+        "Music",
+        0.643
+      ],
+      [
+        "Whoosh, swoosh, swish",
+        0.136
+      ]
+    ],
+    "audio_consistent": true,
+    "scene_name_auto": "Emotional",
+    "auto_confidence": "high",
+    "needs_review": false
+  },
+  {
+    "start_sec": 71.53,
+    "end_sec": 74.45,
+    "scene_name_clip": "Cockpit",
+    "clip_confidence": 0.991,
+    "audio_scene_hint": "Dialogue",
+    "audio_top_tags": [
+      [
+        "Speech",
+        0.711
+      ],
+      [
+        "Music",
+        0.448
+      ],
+      [
+        "Vehicle",
+        0.297
+      ]
+    ],
+    "audio_consistent": true,
+    "scene_name_auto": "Cockpit",
+    "auto_confidence": "high",
+    "needs_review": false
+  },
+  {
+    "start_sec": 74.45,
+    "end_sec": 77.83,
+    "scene_name_clip": "Cockpit",
+    "clip_confidence": 0.96,
+    "audio_scene_hint": "Vehicle",
+    "audio_top_tags": [
+      [
+        "Vehicle",
+        0.469
+      ],
+      [
+        "Music",
+        0.399
+      ],
+      [
+        "Speech",
+        0.258
+      ]
+    ],
+    "audio_consistent": true,
+    "scene_name_auto": "Cockpit",
+    "auto_confidence": "high",
+    "needs_review": false
+  },
+  {
+    "start_sec": 77.83,
+    "end_sec": 81.04,
+    "scene_name_clip": "Carrier",
+    "clip_confidence": 0.771,
+    "audio_scene_hint": "Music",
+    "audio_top_tags": [
+      [
+        "Music",
+        0.57
+      ],
+      [
+        "Boom",
+        0.165
+      ],
+      [
+        "Scary music",
+        0.106
+      ]
+    ],
+    "audio_consistent": true,
+    "scene_name_auto": "Carrier",
+    "auto_confidence": "high",
+    "needs_review": false
+  },
+  {
+    "start_sec": 81.04,
+    "end_sec": 83.96,
+    "scene_name_clip": "Dogfight",
+    "clip_confidence": 0.748,
+    "audio_scene_hint": "Music",
+    "audio_top_tags": [
+      [
+        "Music",
+        0.789
+      ],
+      [
+        "Theme music",
+        0.369
+      ],
+      [
+        "Background music",
+        0.109
+      ]
+    ],
+    "audio_consistent": true,
+    "scene_name_auto": "Dogfight",
+    "auto_confidence": "high",
+    "needs_review": false
+  },
+  {
+    "start_sec": 83.96,
+    "end_sec": 86.13,
+    "scene_name_clip": "Dogfight",
+    "clip_confidence": 0.372,
+    "audio_scene_hint": "Music",
+    "audio_top_tags": [
+      [
+        "Music",
+        0.688
+      ],
+      [
+        "Speech",
+        0.673
+      ],
+      [
+        "Artillery fire",
+        0.131
+      ]
+    ],
+    "audio_consistent": true,
+    "scene_name_auto": "Dogfight?",
+    "auto_confidence": "low",
+    "needs_review": true
+  },
+  {
+    "start_sec": 86.13,
+    "end_sec": 89.13,
+    "scene_name_clip": "Dogfight",
+    "clip_confidence": 0.962,
+    "audio_scene_hint": "Dialogue",
+    "audio_top_tags": [
+      [
+        "Speech",
+        0.78
+      ],
+      [
+        "Music",
+        0.77
+      ],
+      [
+        "Artillery fire",
+        0.316
+      ]
+    ],
+    "audio_consistent": false,
+    "scene_name_auto": "Dogfight",
+    "auto_confidence": "high",
+    "needs_review": false
+  },
+  {
+    "start_sec": 89.13,
+    "end_sec": 93.3,
+    "scene_name_clip": "Ground",
+    "clip_confidence": 0.79,
+    "audio_scene_hint": "Music",
+    "audio_top_tags": [
+      [
+        "Music",
+        0.827
+      ],
+      [
+        "Speech",
+        0.74
+      ],
+      [
+        "Theme music",
+        0.223
+      ]
+    ],
+    "audio_consistent": true,
+    "scene_name_auto": "Ground",
+    "auto_confidence": "high",
+    "needs_review": false
+  },
+  {
+    "start_sec": 93.3,
+    "end_sec": 95.85,
+    "scene_name_clip": "Cockpit",
+    "clip_confidence": 0.718,
+    "audio_scene_hint": "Music",
+    "audio_top_tags": [
+      [
+        "Music",
+        0.765
+      ],
+      [
+        "Theme music",
+        0.199
+      ],
+      [
+        "Smash, crash",
+        0.072
+      ]
+    ],
+    "audio_consistent": true,
+    "scene_name_auto": "Cockpit",
+    "auto_confidence": "high",
+    "needs_review": false
+  },
+  {
+    "start_sec": 95.85,
+    "end_sec": 100.02,
+    "scene_name_clip": "Title",
+    "clip_confidence": 0.979,
+    "audio_scene_hint": "Music",
+    "audio_top_tags": [
+      [
+        "Music",
+        0.824
+      ],
+      [
+        "Speech",
+        0.775
+      ],
+      [
+        "Smash, crash",
+        0.088
+      ]
+    ],
+    "audio_consistent": true,
+    "scene_name_auto": "Title",
+    "auto_confidence": "high",
+    "needs_review": false
+  },
+  {
+    "start_sec": 100.02,
+    "end_sec": 102.23,
+    "scene_name_clip": "Emotional",
+    "clip_confidence": 0.62,
+    "audio_scene_hint": "Dialogue",
+    "audio_top_tags": [
+      [
+        "Speech",
+        0.805
+      ],
+      [
+        "Music",
+        0.492
+      ],
+      [
+        "Speech synthesizer",
+        0.081
+      ]
+    ],
+    "audio_consistent": true,
+    "scene_name_auto": "Emotional",
+    "auto_confidence": "high",
+    "needs_review": false
+  },
+  {
+    "start_sec": 102.23,
+    "end_sec": 105.52,
+    "scene_name_clip": "Title",
+    "clip_confidence": 0.992,
+    "audio_scene_hint": "Music",
+    "audio_top_tags": [
+      [
+        "Music",
+        0.804
+      ],
+      [
+        "Theme music",
+        0.297
+      ],
+      [
+        "Background music",
+        0.095
+      ]
+    ],
+    "audio_consistent": true,
+    "scene_name_auto": "Title",
+    "auto_confidence": "high",
+    "needs_review": false
+  },
+  {
+    "start_sec": 105.52,
+    "end_sec": 108.98,
+    "scene_name_clip": "Cockpit",
+    "clip_confidence": 0.98,
+    "audio_scene_hint": "Music",
+    "audio_top_tags": [
+      [
+        "Music",
+        0.79
+      ],
+      [
+        "Speech",
+        0.479
+      ],
+      [
+        "Background music",
+        0.103
+      ]
+    ],
+    "audio_consistent": true,
+    "scene_name_auto": "Cockpit",
+    "auto_confidence": "high",
+    "needs_review": false
+  },
+  {
+    "start_sec": 108.98,
+    "end_sec": 113.57,
+    "scene_name_clip": "Ground",
+    "clip_confidence": 0.56,
+    "audio_scene_hint": "Music",
+    "audio_top_tags": [
+      [
+        "Music",
+        0.841
+      ],
+      [
+        "Speech",
+        0.84
+      ],
+      [
+        "Background music",
+        0.064
+      ]
+    ],
+    "audio_consistent": true,
+    "scene_name_auto": "Ground",
+    "auto_confidence": "high",
+    "needs_review": false
+  },
+  {
+    "start_sec": 113.57,
+    "end_sec": 117.37,
+    "scene_name_clip": "Cockpit",
+    "clip_confidence": 0.698,
+    "audio_scene_hint": "Music",
+    "audio_top_tags": [
+      [
+        "Music",
+        0.688
+      ],
+      [
+        "Speech",
+        0.623
+      ],
+      [
+        "Smash, crash",
+        0.181
+      ]
+    ],
+    "audio_consistent": true,
+    "scene_name_auto": "Cockpit",
+    "auto_confidence": "high",
+    "needs_review": false
+  },
+  {
+    "start_sec": 117.37,
+    "end_sec": 119.83,
+    "scene_name_clip": "Ground",
+    "clip_confidence": 0.832,
+    "audio_scene_hint": "Music",
+    "audio_top_tags": [
+      [
+        "Music",
+        0.845
+      ],
+      [
+        "Speech",
+        0.273
+      ],
+      [
+        "Theme music",
+        0.081
+      ]
+    ],
+    "audio_consistent": true,
+    "scene_name_auto": "Ground",
+    "auto_confidence": "high",
+    "needs_review": false
+  },
+  {
+    "start_sec": 119.83,
+    "end_sec": 123.92,
+    "scene_name_clip": "Dogfight",
+    "clip_confidence": 0.915,
+    "audio_scene_hint": "Music",
+    "audio_top_tags": [
+      [
+        "Music",
+        0.828
+      ],
+      [
+        "Speech",
+        0.786
+      ],
+      [
+        "Theme music",
+        0.082
+      ]
+    ],
+    "audio_consistent": true,
+    "scene_name_auto": "Dogfight",
+    "auto_confidence": "high",
+    "needs_review": false
+  },
+  {
+    "start_sec": 123.92,
+    "end_sec": 127.21,
+    "scene_name_clip": "Cockpit",
+    "clip_confidence": 0.988,
+    "audio_scene_hint": "Music",
+    "audio_top_tags": [
+      [
+        "Music",
+        0.771
+      ],
+      [
+        "Speech",
+        0.686
+      ],
+      [
+        "Theme music",
+        0.063
+      ]
+    ],
+    "audio_consistent": true,
+    "scene_name_auto": "Cockpit",
+    "auto_confidence": "high",
+    "needs_review": false
+  },
+  {
+    "start_sec": 127.21,
+    "end_sec": 130.34,
+    "scene_name_clip": "Emotional",
+    "clip_confidence": 0.589,
+    "audio_scene_hint": "Music",
+    "audio_top_tags": [
+      [
+        "Music",
+        0.645
+      ],
+      [
+        "Theme music",
+        0.072
+      ],
+      [
+        "Speech",
+        0.066
+      ]
+    ],
+    "audio_consistent": true,
+    "scene_name_auto": "Emotional",
+    "auto_confidence": "high",
+    "needs_review": false
+  },
+  {
+    "start_sec": 130.34,
+    "end_sec": 134.63,
+    "scene_name_clip": "Cockpit",
+    "clip_confidence": 0.69,
+    "audio_scene_hint": "Dialogue",
+    "audio_top_tags": [
+      [
+        "Speech",
+        0.663
+      ],
+      [
+        "Music",
+        0.202
+      ],
+      [
+        "Boom",
+        0.165
+      ]
+    ],
+    "audio_consistent": true,
+    "scene_name_auto": "Cockpit",
+    "auto_confidence": "high",
+    "needs_review": false
+  },
+  {
+    "start_sec": 134.63,
+    "end_sec": 137.68,
+    "scene_name_clip": "Cockpit",
+    "clip_confidence": 0.983,
+    "audio_scene_hint": "Vehicle",
+    "audio_top_tags": [
+      [
+        "Vehicle",
+        0.281
+      ],
+      [
+        "Music",
+        0.116
+      ],
+      [
+        "Boom",
+        0.101
+      ]
+    ],
+    "audio_consistent": true,
+    "scene_name_auto": "Cockpit",
+    "auto_confidence": "high",
+    "needs_review": false
+  },
+  {
+    "start_sec": 137.68,
+    "end_sec": 144.39,
+    "scene_name_clip": "Title",
+    "clip_confidence": 0.957,
+    "audio_scene_hint": "Music",
+    "audio_top_tags": [
+      [
+        "Music",
+        0.822
+      ],
+      [
+        "New-age music",
+        0.221
+      ],
+      [
+        "Ambient music",
+        0.075
+      ]
+    ],
+    "audio_consistent": true,
+    "scene_name_auto": "Title",
+    "auto_confidence": "high",
+    "needs_review": false
+  }
+]

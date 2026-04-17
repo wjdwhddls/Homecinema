@@ -1,0 +1,927 @@
+[
+  {
+    "start_sec": 0.0,
+    "end_sec": 4.09,
+    "scene_name_clip": "Title",
+    "clip_confidence": 0.996,
+    "audio_scene_hint": "Dialogue",
+    "audio_top_tags": [
+      [
+        "Speech",
+        0.717
+      ],
+      [
+        "Female speech, woman speaking",
+        0.164
+      ],
+      [
+        "Conversation",
+        0.11
+      ]
+    ],
+    "audio_consistent": false,
+    "scene_name_auto": "Title",
+    "auto_confidence": "high",
+    "needs_review": false
+  },
+  {
+    "start_sec": 4.09,
+    "end_sec": 8.34,
+    "scene_name_clip": "Title",
+    "clip_confidence": 0.992,
+    "audio_scene_hint": "Dialogue",
+    "audio_top_tags": [
+      [
+        "Speech",
+        0.88
+      ],
+      [
+        "Conversation",
+        0.158
+      ],
+      [
+        "Female speech, woman speaking",
+        0.13
+      ]
+    ],
+    "audio_consistent": false,
+    "scene_name_auto": "Title",
+    "auto_confidence": "high",
+    "needs_review": false
+  },
+  {
+    "start_sec": 8.34,
+    "end_sec": 11.09,
+    "scene_name_clip": "Title",
+    "clip_confidence": 0.975,
+    "audio_scene_hint": "Music",
+    "audio_top_tags": [
+      [
+        "Music",
+        0.744
+      ],
+      [
+        "Piano",
+        0.388
+      ],
+      [
+        "Keyboard (musical)",
+        0.325
+      ]
+    ],
+    "audio_consistent": true,
+    "scene_name_auto": "Title",
+    "auto_confidence": "high",
+    "needs_review": false
+  },
+  {
+    "start_sec": 11.09,
+    "end_sec": 14.64,
+    "scene_name_clip": "Title",
+    "clip_confidence": 0.589,
+    "audio_scene_hint": "Music",
+    "audio_top_tags": [
+      [
+        "Music",
+        0.767
+      ],
+      [
+        "Piano",
+        0.539
+      ],
+      [
+        "Musical instrument",
+        0.453
+      ]
+    ],
+    "audio_consistent": true,
+    "scene_name_auto": "Title",
+    "auto_confidence": "high",
+    "needs_review": false
+  },
+  {
+    "start_sec": 14.64,
+    "end_sec": 21.02,
+    "scene_name_clip": "Romance",
+    "clip_confidence": 0.651,
+    "audio_scene_hint": "Music",
+    "audio_top_tags": [
+      [
+        "Music",
+        0.731
+      ],
+      [
+        "Piano",
+        0.414
+      ],
+      [
+        "Keyboard (musical)",
+        0.359
+      ]
+    ],
+    "audio_consistent": true,
+    "scene_name_auto": "Romance",
+    "auto_confidence": "high",
+    "needs_review": false
+  },
+  {
+    "start_sec": 21.02,
+    "end_sec": 24.4,
+    "scene_name_clip": "Title",
+    "clip_confidence": 0.998,
+    "audio_scene_hint": "Music",
+    "audio_top_tags": [
+      [
+        "Music",
+        0.782
+      ],
+      [
+        "Piano",
+        0.349
+      ],
+      [
+        "Keyboard (musical)",
+        0.326
+      ]
+    ],
+    "audio_consistent": true,
+    "scene_name_auto": "Title",
+    "auto_confidence": "high",
+    "needs_review": false
+  },
+  {
+    "start_sec": 24.4,
+    "end_sec": 26.78,
+    "scene_name_clip": "Romance",
+    "clip_confidence": 0.512,
+    "audio_scene_hint": "Music",
+    "audio_top_tags": [
+      [
+        "Music",
+        0.836
+      ],
+      [
+        "Piano",
+        0.234
+      ],
+      [
+        "Keyboard (musical)",
+        0.182
+      ]
+    ],
+    "audio_consistent": true,
+    "scene_name_auto": "Romance",
+    "auto_confidence": "high",
+    "needs_review": false
+  },
+  {
+    "start_sec": 26.78,
+    "end_sec": 30.2,
+    "scene_name_clip": "Title",
+    "clip_confidence": 0.894,
+    "audio_scene_hint": "Music",
+    "audio_top_tags": [
+      [
+        "Music",
+        0.818
+      ],
+      [
+        "Piano",
+        0.243
+      ],
+      [
+        "Musical instrument",
+        0.233
+      ]
+    ],
+    "audio_consistent": true,
+    "scene_name_auto": "Title",
+    "auto_confidence": "high",
+    "needs_review": false
+  },
+  {
+    "start_sec": 30.2,
+    "end_sec": 33.74,
+    "scene_name_clip": "Title",
+    "clip_confidence": 0.869,
+    "audio_scene_hint": "Music",
+    "audio_top_tags": [
+      [
+        "Music",
+        0.79
+      ],
+      [
+        "Speech",
+        0.697
+      ],
+      [
+        "Musical instrument",
+        0.081
+      ]
+    ],
+    "audio_consistent": true,
+    "scene_name_auto": "Title",
+    "auto_confidence": "high",
+    "needs_review": false
+  },
+  {
+    "start_sec": 33.74,
+    "end_sec": 38.04,
+    "scene_name_clip": "Title",
+    "clip_confidence": 0.575,
+    "audio_scene_hint": "Music",
+    "audio_top_tags": [
+      [
+        "Music",
+        0.891
+      ],
+      [
+        "Speech",
+        0.857
+      ],
+      [
+        "Musical instrument",
+        0.034
+      ]
+    ],
+    "audio_consistent": true,
+    "scene_name_auto": "Title",
+    "auto_confidence": "high",
+    "needs_review": false
+  },
+  {
+    "start_sec": 38.04,
+    "end_sec": 43.88,
+    "scene_name_clip": "Piano",
+    "clip_confidence": 0.956,
+    "audio_scene_hint": "Music (Piano)",
+    "audio_top_tags": [
+      [
+        "Piano",
+        0.78
+      ],
+      [
+        "Music",
+        0.77
+      ],
+      [
+        "Keyboard (musical)",
+        0.696
+      ]
+    ],
+    "audio_consistent": true,
+    "scene_name_auto": "Piano",
+    "auto_confidence": "high",
+    "needs_review": false
+  },
+  {
+    "start_sec": 43.88,
+    "end_sec": 47.71,
+    "scene_name_clip": "Title",
+    "clip_confidence": 0.602,
+    "audio_scene_hint": "Dialogue",
+    "audio_top_tags": [
+      [
+        "Speech",
+        0.764
+      ],
+      [
+        "Silence",
+        0.146
+      ],
+      [
+        "Inside, small room",
+        0.113
+      ]
+    ],
+    "audio_consistent": false,
+    "scene_name_auto": "Title",
+    "auto_confidence": "medium",
+    "needs_review": true
+  },
+  {
+    "start_sec": 47.71,
+    "end_sec": 49.8,
+    "scene_name_clip": "Couple dance",
+    "clip_confidence": 0.665,
+    "audio_scene_hint": "Dialogue",
+    "audio_top_tags": [
+      [
+        "Speech",
+        0.667
+      ],
+      [
+        "Music",
+        0.235
+      ],
+      [
+        "Inside, small room",
+        0.047
+      ]
+    ],
+    "audio_consistent": false,
+    "scene_name_auto": "Couple dance",
+    "auto_confidence": "medium",
+    "needs_review": true
+  },
+  {
+    "start_sec": 49.8,
+    "end_sec": 51.8,
+    "scene_name_clip": "Title",
+    "clip_confidence": 0.894,
+    "audio_scene_hint": "Music",
+    "audio_top_tags": [
+      [
+        "Music",
+        0.835
+      ],
+      [
+        "Speech",
+        0.062
+      ],
+      [
+        "Vehicle",
+        0.043
+      ]
+    ],
+    "audio_consistent": true,
+    "scene_name_auto": "Title",
+    "auto_confidence": "high",
+    "needs_review": false
+  },
+  {
+    "start_sec": 51.8,
+    "end_sec": 54.35,
+    "scene_name_clip": "Title",
+    "clip_confidence": 0.976,
+    "audio_scene_hint": "Music",
+    "audio_top_tags": [
+      [
+        "Music",
+        0.87
+      ],
+      [
+        "Speech",
+        0.863
+      ],
+      [
+        "Female speech, woman speaking",
+        0.063
+      ]
+    ],
+    "audio_consistent": true,
+    "scene_name_auto": "Title",
+    "auto_confidence": "high",
+    "needs_review": false
+  },
+  {
+    "start_sec": 54.35,
+    "end_sec": 56.68,
+    "scene_name_clip": "Romance",
+    "clip_confidence": 0.413,
+    "audio_scene_hint": "Music",
+    "audio_top_tags": [
+      [
+        "Music",
+        0.872
+      ],
+      [
+        "Speech",
+        0.731
+      ],
+      [
+        "Vehicle",
+        0.1
+      ]
+    ],
+    "audio_consistent": true,
+    "scene_name_auto": "Romance",
+    "auto_confidence": "medium",
+    "needs_review": true
+  },
+  {
+    "start_sec": 56.68,
+    "end_sec": 58.68,
+    "scene_name_clip": "Title",
+    "clip_confidence": 0.705,
+    "audio_scene_hint": "Music",
+    "audio_top_tags": [
+      [
+        "Music",
+        0.89
+      ],
+      [
+        "Speech",
+        0.818
+      ],
+      [
+        "Musical instrument",
+        0.072
+      ]
+    ],
+    "audio_consistent": true,
+    "scene_name_auto": "Title",
+    "auto_confidence": "high",
+    "needs_review": false
+  },
+  {
+    "start_sec": 58.68,
+    "end_sec": 61.44,
+    "scene_name_clip": "Title",
+    "clip_confidence": 0.607,
+    "audio_scene_hint": "Dialogue",
+    "audio_top_tags": [
+      [
+        "Speech",
+        0.897
+      ],
+      [
+        "Music",
+        0.873
+      ],
+      [
+        "Basketball bounce",
+        0.056
+      ]
+    ],
+    "audio_consistent": false,
+    "scene_name_auto": "Title",
+    "auto_confidence": "medium",
+    "needs_review": true
+  },
+  {
+    "start_sec": 61.44,
+    "end_sec": 63.44,
+    "scene_name_clip": "Piano",
+    "clip_confidence": 0.987,
+    "audio_scene_hint": "Music",
+    "audio_top_tags": [
+      [
+        "Music",
+        0.766
+      ],
+      [
+        "Speech",
+        0.754
+      ],
+      [
+        "Vehicle",
+        0.086
+      ]
+    ],
+    "audio_consistent": true,
+    "scene_name_auto": "Piano",
+    "auto_confidence": "high",
+    "needs_review": false
+  },
+  {
+    "start_sec": 63.44,
+    "end_sec": 66.73,
+    "scene_name_clip": "Romance",
+    "clip_confidence": 0.494,
+    "audio_scene_hint": "Music",
+    "audio_top_tags": [
+      [
+        "Music",
+        0.623
+      ],
+      [
+        "Vehicle",
+        0.32
+      ],
+      [
+        "Car",
+        0.212
+      ]
+    ],
+    "audio_consistent": true,
+    "scene_name_auto": "Romance",
+    "auto_confidence": "medium",
+    "needs_review": true
+  },
+  {
+    "start_sec": 66.73,
+    "end_sec": 69.78,
+    "scene_name_clip": "Title",
+    "clip_confidence": 0.687,
+    "audio_scene_hint": "Dialogue",
+    "audio_top_tags": [
+      [
+        "Speech",
+        0.57
+      ],
+      [
+        "Wind instrument, woodwind instrument",
+        0.387
+      ],
+      [
+        "Music",
+        0.374
+      ]
+    ],
+    "audio_consistent": false,
+    "scene_name_auto": "Title",
+    "auto_confidence": "medium",
+    "needs_review": true
+  },
+  {
+    "start_sec": 69.78,
+    "end_sec": 72.91,
+    "scene_name_clip": "Couple dance",
+    "clip_confidence": 0.488,
+    "audio_scene_hint": "Music",
+    "audio_top_tags": [
+      [
+        "Music",
+        0.822
+      ],
+      [
+        "Theme music",
+        0.073
+      ],
+      [
+        "Musical instrument",
+        0.063
+      ]
+    ],
+    "audio_consistent": true,
+    "scene_name_auto": "Couple dance",
+    "auto_confidence": "medium",
+    "needs_review": true
+  },
+  {
+    "start_sec": 72.91,
+    "end_sec": 75.49,
+    "scene_name_clip": "Title",
+    "clip_confidence": 0.619,
+    "audio_scene_hint": "Music",
+    "audio_top_tags": [
+      [
+        "Music",
+        0.75
+      ],
+      [
+        "Musical instrument",
+        0.376
+      ],
+      [
+        "Violin, fiddle",
+        0.34
+      ]
+    ],
+    "audio_consistent": true,
+    "scene_name_auto": "Title",
+    "auto_confidence": "high",
+    "needs_review": false
+  },
+  {
+    "start_sec": 75.49,
+    "end_sec": 78.29,
+    "scene_name_clip": "Title",
+    "clip_confidence": 0.993,
+    "audio_scene_hint": "Music",
+    "audio_top_tags": [
+      [
+        "Music",
+        0.861
+      ],
+      [
+        "Speech",
+        0.298
+      ],
+      [
+        "Background music",
+        0.041
+      ]
+    ],
+    "audio_consistent": true,
+    "scene_name_auto": "Title",
+    "auto_confidence": "high",
+    "needs_review": false
+  },
+  {
+    "start_sec": 78.29,
+    "end_sec": 80.75,
+    "scene_name_clip": "Title",
+    "clip_confidence": 0.831,
+    "audio_scene_hint": "Dialogue",
+    "audio_top_tags": [
+      [
+        "Speech",
+        0.841
+      ],
+      [
+        "Music",
+        0.521
+      ],
+      [
+        "Male speech, man speaking",
+        0.199
+      ]
+    ],
+    "audio_consistent": false,
+    "scene_name_auto": "Title",
+    "auto_confidence": "high",
+    "needs_review": false
+  },
+  {
+    "start_sec": 80.75,
+    "end_sec": 84.79,
+    "scene_name_clip": "Jazz",
+    "clip_confidence": 0.931,
+    "audio_scene_hint": "Music",
+    "audio_top_tags": [
+      [
+        "Music",
+        0.89
+      ],
+      [
+        "Speech",
+        0.822
+      ],
+      [
+        "Musical instrument",
+        0.057
+      ]
+    ],
+    "audio_consistent": true,
+    "scene_name_auto": "Jazz",
+    "auto_confidence": "high",
+    "needs_review": false
+  },
+  {
+    "start_sec": 84.79,
+    "end_sec": 88.55,
+    "scene_name_clip": "Dance",
+    "clip_confidence": 0.94,
+    "audio_scene_hint": "Music",
+    "audio_top_tags": [
+      [
+        "Music",
+        0.852
+      ],
+      [
+        "Speech",
+        0.37
+      ],
+      [
+        "Theme music",
+        0.243
+      ]
+    ],
+    "audio_consistent": true,
+    "scene_name_auto": "Dance",
+    "auto_confidence": "high",
+    "needs_review": false
+  },
+  {
+    "start_sec": 88.55,
+    "end_sec": 91.93,
+    "scene_name_clip": "Title",
+    "clip_confidence": 0.454,
+    "audio_scene_hint": "Music",
+    "audio_top_tags": [
+      [
+        "Music",
+        0.911
+      ],
+      [
+        "Speech",
+        0.899
+      ],
+      [
+        "Female speech, woman speaking",
+        0.071
+      ]
+    ],
+    "audio_consistent": true,
+    "scene_name_auto": "Title",
+    "auto_confidence": "medium",
+    "needs_review": true
+  },
+  {
+    "start_sec": 91.93,
+    "end_sec": 94.55,
+    "scene_name_clip": "Title",
+    "clip_confidence": 0.53,
+    "audio_scene_hint": "Music",
+    "audio_top_tags": [
+      [
+        "Music",
+        0.895
+      ],
+      [
+        "Speech",
+        0.884
+      ],
+      [
+        "Male speech, man speaking",
+        0.069
+      ]
+    ],
+    "audio_consistent": true,
+    "scene_name_auto": "Title",
+    "auto_confidence": "high",
+    "needs_review": false
+  },
+  {
+    "start_sec": 94.55,
+    "end_sec": 97.89,
+    "scene_name_clip": "Highway",
+    "clip_confidence": 0.548,
+    "audio_scene_hint": "Music",
+    "audio_top_tags": [
+      [
+        "Music",
+        0.836
+      ],
+      [
+        "Speech",
+        0.718
+      ],
+      [
+        "Theme music",
+        0.176
+      ]
+    ],
+    "audio_consistent": true,
+    "scene_name_auto": "Highway",
+    "auto_confidence": "high",
+    "needs_review": false
+  },
+  {
+    "start_sec": 97.89,
+    "end_sec": 102.14,
+    "scene_name_clip": "Dance",
+    "clip_confidence": 0.81,
+    "audio_scene_hint": "Music",
+    "audio_top_tags": [
+      [
+        "Music",
+        0.826
+      ],
+      [
+        "Timpani",
+        0.167
+      ],
+      [
+        "Theme music",
+        0.11
+      ]
+    ],
+    "audio_consistent": true,
+    "scene_name_auto": "Dance",
+    "auto_confidence": "high",
+    "needs_review": false
+  },
+  {
+    "start_sec": 102.14,
+    "end_sec": 106.02,
+    "scene_name_clip": "Piano",
+    "clip_confidence": 0.757,
+    "audio_scene_hint": "Music",
+    "audio_top_tags": [
+      [
+        "Music",
+        0.83
+      ],
+      [
+        "Choir",
+        0.613
+      ],
+      [
+        "Singing",
+        0.365
+      ]
+    ],
+    "audio_consistent": true,
+    "scene_name_auto": "Piano",
+    "auto_confidence": "high",
+    "needs_review": false
+  },
+  {
+    "start_sec": 106.02,
+    "end_sec": 111.03,
+    "scene_name_clip": "Romance",
+    "clip_confidence": 0.497,
+    "audio_scene_hint": "Music",
+    "audio_top_tags": [
+      [
+        "Music",
+        0.862
+      ],
+      [
+        "Singing",
+        0.261
+      ],
+      [
+        "Choir",
+        0.162
+      ]
+    ],
+    "audio_consistent": true,
+    "scene_name_auto": "Romance",
+    "auto_confidence": "medium",
+    "needs_review": true
+  },
+  {
+    "start_sec": 111.03,
+    "end_sec": 114.82,
+    "scene_name_clip": "Dance",
+    "clip_confidence": 0.979,
+    "audio_scene_hint": "Music",
+    "audio_top_tags": [
+      [
+        "Music",
+        0.825
+      ],
+      [
+        "Singing",
+        0.173
+      ],
+      [
+        "Pop music",
+        0.078
+      ]
+    ],
+    "audio_consistent": true,
+    "scene_name_auto": "Dance",
+    "auto_confidence": "high",
+    "needs_review": false
+  },
+  {
+    "start_sec": 114.82,
+    "end_sec": 118.45,
+    "scene_name_clip": "Romance",
+    "clip_confidence": 0.333,
+    "audio_scene_hint": "Music",
+    "audio_top_tags": [
+      [
+        "Music",
+        0.827
+      ],
+      [
+        "Choir",
+        0.372
+      ],
+      [
+        "Singing",
+        0.341
+      ]
+    ],
+    "audio_consistent": true,
+    "scene_name_auto": "Romance?",
+    "auto_confidence": "low",
+    "needs_review": true
+  },
+  {
+    "start_sec": 118.45,
+    "end_sec": 126.13,
+    "scene_name_clip": "Dance",
+    "clip_confidence": 0.873,
+    "audio_scene_hint": "Music",
+    "audio_top_tags": [
+      [
+        "Music",
+        0.795
+      ],
+      [
+        "Choir",
+        0.225
+      ],
+      [
+        "Singing",
+        0.215
+      ]
+    ],
+    "audio_consistent": true,
+    "scene_name_auto": "Dance",
+    "auto_confidence": "high",
+    "needs_review": false
+  },
+  {
+    "start_sec": 126.13,
+    "end_sec": 131.17,
+    "scene_name_clip": "Title",
+    "clip_confidence": 0.999,
+    "audio_scene_hint": "Music",
+    "audio_top_tags": [
+      [
+        "Music",
+        0.833
+      ],
+      [
+        "Timpani",
+        0.119
+      ],
+      [
+        "Theme music",
+        0.1
+      ]
+    ],
+    "audio_consistent": true,
+    "scene_name_auto": "Title",
+    "auto_confidence": "high",
+    "needs_review": false
+  }
+]
