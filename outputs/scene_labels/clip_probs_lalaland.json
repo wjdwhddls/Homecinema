@@ -1,0 +1,3000 @@
+{
+  "metadata": {
+    "trailer": "lalaland",
+    "video_key": "trailer_lalaland",
+    "candidate_labels": [
+      "a photo of cars on a highway or Los Angeles street",
+      "a photo of a city skyline or urban landscape at sunset",
+      "a photo of people dancing with colorful clothes",
+      "a photo of a couple dancing together romantically",
+      "a photo of a person playing piano",
+      "a photo of a jazz musician playing a brass instrument",
+      "a photo of two people having a close intimate conversation",
+      "a photo of a man and woman looking at each other romantically",
+      "a photo of a theater stage with spotlights or performance",
+      "a photo of a text logo or movie credits on plain background"
+    ],
+    "candidate_short_names": [
+      "Highway",
+      "Cityscape",
+      "Dance",
+      "Couple dance",
+      "Piano",
+      "Jazz",
+      "Dialogue",
+      "Romance",
+      "Stage",
+      "Title"
+    ],
+    "topk": 5,
+    "total_scenes": 37,
+    "processed_scenes": 37,
+    "skipped_missing_frame": [],
+    "processing_errors": [],
+    "auto_source": "scene_labels_lalaland_auto.json",
+    "created_at": "2026-04-17T01:23:49+00:00",
+    "note": "CLIP re-run on review_frames_*/scene_NNN.jpg (q:v 3). Minor numeric drift vs scene_labeler.py original (q:v 2) possible; top-1 label is expected to match in ≥~95% of high-confidence scenes."
+  },
+  "scenes": [
+    {
+      "idx": 0,
+      "start_sec": 0.0,
+      "end_sec": 4.09,
+      "frame": "review_frames_lalaland/scene_000.jpg",
+      "top1": {
+        "label": "Title",
+        "prompt": "a photo of a text logo or movie credits on plain background",
+        "prob": 0.9963
+      },
+      "top_k": [
+        {
+          "label": "Title",
+          "prompt": "a photo of a text logo or movie credits on plain background",
+          "prob": 0.9963
+        },
+        {
+          "label": "Dialogue",
+          "prompt": "a photo of two people having a close intimate conversation",
+          "prob": 0.0018
+        },
+        {
+          "label": "Romance",
+          "prompt": "a photo of a man and woman looking at each other romantically",
+          "prob": 0.0017
+        },
+        {
+          "label": "Dance",
+          "prompt": "a photo of people dancing with colorful clothes",
+          "prob": 0.0001
+        },
+        {
+          "label": "Stage",
+          "prompt": "a photo of a theater stage with spotlights or performance",
+          "prob": 0.0001
+        }
+      ],
+      "full_probs": [
+        {
+          "label": "Highway",
+          "prob": 0.0
+        },
+        {
+          "label": "Cityscape",
+          "prob": 0.0
+        },
+        {
+          "label": "Dance",
+          "prob": 0.0001
+        },
+        {
+          "label": "Couple dance",
+          "prob": 0.0
+        },
+        {
+          "label": "Piano",
+          "prob": 0.0
+        },
+        {
+          "label": "Jazz",
+          "prob": 0.0
+        },
+        {
+          "label": "Dialogue",
+          "prob": 0.0018
+        },
+        {
+          "label": "Romance",
+          "prob": 0.0017
+        },
+        {
+          "label": "Stage",
+          "prob": 0.0001
+        },
+        {
+          "label": "Title",
+          "prob": 0.9963
+        }
+      ]
+    },
+    {
+      "idx": 1,
+      "start_sec": 4.09,
+      "end_sec": 8.34,
+      "frame": "review_frames_lalaland/scene_001.jpg",
+      "top1": {
+        "label": "Title",
+        "prompt": "a photo of a text logo or movie credits on plain background",
+        "prob": 0.9924
+      },
+      "top_k": [
+        {
+          "label": "Title",
+          "prompt": "a photo of a text logo or movie credits on plain background",
+          "prob": 0.9924
+        },
+        {
+          "label": "Dialogue",
+          "prompt": "a photo of two people having a close intimate conversation",
+          "prob": 0.004
+        },
+        {
+          "label": "Romance",
+          "prompt": "a photo of a man and woman looking at each other romantically",
+          "prob": 0.0032
+        },
+        {
+          "label": "Dance",
+          "prompt": "a photo of people dancing with colorful clothes",
+          "prob": 0.0002
+        },
+        {
+          "label": "Stage",
+          "prompt": "a photo of a theater stage with spotlights or performance",
+          "prob": 0.0001
+        }
+      ],
+      "full_probs": [
+        {
+          "label": "Highway",
+          "prob": 0.0
+        },
+        {
+          "label": "Cityscape",
+          "prob": 0.0
+        },
+        {
+          "label": "Dance",
+          "prob": 0.0002
+        },
+        {
+          "label": "Couple dance",
+          "prob": 0.0001
+        },
+        {
+          "label": "Piano",
+          "prob": 0.0001
+        },
+        {
+          "label": "Jazz",
+          "prob": 0.0
+        },
+        {
+          "label": "Dialogue",
+          "prob": 0.004
+        },
+        {
+          "label": "Romance",
+          "prob": 0.0032
+        },
+        {
+          "label": "Stage",
+          "prob": 0.0001
+        },
+        {
+          "label": "Title",
+          "prob": 0.9924
+        }
+      ]
+    },
+    {
+      "idx": 2,
+      "start_sec": 8.34,
+      "end_sec": 11.09,
+      "frame": "review_frames_lalaland/scene_002.jpg",
+      "top1": {
+        "label": "Title",
+        "prompt": "a photo of a text logo or movie credits on plain background",
+        "prob": 0.9803
+      },
+      "top_k": [
+        {
+          "label": "Title",
+          "prompt": "a photo of a text logo or movie credits on plain background",
+          "prob": 0.9803
+        },
+        {
+          "label": "Dialogue",
+          "prompt": "a photo of two people having a close intimate conversation",
+          "prob": 0.0104
+        },
+        {
+          "label": "Romance",
+          "prompt": "a photo of a man and woman looking at each other romantically",
+          "prob": 0.0065
+        },
+        {
+          "label": "Dance",
+          "prompt": "a photo of people dancing with colorful clothes",
+          "prob": 0.0022
+        },
+        {
+          "label": "Couple dance",
+          "prompt": "a photo of a couple dancing together romantically",
+          "prob": 0.0002
+        }
+      ],
+      "full_probs": [
+        {
+          "label": "Highway",
+          "prob": 0.0
+        },
+        {
+          "label": "Cityscape",
+          "prob": 0.0
+        },
+        {
+          "label": "Dance",
+          "prob": 0.0022
+        },
+        {
+          "label": "Couple dance",
+          "prob": 0.0002
+        },
+        {
+          "label": "Piano",
+          "prob": 0.0002
+        },
+        {
+          "label": "Jazz",
+          "prob": 0.0
+        },
+        {
+          "label": "Dialogue",
+          "prob": 0.0104
+        },
+        {
+          "label": "Romance",
+          "prob": 0.0065
+        },
+        {
+          "label": "Stage",
+          "prob": 0.0001
+        },
+        {
+          "label": "Title",
+          "prob": 0.9803
+        }
+      ]
+    },
+    {
+      "idx": 3,
+      "start_sec": 11.09,
+      "end_sec": 14.64,
+      "frame": "review_frames_lalaland/scene_003.jpg",
+      "top1": {
+        "label": "Title",
+        "prompt": "a photo of a text logo or movie credits on plain background",
+        "prob": 0.6548
+      },
+      "top_k": [
+        {
+          "label": "Title",
+          "prompt": "a photo of a text logo or movie credits on plain background",
+          "prob": 0.6548
+        },
+        {
+          "label": "Highway",
+          "prompt": "a photo of cars on a highway or Los Angeles street",
+          "prob": 0.3133
+        },
+        {
+          "label": "Cityscape",
+          "prompt": "a photo of a city skyline or urban landscape at sunset",
+          "prob": 0.0246
+        },
+        {
+          "label": "Stage",
+          "prompt": "a photo of a theater stage with spotlights or performance",
+          "prob": 0.0035
+        },
+        {
+          "label": "Dialogue",
+          "prompt": "a photo of two people having a close intimate conversation",
+          "prob": 0.0014
+        }
+      ],
+      "full_probs": [
+        {
+          "label": "Highway",
+          "prob": 0.3133
+        },
+        {
+          "label": "Cityscape",
+          "prob": 0.0246
+        },
+        {
+          "label": "Dance",
+          "prob": 0.0001
+        },
+        {
+          "label": "Couple dance",
+          "prob": 0.0004
+        },
+        {
+          "label": "Piano",
+          "prob": 0.0006
+        },
+        {
+          "label": "Jazz",
+          "prob": 0.0
+        },
+        {
+          "label": "Dialogue",
+          "prob": 0.0014
+        },
+        {
+          "label": "Romance",
+          "prob": 0.0013
+        },
+        {
+          "label": "Stage",
+          "prob": 0.0035
+        },
+        {
+          "label": "Title",
+          "prob": 0.6548
+        }
+      ]
+    },
+    {
+      "idx": 4,
+      "start_sec": 14.64,
+      "end_sec": 21.02,
+      "frame": "review_frames_lalaland/scene_004.jpg",
+      "top1": {
+        "label": "Romance",
+        "prompt": "a photo of a man and woman looking at each other romantically",
+        "prob": 0.5845
+      },
+      "top_k": [
+        {
+          "label": "Romance",
+          "prompt": "a photo of a man and woman looking at each other romantically",
+          "prob": 0.5845
+        },
+        {
+          "label": "Title",
+          "prompt": "a photo of a text logo or movie credits on plain background",
+          "prob": 0.1375
+        },
+        {
+          "label": "Dialogue",
+          "prompt": "a photo of two people having a close intimate conversation",
+          "prob": 0.1269
+        },
+        {
+          "label": "Dance",
+          "prompt": "a photo of people dancing with colorful clothes",
+          "prob": 0.0769
+        },
+        {
+          "label": "Stage",
+          "prompt": "a photo of a theater stage with spotlights or performance",
+          "prob": 0.043
+        }
+      ],
+      "full_probs": [
+        {
+          "label": "Highway",
+          "prob": 0.0003
+        },
+        {
+          "label": "Cityscape",
+          "prob": 0.0
+        },
+        {
+          "label": "Dance",
+          "prob": 0.0769
+        },
+        {
+          "label": "Couple dance",
+          "prob": 0.0206
+        },
+        {
+          "label": "Piano",
+          "prob": 0.0094
+        },
+        {
+          "label": "Jazz",
+          "prob": 0.001
+        },
+        {
+          "label": "Dialogue",
+          "prob": 0.1269
+        },
+        {
+          "label": "Romance",
+          "prob": 0.5845
+        },
+        {
+          "label": "Stage",
+          "prob": 0.043
+        },
+        {
+          "label": "Title",
+          "prob": 0.1375
+        }
+      ]
+    },
+    {
+      "idx": 5,
+      "start_sec": 21.02,
+      "end_sec": 24.4,
+      "frame": "review_frames_lalaland/scene_005.jpg",
+      "top1": {
+        "label": "Title",
+        "prompt": "a photo of a text logo or movie credits on plain background",
+        "prob": 0.9983
+      },
+      "top_k": [
+        {
+          "label": "Title",
+          "prompt": "a photo of a text logo or movie credits on plain background",
+          "prob": 0.9983
+        },
+        {
+          "label": "Stage",
+          "prompt": "a photo of a theater stage with spotlights or performance",
+          "prob": 0.0008
+        },
+        {
+          "label": "Romance",
+          "prompt": "a photo of a man and woman looking at each other romantically",
+          "prob": 0.0005
+        },
+        {
+          "label": "Dialogue",
+          "prompt": "a photo of two people having a close intimate conversation",
+          "prob": 0.0002
+        },
+        {
+          "label": "Couple dance",
+          "prompt": "a photo of a couple dancing together romantically",
+          "prob": 0.0001
+        }
+      ],
+      "full_probs": [
+        {
+          "label": "Highway",
+          "prob": 0.0
+        },
+        {
+          "label": "Cityscape",
+          "prob": 0.0
+        },
+        {
+          "label": "Dance",
+          "prob": 0.0
+        },
+        {
+          "label": "Couple dance",
+          "prob": 0.0001
+        },
+        {
+          "label": "Piano",
+          "prob": 0.0
+        },
+        {
+          "label": "Jazz",
+          "prob": 0.0
+        },
+        {
+          "label": "Dialogue",
+          "prob": 0.0002
+        },
+        {
+          "label": "Romance",
+          "prob": 0.0005
+        },
+        {
+          "label": "Stage",
+          "prob": 0.0008
+        },
+        {
+          "label": "Title",
+          "prob": 0.9983
+        }
+      ]
+    },
+    {
+      "idx": 6,
+      "start_sec": 24.4,
+      "end_sec": 26.78,
+      "frame": "review_frames_lalaland/scene_006.jpg",
+      "top1": {
+        "label": "Romance",
+        "prompt": "a photo of a man and woman looking at each other romantically",
+        "prob": 0.4397
+      },
+      "top_k": [
+        {
+          "label": "Romance",
+          "prompt": "a photo of a man and woman looking at each other romantically",
+          "prob": 0.4397
+        },
+        {
+          "label": "Title",
+          "prompt": "a photo of a text logo or movie credits on plain background",
+          "prob": 0.2862
+        },
+        {
+          "label": "Dialogue",
+          "prompt": "a photo of two people having a close intimate conversation",
+          "prob": 0.198
+        },
+        {
+          "label": "Couple dance",
+          "prompt": "a photo of a couple dancing together romantically",
+          "prob": 0.0412
+        },
+        {
+          "label": "Piano",
+          "prompt": "a photo of a person playing piano",
+          "prob": 0.0159
+        }
+      ],
+      "full_probs": [
+        {
+          "label": "Highway",
+          "prob": 0.0003
+        },
+        {
+          "label": "Cityscape",
+          "prob": 0.0001
+        },
+        {
+          "label": "Dance",
+          "prob": 0.0028
+        },
+        {
+          "label": "Couple dance",
+          "prob": 0.0412
+        },
+        {
+          "label": "Piano",
+          "prob": 0.0159
+        },
+        {
+          "label": "Jazz",
+          "prob": 0.0017
+        },
+        {
+          "label": "Dialogue",
+          "prob": 0.198
+        },
+        {
+          "label": "Romance",
+          "prob": 0.4397
+        },
+        {
+          "label": "Stage",
+          "prob": 0.0142
+        },
+        {
+          "label": "Title",
+          "prob": 0.2862
+        }
+      ]
+    },
+    {
+      "idx": 7,
+      "start_sec": 26.78,
+      "end_sec": 30.2,
+      "frame": "review_frames_lalaland/scene_007.jpg",
+      "top1": {
+        "label": "Title",
+        "prompt": "a photo of a text logo or movie credits on plain background",
+        "prob": 0.9138
+      },
+      "top_k": [
+        {
+          "label": "Title",
+          "prompt": "a photo of a text logo or movie credits on plain background",
+          "prob": 0.9138
+        },
+        {
+          "label": "Piano",
+          "prompt": "a photo of a person playing piano",
+          "prob": 0.0298
+        },
+        {
+          "label": "Dialogue",
+          "prompt": "a photo of two people having a close intimate conversation",
+          "prob": 0.0293
+        },
+        {
+          "label": "Romance",
+          "prompt": "a photo of a man and woman looking at each other romantically",
+          "prob": 0.0213
+        },
+        {
+          "label": "Jazz",
+          "prompt": "a photo of a jazz musician playing a brass instrument",
+          "prob": 0.0033
+        }
+      ],
+      "full_probs": [
+        {
+          "label": "Highway",
+          "prob": 0.0001
+        },
+        {
+          "label": "Cityscape",
+          "prob": 0.0
+        },
+        {
+          "label": "Dance",
+          "prob": 0.0012
+        },
+        {
+          "label": "Couple dance",
+          "prob": 0.001
+        },
+        {
+          "label": "Piano",
+          "prob": 0.0298
+        },
+        {
+          "label": "Jazz",
+          "prob": 0.0033
+        },
+        {
+          "label": "Dialogue",
+          "prob": 0.0293
+        },
+        {
+          "label": "Romance",
+          "prob": 0.0213
+        },
+        {
+          "label": "Stage",
+          "prob": 0.0003
+        },
+        {
+          "label": "Title",
+          "prob": 0.9138
+        }
+      ]
+    },
+    {
+      "idx": 8,
+      "start_sec": 30.2,
+      "end_sec": 33.74,
+      "frame": "review_frames_lalaland/scene_008.jpg",
+      "top1": {
+        "label": "Title",
+        "prompt": "a photo of a text logo or movie credits on plain background",
+        "prob": 0.8894
+      },
+      "top_k": [
+        {
+          "label": "Title",
+          "prompt": "a photo of a text logo or movie credits on plain background",
+          "prob": 0.8894
+        },
+        {
+          "label": "Dialogue",
+          "prompt": "a photo of two people having a close intimate conversation",
+          "prob": 0.0776
+        },
+        {
+          "label": "Romance",
+          "prompt": "a photo of a man and woman looking at each other romantically",
+          "prob": 0.0296
+        },
+        {
+          "label": "Couple dance",
+          "prompt": "a photo of a couple dancing together romantically",
+          "prob": 0.0023
+        },
+        {
+          "label": "Piano",
+          "prompt": "a photo of a person playing piano",
+          "prob": 0.0004
+        }
+      ],
+      "full_probs": [
+        {
+          "label": "Highway",
+          "prob": 0.0002
+        },
+        {
+          "label": "Cityscape",
+          "prob": 0.0001
+        },
+        {
+          "label": "Dance",
+          "prob": 0.0001
+        },
+        {
+          "label": "Couple dance",
+          "prob": 0.0023
+        },
+        {
+          "label": "Piano",
+          "prob": 0.0004
+        },
+        {
+          "label": "Jazz",
+          "prob": 0.0001
+        },
+        {
+          "label": "Dialogue",
+          "prob": 0.0776
+        },
+        {
+          "label": "Romance",
+          "prob": 0.0296
+        },
+        {
+          "label": "Stage",
+          "prob": 0.0002
+        },
+        {
+          "label": "Title",
+          "prob": 0.8894
+        }
+      ]
+    },
+    {
+      "idx": 9,
+      "start_sec": 33.74,
+      "end_sec": 38.04,
+      "frame": "review_frames_lalaland/scene_009.jpg",
+      "top1": {
+        "label": "Title",
+        "prompt": "a photo of a text logo or movie credits on plain background",
+        "prob": 0.5518
+      },
+      "top_k": [
+        {
+          "label": "Title",
+          "prompt": "a photo of a text logo or movie credits on plain background",
+          "prob": 0.5518
+        },
+        {
+          "label": "Dialogue",
+          "prompt": "a photo of two people having a close intimate conversation",
+          "prob": 0.3634
+        },
+        {
+          "label": "Romance",
+          "prompt": "a photo of a man and woman looking at each other romantically",
+          "prob": 0.0769
+        },
+        {
+          "label": "Couple dance",
+          "prompt": "a photo of a couple dancing together romantically",
+          "prob": 0.0061
+        },
+        {
+          "label": "Stage",
+          "prompt": "a photo of a theater stage with spotlights or performance",
+          "prob": 0.0011
+        }
+      ],
+      "full_probs": [
+        {
+          "label": "Highway",
+          "prob": 0.0001
+        },
+        {
+          "label": "Cityscape",
+          "prob": 0.0
+        },
+        {
+          "label": "Dance",
+          "prob": 0.0003
+        },
+        {
+          "label": "Couple dance",
+          "prob": 0.0061
+        },
+        {
+          "label": "Piano",
+          "prob": 0.0001
+        },
+        {
+          "label": "Jazz",
+          "prob": 0.0001
+        },
+        {
+          "label": "Dialogue",
+          "prob": 0.3634
+        },
+        {
+          "label": "Romance",
+          "prob": 0.0769
+        },
+        {
+          "label": "Stage",
+          "prob": 0.0011
+        },
+        {
+          "label": "Title",
+          "prob": 0.5518
+        }
+      ]
+    },
+    {
+      "idx": 10,
+      "start_sec": 38.04,
+      "end_sec": 43.88,
+      "frame": "review_frames_lalaland/scene_010.jpg",
+      "top1": {
+        "label": "Piano",
+        "prompt": "a photo of a person playing piano",
+        "prob": 0.9615
+      },
+      "top_k": [
+        {
+          "label": "Piano",
+          "prompt": "a photo of a person playing piano",
+          "prob": 0.9615
+        },
+        {
+          "label": "Title",
+          "prompt": "a photo of a text logo or movie credits on plain background",
+          "prob": 0.0155
+        },
+        {
+          "label": "Couple dance",
+          "prompt": "a photo of a couple dancing together romantically",
+          "prob": 0.0083
+        },
+        {
+          "label": "Jazz",
+          "prompt": "a photo of a jazz musician playing a brass instrument",
+          "prob": 0.0064
+        },
+        {
+          "label": "Stage",
+          "prompt": "a photo of a theater stage with spotlights or performance",
+          "prob": 0.005
+        }
+      ],
+      "full_probs": [
+        {
+          "label": "Highway",
+          "prob": 0.0
+        },
+        {
+          "label": "Cityscape",
+          "prob": 0.0
+        },
+        {
+          "label": "Dance",
+          "prob": 0.0005
+        },
+        {
+          "label": "Couple dance",
+          "prob": 0.0083
+        },
+        {
+          "label": "Piano",
+          "prob": 0.9615
+        },
+        {
+          "label": "Jazz",
+          "prob": 0.0064
+        },
+        {
+          "label": "Dialogue",
+          "prob": 0.0021
+        },
+        {
+          "label": "Romance",
+          "prob": 0.0006
+        },
+        {
+          "label": "Stage",
+          "prob": 0.005
+        },
+        {
+          "label": "Title",
+          "prob": 0.0155
+        }
+      ]
+    },
+    {
+      "idx": 11,
+      "start_sec": 43.88,
+      "end_sec": 47.71,
+      "frame": "review_frames_lalaland/scene_011.jpg",
+      "top1": {
+        "label": "Title",
+        "prompt": "a photo of a text logo or movie credits on plain background",
+        "prob": 0.6247
+      },
+      "top_k": [
+        {
+          "label": "Title",
+          "prompt": "a photo of a text logo or movie credits on plain background",
+          "prob": 0.6247
+        },
+        {
+          "label": "Romance",
+          "prompt": "a photo of a man and woman looking at each other romantically",
+          "prob": 0.2247
+        },
+        {
+          "label": "Dialogue",
+          "prompt": "a photo of two people having a close intimate conversation",
+          "prob": 0.1369
+        },
+        {
+          "label": "Couple dance",
+          "prompt": "a photo of a couple dancing together romantically",
+          "prob": 0.0053
+        },
+        {
+          "label": "Piano",
+          "prompt": "a photo of a person playing piano",
+          "prob": 0.0045
+        }
+      ],
+      "full_probs": [
+        {
+          "label": "Highway",
+          "prob": 0.0014
+        },
+        {
+          "label": "Cityscape",
+          "prob": 0.0001
+        },
+        {
+          "label": "Dance",
+          "prob": 0.0001
+        },
+        {
+          "label": "Couple dance",
+          "prob": 0.0053
+        },
+        {
+          "label": "Piano",
+          "prob": 0.0045
+        },
+        {
+          "label": "Jazz",
+          "prob": 0.0004
+        },
+        {
+          "label": "Dialogue",
+          "prob": 0.1369
+        },
+        {
+          "label": "Romance",
+          "prob": 0.2247
+        },
+        {
+          "label": "Stage",
+          "prob": 0.0019
+        },
+        {
+          "label": "Title",
+          "prob": 0.6247
+        }
+      ]
+    },
+    {
+      "idx": 12,
+      "start_sec": 47.71,
+      "end_sec": 49.8,
+      "frame": "review_frames_lalaland/scene_012.jpg",
+      "top1": {
+        "label": "Couple dance",
+        "prompt": "a photo of a couple dancing together romantically",
+        "prob": 0.6906
+      },
+      "top_k": [
+        {
+          "label": "Couple dance",
+          "prompt": "a photo of a couple dancing together romantically",
+          "prob": 0.6906
+        },
+        {
+          "label": "Romance",
+          "prompt": "a photo of a man and woman looking at each other romantically",
+          "prob": 0.1467
+        },
+        {
+          "label": "Dialogue",
+          "prompt": "a photo of two people having a close intimate conversation",
+          "prob": 0.1163
+        },
+        {
+          "label": "Title",
+          "prompt": "a photo of a text logo or movie credits on plain background",
+          "prob": 0.0439
+        },
+        {
+          "label": "Dance",
+          "prompt": "a photo of people dancing with colorful clothes",
+          "prob": 0.0021
+        }
+      ],
+      "full_probs": [
+        {
+          "label": "Highway",
+          "prob": 0.0
+        },
+        {
+          "label": "Cityscape",
+          "prob": 0.0
+        },
+        {
+          "label": "Dance",
+          "prob": 0.0021
+        },
+        {
+          "label": "Couple dance",
+          "prob": 0.6906
+        },
+        {
+          "label": "Piano",
+          "prob": 0.0002
+        },
+        {
+          "label": "Jazz",
+          "prob": 0.0
+        },
+        {
+          "label": "Dialogue",
+          "prob": 0.1163
+        },
+        {
+          "label": "Romance",
+          "prob": 0.1467
+        },
+        {
+          "label": "Stage",
+          "prob": 0.0001
+        },
+        {
+          "label": "Title",
+          "prob": 0.0439
+        }
+      ]
+    },
+    {
+      "idx": 13,
+      "start_sec": 49.8,
+      "end_sec": 51.8,
+      "frame": "review_frames_lalaland/scene_013.jpg",
+      "top1": {
+        "label": "Title",
+        "prompt": "a photo of a text logo or movie credits on plain background",
+        "prob": 0.9025
+      },
+      "top_k": [
+        {
+          "label": "Title",
+          "prompt": "a photo of a text logo or movie credits on plain background",
+          "prob": 0.9025
+        },
+        {
+          "label": "Romance",
+          "prompt": "a photo of a man and woman looking at each other romantically",
+          "prob": 0.0408
+        },
+        {
+          "label": "Dance",
+          "prompt": "a photo of people dancing with colorful clothes",
+          "prob": 0.0204
+        },
+        {
+          "label": "Couple dance",
+          "prompt": "a photo of a couple dancing together romantically",
+          "prob": 0.0129
+        },
+        {
+          "label": "Dialogue",
+          "prompt": "a photo of two people having a close intimate conversation",
+          "prob": 0.0129
+        }
+      ],
+      "full_probs": [
+        {
+          "label": "Highway",
+          "prob": 0.0
+        },
+        {
+          "label": "Cityscape",
+          "prob": 0.0001
+        },
+        {
+          "label": "Dance",
+          "prob": 0.0204
+        },
+        {
+          "label": "Couple dance",
+          "prob": 0.0129
+        },
+        {
+          "label": "Piano",
+          "prob": 0.0073
+        },
+        {
+          "label": "Jazz",
+          "prob": 0.0008
+        },
+        {
+          "label": "Dialogue",
+          "prob": 0.0129
+        },
+        {
+          "label": "Romance",
+          "prob": 0.0408
+        },
+        {
+          "label": "Stage",
+          "prob": 0.0023
+        },
+        {
+          "label": "Title",
+          "prob": 0.9025
+        }
+      ]
+    },
+    {
+      "idx": 14,
+      "start_sec": 51.8,
+      "end_sec": 54.35,
+      "frame": "review_frames_lalaland/scene_014.jpg",
+      "top1": {
+        "label": "Title",
+        "prompt": "a photo of a text logo or movie credits on plain background",
+        "prob": 0.9746
+      },
+      "top_k": [
+        {
+          "label": "Title",
+          "prompt": "a photo of a text logo or movie credits on plain background",
+          "prob": 0.9746
+        },
+        {
+          "label": "Stage",
+          "prompt": "a photo of a theater stage with spotlights or performance",
+          "prob": 0.0162
+        },
+        {
+          "label": "Romance",
+          "prompt": "a photo of a man and woman looking at each other romantically",
+          "prob": 0.0028
+        },
+        {
+          "label": "Dance",
+          "prompt": "a photo of people dancing with colorful clothes",
+          "prob": 0.0023
+        },
+        {
+          "label": "Dialogue",
+          "prompt": "a photo of two people having a close intimate conversation",
+          "prob": 0.0019
+        }
+      ],
+      "full_probs": [
+        {
+          "label": "Highway",
+          "prob": 0.0007
+        },
+        {
+          "label": "Cityscape",
+          "prob": 0.0001
+        },
+        {
+          "label": "Dance",
+          "prob": 0.0023
+        },
+        {
+          "label": "Couple dance",
+          "prob": 0.0013
+        },
+        {
+          "label": "Piano",
+          "prob": 0.0001
+        },
+        {
+          "label": "Jazz",
+          "prob": 0.0
+        },
+        {
+          "label": "Dialogue",
+          "prob": 0.0019
+        },
+        {
+          "label": "Romance",
+          "prob": 0.0028
+        },
+        {
+          "label": "Stage",
+          "prob": 0.0162
+        },
+        {
+          "label": "Title",
+          "prob": 0.9746
+        }
+      ]
+    },
+    {
+      "idx": 15,
+      "start_sec": 54.35,
+      "end_sec": 56.68,
+      "frame": "review_frames_lalaland/scene_015.jpg",
+      "top1": {
+        "label": "Romance",
+        "prompt": "a photo of a man and woman looking at each other romantically",
+        "prob": 0.3568
+      },
+      "top_k": [
+        {
+          "label": "Romance",
+          "prompt": "a photo of a man and woman looking at each other romantically",
+          "prob": 0.3568
+        },
+        {
+          "label": "Couple dance",
+          "prompt": "a photo of a couple dancing together romantically",
+          "prob": 0.3378
+        },
+        {
+          "label": "Dance",
+          "prompt": "a photo of people dancing with colorful clothes",
+          "prob": 0.1451
+        },
+        {
+          "label": "Title",
+          "prompt": "a photo of a text logo or movie credits on plain background",
+          "prob": 0.1095
+        },
+        {
+          "label": "Dialogue",
+          "prompt": "a photo of two people having a close intimate conversation",
+          "prob": 0.0463
+        }
+      ],
+      "full_probs": [
+        {
+          "label": "Highway",
+          "prob": 0.0001
+        },
+        {
+          "label": "Cityscape",
+          "prob": 0.0
+        },
+        {
+          "label": "Dance",
+          "prob": 0.1451
+        },
+        {
+          "label": "Couple dance",
+          "prob": 0.3378
+        },
+        {
+          "label": "Piano",
+          "prob": 0.0003
+        },
+        {
+          "label": "Jazz",
+          "prob": 0.0002
+        },
+        {
+          "label": "Dialogue",
+          "prob": 0.0463
+        },
+        {
+          "label": "Romance",
+          "prob": 0.3568
+        },
+        {
+          "label": "Stage",
+          "prob": 0.0039
+        },
+        {
+          "label": "Title",
+          "prob": 0.1095
+        }
+      ]
+    },
+    {
+      "idx": 16,
+      "start_sec": 56.68,
+      "end_sec": 58.68,
+      "frame": "review_frames_lalaland/scene_016.jpg",
+      "top1": {
+        "label": "Title",
+        "prompt": "a photo of a text logo or movie credits on plain background",
+        "prob": 0.6946
+      },
+      "top_k": [
+        {
+          "label": "Title",
+          "prompt": "a photo of a text logo or movie credits on plain background",
+          "prob": 0.6946
+        },
+        {
+          "label": "Dance",
+          "prompt": "a photo of people dancing with colorful clothes",
+          "prob": 0.265
+        },
+        {
+          "label": "Couple dance",
+          "prompt": "a photo of a couple dancing together romantically",
+          "prob": 0.0168
+        },
+        {
+          "label": "Romance",
+          "prompt": "a photo of a man and woman looking at each other romantically",
+          "prob": 0.0135
+        },
+        {
+          "label": "Stage",
+          "prompt": "a photo of a theater stage with spotlights or performance",
+          "prob": 0.0049
+        }
+      ],
+      "full_probs": [
+        {
+          "label": "Highway",
+          "prob": 0.0003
+        },
+        {
+          "label": "Cityscape",
+          "prob": 0.0005
+        },
+        {
+          "label": "Dance",
+          "prob": 0.265
+        },
+        {
+          "label": "Couple dance",
+          "prob": 0.0168
+        },
+        {
+          "label": "Piano",
+          "prob": 0.0002
+        },
+        {
+          "label": "Jazz",
+          "prob": 0.0005
+        },
+        {
+          "label": "Dialogue",
+          "prob": 0.0037
+        },
+        {
+          "label": "Romance",
+          "prob": 0.0135
+        },
+        {
+          "label": "Stage",
+          "prob": 0.0049
+        },
+        {
+          "label": "Title",
+          "prob": 0.6946
+        }
+      ]
+    },
+    {
+      "idx": 17,
+      "start_sec": 58.68,
+      "end_sec": 61.44,
+      "frame": "review_frames_lalaland/scene_017.jpg",
+      "top1": {
+        "label": "Title",
+        "prompt": "a photo of a text logo or movie credits on plain background",
+        "prob": 0.5521
+      },
+      "top_k": [
+        {
+          "label": "Title",
+          "prompt": "a photo of a text logo or movie credits on plain background",
+          "prob": 0.5521
+        },
+        {
+          "label": "Romance",
+          "prompt": "a photo of a man and woman looking at each other romantically",
+          "prob": 0.3703
+        },
+        {
+          "label": "Dialogue",
+          "prompt": "a photo of two people having a close intimate conversation",
+          "prob": 0.0542
+        },
+        {
+          "label": "Couple dance",
+          "prompt": "a photo of a couple dancing together romantically",
+          "prob": 0.0153
+        },
+        {
+          "label": "Dance",
+          "prompt": "a photo of people dancing with colorful clothes",
+          "prob": 0.0077
+        }
+      ],
+      "full_probs": [
+        {
+          "label": "Highway",
+          "prob": 0.0003
+        },
+        {
+          "label": "Cityscape",
+          "prob": 0.0
+        },
+        {
+          "label": "Dance",
+          "prob": 0.0077
+        },
+        {
+          "label": "Couple dance",
+          "prob": 0.0153
+        },
+        {
+          "label": "Piano",
+          "prob": 0.0
+        },
+        {
+          "label": "Jazz",
+          "prob": 0.0
+        },
+        {
+          "label": "Dialogue",
+          "prob": 0.0542
+        },
+        {
+          "label": "Romance",
+          "prob": 0.3703
+        },
+        {
+          "label": "Stage",
+          "prob": 0.0
+        },
+        {
+          "label": "Title",
+          "prob": 0.5521
+        }
+      ]
+    },
+    {
+      "idx": 18,
+      "start_sec": 61.44,
+      "end_sec": 63.44,
+      "frame": "review_frames_lalaland/scene_018.jpg",
+      "top1": {
+        "label": "Piano",
+        "prompt": "a photo of a person playing piano",
+        "prob": 0.9884
+      },
+      "top_k": [
+        {
+          "label": "Piano",
+          "prompt": "a photo of a person playing piano",
+          "prob": 0.9884
+        },
+        {
+          "label": "Title",
+          "prompt": "a photo of a text logo or movie credits on plain background",
+          "prob": 0.0099
+        },
+        {
+          "label": "Romance",
+          "prompt": "a photo of a man and woman looking at each other romantically",
+          "prob": 0.0007
+        },
+        {
+          "label": "Jazz",
+          "prompt": "a photo of a jazz musician playing a brass instrument",
+          "prob": 0.0005
+        },
+        {
+          "label": "Dialogue",
+          "prompt": "a photo of two people having a close intimate conversation",
+          "prob": 0.0004
+        }
+      ],
+      "full_probs": [
+        {
+          "label": "Highway",
+          "prob": 0.0
+        },
+        {
+          "label": "Cityscape",
+          "prob": 0.0
+        },
+        {
+          "label": "Dance",
+          "prob": 0.0
+        },
+        {
+          "label": "Couple dance",
+          "prob": 0.0001
+        },
+        {
+          "label": "Piano",
+          "prob": 0.9884
+        },
+        {
+          "label": "Jazz",
+          "prob": 0.0005
+        },
+        {
+          "label": "Dialogue",
+          "prob": 0.0004
+        },
+        {
+          "label": "Romance",
+          "prob": 0.0007
+        },
+        {
+          "label": "Stage",
+          "prob": 0.0
+        },
+        {
+          "label": "Title",
+          "prob": 0.0099
+        }
+      ]
+    },
+    {
+      "idx": 19,
+      "start_sec": 63.44,
+      "end_sec": 66.73,
+      "frame": "review_frames_lalaland/scene_019.jpg",
+      "top1": {
+        "label": "Romance",
+        "prompt": "a photo of a man and woman looking at each other romantically",
+        "prob": 0.3617
+      },
+      "top_k": [
+        {
+          "label": "Romance",
+          "prompt": "a photo of a man and woman looking at each other romantically",
+          "prob": 0.3617
+        },
+        {
+          "label": "Couple dance",
+          "prompt": "a photo of a couple dancing together romantically",
+          "prob": 0.2339
+        },
+        {
+          "label": "Dance",
+          "prompt": "a photo of people dancing with colorful clothes",
+          "prob": 0.1973
+        },
+        {
+          "label": "Title",
+          "prompt": "a photo of a text logo or movie credits on plain background",
+          "prob": 0.1217
+        },
+        {
+          "label": "Dialogue",
+          "prompt": "a photo of two people having a close intimate conversation",
+          "prob": 0.0663
+        }
+      ],
+      "full_probs": [
+        {
+          "label": "Highway",
+          "prob": 0.0001
+        },
+        {
+          "label": "Cityscape",
+          "prob": 0.0166
+        },
+        {
+          "label": "Dance",
+          "prob": 0.1973
+        },
+        {
+          "label": "Couple dance",
+          "prob": 0.2339
+        },
+        {
+          "label": "Piano",
+          "prob": 0.0013
+        },
+        {
+          "label": "Jazz",
+          "prob": 0.0001
+        },
+        {
+          "label": "Dialogue",
+          "prob": 0.0663
+        },
+        {
+          "label": "Romance",
+          "prob": 0.3617
+        },
+        {
+          "label": "Stage",
+          "prob": 0.0011
+        },
+        {
+          "label": "Title",
+          "prob": 0.1217
+        }
+      ]
+    },
+    {
+      "idx": 20,
+      "start_sec": 66.73,
+      "end_sec": 69.78,
+      "frame": "review_frames_lalaland/scene_020.jpg",
+      "top1": {
+        "label": "Title",
+        "prompt": "a photo of a text logo or movie credits on plain background",
+        "prob": 0.7328
+      },
+      "top_k": [
+        {
+          "label": "Title",
+          "prompt": "a photo of a text logo or movie credits on plain background",
+          "prob": 0.7328
+        },
+        {
+          "label": "Dialogue",
+          "prompt": "a photo of two people having a close intimate conversation",
+          "prob": 0.1545
+        },
+        {
+          "label": "Romance",
+          "prompt": "a photo of a man and woman looking at each other romantically",
+          "prob": 0.1094
+        },
+        {
+          "label": "Couple dance",
+          "prompt": "a photo of a couple dancing together romantically",
+          "prob": 0.0024
+        },
+        {
+          "label": "Piano",
+          "prompt": "a photo of a person playing piano",
+          "prob": 0.0006
+        }
+      ],
+      "full_probs": [
+        {
+          "label": "Highway",
+          "prob": 0.0
+        },
+        {
+          "label": "Cityscape",
+          "prob": 0.0
+        },
+        {
+          "label": "Dance",
+          "prob": 0.0001
+        },
+        {
+          "label": "Couple dance",
+          "prob": 0.0024
+        },
+        {
+          "label": "Piano",
+          "prob": 0.0006
+        },
+        {
+          "label": "Jazz",
+          "prob": 0.0
+        },
+        {
+          "label": "Dialogue",
+          "prob": 0.1545
+        },
+        {
+          "label": "Romance",
+          "prob": 0.1094
+        },
+        {
+          "label": "Stage",
+          "prob": 0.0001
+        },
+        {
+          "label": "Title",
+          "prob": 0.7328
+        }
+      ]
+    },
+    {
+      "idx": 21,
+      "start_sec": 69.78,
+      "end_sec": 72.91,
+      "frame": "review_frames_lalaland/scene_021.jpg",
+      "top1": {
+        "label": "Couple dance",
+        "prompt": "a photo of a couple dancing together romantically",
+        "prob": 0.4434
+      },
+      "top_k": [
+        {
+          "label": "Couple dance",
+          "prompt": "a photo of a couple dancing together romantically",
+          "prob": 0.4434
+        },
+        {
+          "label": "Title",
+          "prompt": "a photo of a text logo or movie credits on plain background",
+          "prob": 0.3276
+        },
+        {
+          "label": "Stage",
+          "prompt": "a photo of a theater stage with spotlights or performance",
+          "prob": 0.0865
+        },
+        {
+          "label": "Romance",
+          "prompt": "a photo of a man and woman looking at each other romantically",
+          "prob": 0.0572
+        },
+        {
+          "label": "Dialogue",
+          "prompt": "a photo of two people having a close intimate conversation",
+          "prob": 0.0349
+        }
+      ],
+      "full_probs": [
+        {
+          "label": "Highway",
+          "prob": 0.0
+        },
+        {
+          "label": "Cityscape",
+          "prob": 0.0
+        },
+        {
+          "label": "Dance",
+          "prob": 0.0237
+        },
+        {
+          "label": "Couple dance",
+          "prob": 0.4434
+        },
+        {
+          "label": "Piano",
+          "prob": 0.0077
+        },
+        {
+          "label": "Jazz",
+          "prob": 0.0191
+        },
+        {
+          "label": "Dialogue",
+          "prob": 0.0349
+        },
+        {
+          "label": "Romance",
+          "prob": 0.0572
+        },
+        {
+          "label": "Stage",
+          "prob": 0.0865
+        },
+        {
+          "label": "Title",
+          "prob": 0.3276
+        }
+      ]
+    },
+    {
+      "idx": 22,
+      "start_sec": 72.91,
+      "end_sec": 75.49,
+      "frame": "review_frames_lalaland/scene_022.jpg",
+      "top1": {
+        "label": "Title",
+        "prompt": "a photo of a text logo or movie credits on plain background",
+        "prob": 0.7589
+      },
+      "top_k": [
+        {
+          "label": "Title",
+          "prompt": "a photo of a text logo or movie credits on plain background",
+          "prob": 0.7589
+        },
+        {
+          "label": "Dialogue",
+          "prompt": "a photo of two people having a close intimate conversation",
+          "prob": 0.1115
+        },
+        {
+          "label": "Piano",
+          "prompt": "a photo of a person playing piano",
+          "prob": 0.0943
+        },
+        {
+          "label": "Romance",
+          "prompt": "a photo of a man and woman looking at each other romantically",
+          "prob": 0.0258
+        },
+        {
+          "label": "Couple dance",
+          "prompt": "a photo of a couple dancing together romantically",
+          "prob": 0.008
+        }
+      ],
+      "full_probs": [
+        {
+          "label": "Highway",
+          "prob": 0.0002
+        },
+        {
+          "label": "Cityscape",
+          "prob": 0.0
+        },
+        {
+          "label": "Dance",
+          "prob": 0.0004
+        },
+        {
+          "label": "Couple dance",
+          "prob": 0.008
+        },
+        {
+          "label": "Piano",
+          "prob": 0.0943
+        },
+        {
+          "label": "Jazz",
+          "prob": 0.0006
+        },
+        {
+          "label": "Dialogue",
+          "prob": 0.1115
+        },
+        {
+          "label": "Romance",
+          "prob": 0.0258
+        },
+        {
+          "label": "Stage",
+          "prob": 0.0004
+        },
+        {
+          "label": "Title",
+          "prob": 0.7589
+        }
+      ]
+    },
+    {
+      "idx": 23,
+      "start_sec": 75.49,
+      "end_sec": 78.29,
+      "frame": "review_frames_lalaland/scene_023.jpg",
+      "top1": {
+        "label": "Title",
+        "prompt": "a photo of a text logo or movie credits on plain background",
+        "prob": 0.9944
+      },
+      "top_k": [
+        {
+          "label": "Title",
+          "prompt": "a photo of a text logo or movie credits on plain background",
+          "prob": 0.9944
+        },
+        {
+          "label": "Dance",
+          "prompt": "a photo of people dancing with colorful clothes",
+          "prob": 0.0017
+        },
+        {
+          "label": "Piano",
+          "prompt": "a photo of a person playing piano",
+          "prob": 0.0011
+        },
+        {
+          "label": "Romance",
+          "prompt": "a photo of a man and woman looking at each other romantically",
+          "prob": 0.0011
+        },
+        {
+          "label": "Dialogue",
+          "prompt": "a photo of two people having a close intimate conversation",
+          "prob": 0.0009
+        }
+      ],
+      "full_probs": [
+        {
+          "label": "Highway",
+          "prob": 0.0
+        },
+        {
+          "label": "Cityscape",
+          "prob": 0.0
+        },
+        {
+          "label": "Dance",
+          "prob": 0.0017
+        },
+        {
+          "label": "Couple dance",
+          "prob": 0.0006
+        },
+        {
+          "label": "Piano",
+          "prob": 0.0011
+        },
+        {
+          "label": "Jazz",
+          "prob": 0.0
+        },
+        {
+          "label": "Dialogue",
+          "prob": 0.0009
+        },
+        {
+          "label": "Romance",
+          "prob": 0.0011
+        },
+        {
+          "label": "Stage",
+          "prob": 0.0002
+        },
+        {
+          "label": "Title",
+          "prob": 0.9944
+        }
+      ]
+    },
+    {
+      "idx": 24,
+      "start_sec": 78.29,
+      "end_sec": 80.75,
+      "frame": "review_frames_lalaland/scene_024.jpg",
+      "top1": {
+        "label": "Title",
+        "prompt": "a photo of a text logo or movie credits on plain background",
+        "prob": 0.8538
+      },
+      "top_k": [
+        {
+          "label": "Title",
+          "prompt": "a photo of a text logo or movie credits on plain background",
+          "prob": 0.8538
+        },
+        {
+          "label": "Dialogue",
+          "prompt": "a photo of two people having a close intimate conversation",
+          "prob": 0.0811
+        },
+        {
+          "label": "Romance",
+          "prompt": "a photo of a man and woman looking at each other romantically",
+          "prob": 0.0576
+        },
+        {
+          "label": "Piano",
+          "prompt": "a photo of a person playing piano",
+          "prob": 0.0039
+        },
+        {
+          "label": "Couple dance",
+          "prompt": "a photo of a couple dancing together romantically",
+          "prob": 0.0023
+        }
+      ],
+      "full_probs": [
+        {
+          "label": "Highway",
+          "prob": 0.0002
+        },
+        {
+          "label": "Cityscape",
+          "prob": 0.0
+        },
+        {
+          "label": "Dance",
+          "prob": 0.0001
+        },
+        {
+          "label": "Couple dance",
+          "prob": 0.0023
+        },
+        {
+          "label": "Piano",
+          "prob": 0.0039
+        },
+        {
+          "label": "Jazz",
+          "prob": 0.0007
+        },
+        {
+          "label": "Dialogue",
+          "prob": 0.0811
+        },
+        {
+          "label": "Romance",
+          "prob": 0.0576
+        },
+        {
+          "label": "Stage",
+          "prob": 0.0004
+        },
+        {
+          "label": "Title",
+          "prob": 0.8538
+        }
+      ]
+    },
+    {
+      "idx": 25,
+      "start_sec": 80.75,
+      "end_sec": 84.79,
+      "frame": "review_frames_lalaland/scene_025.jpg",
+      "top1": {
+        "label": "Jazz",
+        "prompt": "a photo of a jazz musician playing a brass instrument",
+        "prob": 0.8999
+      },
+      "top_k": [
+        {
+          "label": "Jazz",
+          "prompt": "a photo of a jazz musician playing a brass instrument",
+          "prob": 0.8999
+        },
+        {
+          "label": "Title",
+          "prompt": "a photo of a text logo or movie credits on plain background",
+          "prob": 0.0563
+        },
+        {
+          "label": "Couple dance",
+          "prompt": "a photo of a couple dancing together romantically",
+          "prob": 0.0337
+        },
+        {
+          "label": "Piano",
+          "prompt": "a photo of a person playing piano",
+          "prob": 0.0031
+        },
+        {
+          "label": "Dialogue",
+          "prompt": "a photo of two people having a close intimate conversation",
+          "prob": 0.0027
+        }
+      ],
+      "full_probs": [
+        {
+          "label": "Highway",
+          "prob": 0.0
+        },
+        {
+          "label": "Cityscape",
+          "prob": 0.0
+        },
+        {
+          "label": "Dance",
+          "prob": 0.0009
+        },
+        {
+          "label": "Couple dance",
+          "prob": 0.0337
+        },
+        {
+          "label": "Piano",
+          "prob": 0.0031
+        },
+        {
+          "label": "Jazz",
+          "prob": 0.8999
+        },
+        {
+          "label": "Dialogue",
+          "prob": 0.0027
+        },
+        {
+          "label": "Romance",
+          "prob": 0.0019
+        },
+        {
+          "label": "Stage",
+          "prob": 0.0016
+        },
+        {
+          "label": "Title",
+          "prob": 0.0563
+        }
+      ]
+    },
+    {
+      "idx": 26,
+      "start_sec": 84.79,
+      "end_sec": 88.55,
+      "frame": "review_frames_lalaland/scene_026.jpg",
+      "top1": {
+        "label": "Dance",
+        "prompt": "a photo of people dancing with colorful clothes",
+        "prob": 0.9303
+      },
+      "top_k": [
+        {
+          "label": "Dance",
+          "prompt": "a photo of people dancing with colorful clothes",
+          "prob": 0.9303
+        },
+        {
+          "label": "Couple dance",
+          "prompt": "a photo of a couple dancing together romantically",
+          "prob": 0.0388
+        },
+        {
+          "label": "Title",
+          "prompt": "a photo of a text logo or movie credits on plain background",
+          "prob": 0.0172
+        },
+        {
+          "label": "Romance",
+          "prompt": "a photo of a man and woman looking at each other romantically",
+          "prob": 0.0112
+        },
+        {
+          "label": "Stage",
+          "prompt": "a photo of a theater stage with spotlights or performance",
+          "prob": 0.0014
+        }
+      ],
+      "full_probs": [
+        {
+          "label": "Highway",
+          "prob": 0.0
+        },
+        {
+          "label": "Cityscape",
+          "prob": 0.0
+        },
+        {
+          "label": "Dance",
+          "prob": 0.9303
+        },
+        {
+          "label": "Couple dance",
+          "prob": 0.0388
+        },
+        {
+          "label": "Piano",
+          "prob": 0.0001
+        },
+        {
+          "label": "Jazz",
+          "prob": 0.0
+        },
+        {
+          "label": "Dialogue",
+          "prob": 0.0009
+        },
+        {
+          "label": "Romance",
+          "prob": 0.0112
+        },
+        {
+          "label": "Stage",
+          "prob": 0.0014
+        },
+        {
+          "label": "Title",
+          "prob": 0.0172
+        }
+      ]
+    },
+    {
+      "idx": 27,
+      "start_sec": 88.55,
+      "end_sec": 91.93,
+      "frame": "review_frames_lalaland/scene_027.jpg",
+      "top1": {
+        "label": "Title",
+        "prompt": "a photo of a text logo or movie credits on plain background",
+        "prob": 0.4853
+      },
+      "top_k": [
+        {
+          "label": "Title",
+          "prompt": "a photo of a text logo or movie credits on plain background",
+          "prob": 0.4853
+        },
+        {
+          "label": "Dance",
+          "prompt": "a photo of people dancing with colorful clothes",
+          "prob": 0.1994
+        },
+        {
+          "label": "Dialogue",
+          "prompt": "a photo of two people having a close intimate conversation",
+          "prob": 0.157
+        },
+        {
+          "label": "Romance",
+          "prompt": "a photo of a man and woman looking at each other romantically",
+          "prob": 0.0889
+        },
+        {
+          "label": "Piano",
+          "prompt": "a photo of a person playing piano",
+          "prob": 0.0375
+        }
+      ],
+      "full_probs": [
+        {
+          "label": "Highway",
+          "prob": 0.0002
+        },
+        {
+          "label": "Cityscape",
+          "prob": 0.0
+        },
+        {
+          "label": "Dance",
+          "prob": 0.1994
+        },
+        {
+          "label": "Couple dance",
+          "prob": 0.0282
+        },
+        {
+          "label": "Piano",
+          "prob": 0.0375
+        },
+        {
+          "label": "Jazz",
+          "prob": 0.0005
+        },
+        {
+          "label": "Dialogue",
+          "prob": 0.157
+        },
+        {
+          "label": "Romance",
+          "prob": 0.0889
+        },
+        {
+          "label": "Stage",
+          "prob": 0.0028
+        },
+        {
+          "label": "Title",
+          "prob": 0.4853
+        }
+      ]
+    },
+    {
+      "idx": 28,
+      "start_sec": 91.93,
+      "end_sec": 94.55,
+      "frame": "review_frames_lalaland/scene_028.jpg",
+      "top1": {
+        "label": "Title",
+        "prompt": "a photo of a text logo or movie credits on plain background",
+        "prob": 0.552
+      },
+      "top_k": [
+        {
+          "label": "Title",
+          "prompt": "a photo of a text logo or movie credits on plain background",
+          "prob": 0.552
+        },
+        {
+          "label": "Romance",
+          "prompt": "a photo of a man and woman looking at each other romantically",
+          "prob": 0.1804
+        },
+        {
+          "label": "Dance",
+          "prompt": "a photo of people dancing with colorful clothes",
+          "prob": 0.1145
+        },
+        {
+          "label": "Dialogue",
+          "prompt": "a photo of two people having a close intimate conversation",
+          "prob": 0.113
+        },
+        {
+          "label": "Couple dance",
+          "prompt": "a photo of a couple dancing together romantically",
+          "prob": 0.032
+        }
+      ],
+      "full_probs": [
+        {
+          "label": "Highway",
+          "prob": 0.0
+        },
+        {
+          "label": "Cityscape",
+          "prob": 0.0
+        },
+        {
+          "label": "Dance",
+          "prob": 0.1145
+        },
+        {
+          "label": "Couple dance",
+          "prob": 0.032
+        },
+        {
+          "label": "Piano",
+          "prob": 0.0061
+        },
+        {
+          "label": "Jazz",
+          "prob": 0.0001
+        },
+        {
+          "label": "Dialogue",
+          "prob": 0.113
+        },
+        {
+          "label": "Romance",
+          "prob": 0.1804
+        },
+        {
+          "label": "Stage",
+          "prob": 0.0019
+        },
+        {
+          "label": "Title",
+          "prob": 0.552
+        }
+      ]
+    },
+    {
+      "idx": 29,
+      "start_sec": 94.55,
+      "end_sec": 97.89,
+      "frame": "review_frames_lalaland/scene_029.jpg",
+      "top1": {
+        "label": "Highway",
+        "prompt": "a photo of cars on a highway or Los Angeles street",
+        "prob": 0.5005
+      },
+      "top_k": [
+        {
+          "label": "Highway",
+          "prompt": "a photo of cars on a highway or Los Angeles street",
+          "prob": 0.5005
+        },
+        {
+          "label": "Title",
+          "prompt": "a photo of a text logo or movie credits on plain background",
+          "prob": 0.4803
+        },
+        {
+          "label": "Romance",
+          "prompt": "a photo of a man and woman looking at each other romantically",
+          "prob": 0.0066
+        },
+        {
+          "label": "Piano",
+          "prompt": "a photo of a person playing piano",
+          "prob": 0.0064
+        },
+        {
+          "label": "Dialogue",
+          "prompt": "a photo of two people having a close intimate conversation",
+          "prob": 0.0037
+        }
+      ],
+      "full_probs": [
+        {
+          "label": "Highway",
+          "prob": 0.5005
+        },
+        {
+          "label": "Cityscape",
+          "prob": 0.0009
+        },
+        {
+          "label": "Dance",
+          "prob": 0.0002
+        },
+        {
+          "label": "Couple dance",
+          "prob": 0.0007
+        },
+        {
+          "label": "Piano",
+          "prob": 0.0064
+        },
+        {
+          "label": "Jazz",
+          "prob": 0.0005
+        },
+        {
+          "label": "Dialogue",
+          "prob": 0.0037
+        },
+        {
+          "label": "Romance",
+          "prob": 0.0066
+        },
+        {
+          "label": "Stage",
+          "prob": 0.0002
+        },
+        {
+          "label": "Title",
+          "prob": 0.4803
+        }
+      ]
+    },
+    {
+      "idx": 30,
+      "start_sec": 97.89,
+      "end_sec": 102.14,
+      "frame": "review_frames_lalaland/scene_030.jpg",
+      "top1": {
+        "label": "Dance",
+        "prompt": "a photo of people dancing with colorful clothes",
+        "prob": 0.8189
+      },
+      "top_k": [
+        {
+          "label": "Dance",
+          "prompt": "a photo of people dancing with colorful clothes",
+          "prob": 0.8189
+        },
+        {
+          "label": "Highway",
+          "prompt": "a photo of cars on a highway or Los Angeles street",
+          "prob": 0.1085
+        },
+        {
+          "label": "Title",
+          "prompt": "a photo of a text logo or movie credits on plain background",
+          "prob": 0.0689
+        },
+        {
+          "label": "Couple dance",
+          "prompt": "a photo of a couple dancing together romantically",
+          "prob": 0.0029
+        },
+        {
+          "label": "Romance",
+          "prompt": "a photo of a man and woman looking at each other romantically",
+          "prob": 0.0005
+        }
+      ],
+      "full_probs": [
+        {
+          "label": "Highway",
+          "prob": 0.1085
+        },
+        {
+          "label": "Cityscape",
+          "prob": 0.0002
+        },
+        {
+          "label": "Dance",
+          "prob": 0.8189
+        },
+        {
+          "label": "Couple dance",
+          "prob": 0.0029
+        },
+        {
+          "label": "Piano",
+          "prob": 0.0001
+        },
+        {
+          "label": "Jazz",
+          "prob": 0.0
+        },
+        {
+          "label": "Dialogue",
+          "prob": 0.0
+        },
+        {
+          "label": "Romance",
+          "prob": 0.0005
+        },
+        {
+          "label": "Stage",
+          "prob": 0.0
+        },
+        {
+          "label": "Title",
+          "prob": 0.0689
+        }
+      ]
+    },
+    {
+      "idx": 31,
+      "start_sec": 102.14,
+      "end_sec": 106.02,
+      "frame": "review_frames_lalaland/scene_031.jpg",
+      "top1": {
+        "label": "Piano",
+        "prompt": "a photo of a person playing piano",
+        "prob": 0.8044
+      },
+      "top_k": [
+        {
+          "label": "Piano",
+          "prompt": "a photo of a person playing piano",
+          "prob": 0.8044
+        },
+        {
+          "label": "Title",
+          "prompt": "a photo of a text logo or movie credits on plain background",
+          "prob": 0.1691
+        },
+        {
+          "label": "Jazz",
+          "prompt": "a photo of a jazz musician playing a brass instrument",
+          "prob": 0.0106
+        },
+        {
+          "label": "Romance",
+          "prompt": "a photo of a man and woman looking at each other romantically",
+          "prob": 0.0047
+        },
+        {
+          "label": "Dialogue",
+          "prompt": "a photo of two people having a close intimate conversation",
+          "prob": 0.0046
+        }
+      ],
+      "full_probs": [
+        {
+          "label": "Highway",
+          "prob": 0.0013
+        },
+        {
+          "label": "Cityscape",
+          "prob": 0.0
+        },
+        {
+          "label": "Dance",
+          "prob": 0.0006
+        },
+        {
+          "label": "Couple dance",
+          "prob": 0.0034
+        },
+        {
+          "label": "Piano",
+          "prob": 0.8044
+        },
+        {
+          "label": "Jazz",
+          "prob": 0.0106
+        },
+        {
+          "label": "Dialogue",
+          "prob": 0.0046
+        },
+        {
+          "label": "Romance",
+          "prob": 0.0047
+        },
+        {
+          "label": "Stage",
+          "prob": 0.0013
+        },
+        {
+          "label": "Title",
+          "prob": 0.1691
+        }
+      ]
+    },
+    {
+      "idx": 32,
+      "start_sec": 106.02,
+      "end_sec": 111.03,
+      "frame": "review_frames_lalaland/scene_032.jpg",
+      "top1": {
+        "label": "Romance",
+        "prompt": "a photo of a man and woman looking at each other romantically",
+        "prob": 0.4236
+      },
+      "top_k": [
+        {
+          "label": "Romance",
+          "prompt": "a photo of a man and woman looking at each other romantically",
+          "prob": 0.4236
+        },
+        {
+          "label": "Couple dance",
+          "prompt": "a photo of a couple dancing together romantically",
+          "prob": 0.2392
+        },
+        {
+          "label": "Dialogue",
+          "prompt": "a photo of two people having a close intimate conversation",
+          "prob": 0.2319
+        },
+        {
+          "label": "Title",
+          "prompt": "a photo of a text logo or movie credits on plain background",
+          "prob": 0.072
+        },
+        {
+          "label": "Dance",
+          "prompt": "a photo of people dancing with colorful clothes",
+          "prob": 0.0317
+        }
+      ],
+      "full_probs": [
+        {
+          "label": "Highway",
+          "prob": 0.0
+        },
+        {
+          "label": "Cityscape",
+          "prob": 0.0001
+        },
+        {
+          "label": "Dance",
+          "prob": 0.0317
+        },
+        {
+          "label": "Couple dance",
+          "prob": 0.2392
+        },
+        {
+          "label": "Piano",
+          "prob": 0.0011
+        },
+        {
+          "label": "Jazz",
+          "prob": 0.0001
+        },
+        {
+          "label": "Dialogue",
+          "prob": 0.2319
+        },
+        {
+          "label": "Romance",
+          "prob": 0.4236
+        },
+        {
+          "label": "Stage",
+          "prob": 0.0005
+        },
+        {
+          "label": "Title",
+          "prob": 0.072
+        }
+      ]
+    },
+    {
+      "idx": 33,
+      "start_sec": 111.03,
+      "end_sec": 114.82,
+      "frame": "review_frames_lalaland/scene_033.jpg",
+      "top1": {
+        "label": "Dance",
+        "prompt": "a photo of people dancing with colorful clothes",
+        "prob": 0.9782
+      },
+      "top_k": [
+        {
+          "label": "Dance",
+          "prompt": "a photo of people dancing with colorful clothes",
+          "prob": 0.9782
+        },
+        {
+          "label": "Title",
+          "prompt": "a photo of a text logo or movie credits on plain background",
+          "prob": 0.0193
+        },
+        {
+          "label": "Couple dance",
+          "prompt": "a photo of a couple dancing together romantically",
+          "prob": 0.0017
+        },
+        {
+          "label": "Romance",
+          "prompt": "a photo of a man and woman looking at each other romantically",
+          "prob": 0.0004
+        },
+        {
+          "label": "Dialogue",
+          "prompt": "a photo of two people having a close intimate conversation",
+          "prob": 0.0004
+        }
+      ],
+      "full_probs": [
+        {
+          "label": "Highway",
+          "prob": 0.0
+        },
+        {
+          "label": "Cityscape",
+          "prob": 0.0
+        },
+        {
+          "label": "Dance",
+          "prob": 0.9782
+        },
+        {
+          "label": "Couple dance",
+          "prob": 0.0017
+        },
+        {
+          "label": "Piano",
+          "prob": 0.0
+        },
+        {
+          "label": "Jazz",
+          "prob": 0.0
+        },
+        {
+          "label": "Dialogue",
+          "prob": 0.0004
+        },
+        {
+          "label": "Romance",
+          "prob": 0.0004
+        },
+        {
+          "label": "Stage",
+          "prob": 0.0001
+        },
+        {
+          "label": "Title",
+          "prob": 0.0193
+        }
+      ]
+    },
+    {
+      "idx": 34,
+      "start_sec": 114.82,
+      "end_sec": 118.45,
+      "frame": "review_frames_lalaland/scene_034.jpg",
+      "top1": {
+        "label": "Romance",
+        "prompt": "a photo of a man and woman looking at each other romantically",
+        "prob": 0.383
+      },
+      "top_k": [
+        {
+          "label": "Romance",
+          "prompt": "a photo of a man and woman looking at each other romantically",
+          "prob": 0.383
+        },
+        {
+          "label": "Stage",
+          "prompt": "a photo of a theater stage with spotlights or performance",
+          "prob": 0.2378
+        },
+        {
+          "label": "Couple dance",
+          "prompt": "a photo of a couple dancing together romantically",
+          "prob": 0.1918
+        },
+        {
+          "label": "Title",
+          "prompt": "a photo of a text logo or movie credits on plain background",
+          "prob": 0.089
+        },
+        {
+          "label": "Dialogue",
+          "prompt": "a photo of two people having a close intimate conversation",
+          "prob": 0.0511
+        }
+      ],
+      "full_probs": [
+        {
+          "label": "Highway",
+          "prob": 0.0001
+        },
+        {
+          "label": "Cityscape",
+          "prob": 0.0003
+        },
+        {
+          "label": "Dance",
+          "prob": 0.0314
+        },
+        {
+          "label": "Couple dance",
+          "prob": 0.1918
+        },
+        {
+          "label": "Piano",
+          "prob": 0.0149
+        },
+        {
+          "label": "Jazz",
+          "prob": 0.0007
+        },
+        {
+          "label": "Dialogue",
+          "prob": 0.0511
+        },
+        {
+          "label": "Romance",
+          "prob": 0.383
+        },
+        {
+          "label": "Stage",
+          "prob": 0.2378
+        },
+        {
+          "label": "Title",
+          "prob": 0.089
+        }
+      ]
+    },
+    {
+      "idx": 35,
+      "start_sec": 118.45,
+      "end_sec": 126.13,
+      "frame": "review_frames_lalaland/scene_035.jpg",
+      "top1": {
+        "label": "Dance",
+        "prompt": "a photo of people dancing with colorful clothes",
+        "prob": 0.9127
+      },
+      "top_k": [
+        {
+          "label": "Dance",
+          "prompt": "a photo of people dancing with colorful clothes",
+          "prob": 0.9127
+        },
+        {
+          "label": "Couple dance",
+          "prompt": "a photo of a couple dancing together romantically",
+          "prob": 0.0539
+        },
+        {
+          "label": "Title",
+          "prompt": "a photo of a text logo or movie credits on plain background",
+          "prob": 0.0304
+        },
+        {
+          "label": "Stage",
+          "prompt": "a photo of a theater stage with spotlights or performance",
+          "prob": 0.0011
+        },
+        {
+          "label": "Romance",
+          "prompt": "a photo of a man and woman looking at each other romantically",
+          "prob": 0.0009
+        }
+      ],
+      "full_probs": [
+        {
+          "label": "Highway",
+          "prob": 0.0
+        },
+        {
+          "label": "Cityscape",
+          "prob": 0.0
+        },
+        {
+          "label": "Dance",
+          "prob": 0.9127
+        },
+        {
+          "label": "Couple dance",
+          "prob": 0.0539
+        },
+        {
+          "label": "Piano",
+          "prob": 0.0001
+        },
+        {
+          "label": "Jazz",
+          "prob": 0.0
+        },
+        {
+          "label": "Dialogue",
+          "prob": 0.0008
+        },
+        {
+          "label": "Romance",
+          "prob": 0.0009
+        },
+        {
+          "label": "Stage",
+          "prob": 0.0011
+        },
+        {
+          "label": "Title",
+          "prob": 0.0304
+        }
+      ]
+    },
+    {
+      "idx": 36,
+      "start_sec": 126.13,
+      "end_sec": 131.17,
+      "frame": "review_frames_lalaland/scene_036.jpg",
+      "top1": {
+        "label": "Title",
+        "prompt": "a photo of a text logo or movie credits on plain background",
+        "prob": 0.9992
+      },
+      "top_k": [
+        {
+          "label": "Title",
+          "prompt": "a photo of a text logo or movie credits on plain background",
+          "prob": 0.9992
+        },
+        {
+          "label": "Stage",
+          "prompt": "a photo of a theater stage with spotlights or performance",
+          "prob": 0.0003
+        },
+        {
+          "label": "Romance",
+          "prompt": "a photo of a man and woman looking at each other romantically",
+          "prob": 0.0003
+        },
+        {
+          "label": "Dance",
+          "prompt": "a photo of people dancing with colorful clothes",
+          "prob": 0.0001
+        },
+        {
+          "label": "Piano",
+          "prompt": "a photo of a person playing piano",
+          "prob": 0.0001
+        }
+      ],
+      "full_probs": [
+        {
+          "label": "Highway",
+          "prob": 0.0
+        },
+        {
+          "label": "Cityscape",
+          "prob": 0.0
+        },
+        {
+          "label": "Dance",
+          "prob": 0.0001
+        },
+        {
+          "label": "Couple dance",
+          "prob": 0.0
+        },
+        {
+          "label": "Piano",
+          "prob": 0.0001
+        },
+        {
+          "label": "Jazz",
+          "prob": 0.0
+        },
+        {
+          "label": "Dialogue",
+          "prob": 0.0001
+        },
+        {
+          "label": "Romance",
+          "prob": 0.0003
+        },
+        {
+          "label": "Stage",
+          "prob": 0.0003
+        },
+        {
+          "label": "Title",
+          "prob": 0.9992
+        }
+      ]
+    }
+  ]
+}

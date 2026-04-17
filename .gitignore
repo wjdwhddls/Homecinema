@@ -5,7 +5,12 @@ __pycache__/
 .pytest_cache/
 
 # 워커 산출물 (자동 생성, 재현 가능)
-outputs/
+outputs/*
+# 예외: 씬 라벨 자동 산출물은 baseline 비교용으로 보관 (각 ~20~80KB)
+!outputs/scene_labels/
+outputs/scene_labels/*
+!outputs/scene_labels/scene_labels_*_auto.json
+!outputs/scene_labels/clip_probs_*.json
 
 # 입력 데이터 (용량 큼, yt-dlp로 재다운 가능)
 data/trailers/*.mp4
