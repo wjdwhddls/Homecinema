@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>Mood-EQ 청취 평가 (Plan B)</title>
+<title>Mood-EQ 청취 평가 (Plan B v2)</title>
 <style>
   * { box-sizing: border-box; }
   body {
@@ -32,10 +32,25 @@
     font-size: 16px;
     border-bottom: 2px solid transparent;
     margin-bottom: -2px;
+    position: relative;
   }
   .tab.active {
     color: #fff;
     border-bottom-color: #4a90e2;
+  }
+  .tab .progress-badge {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 2px 7px;
+    background: #383838;
+    color: #aaa;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 500;
+  }
+  .tab .progress-badge.complete {
+    background: #2d5a2d;
+    color: #8fd48f;
   }
   
   .controls {
@@ -46,6 +61,7 @@
     padding: 12px;
     background: #252525;
     border-radius: 6px;
+    flex-wrap: wrap;
   }
   .toggle-blind {
     display: flex;
@@ -66,6 +82,9 @@
     border: 1px solid #383838;
     border-radius: 8px;
     padding: 16px;
+  }
+  .clip.scored {
+    border-color: #4a90e2;
   }
   .clip-label {
     font-weight: 600;
@@ -106,6 +125,15 @@
     flex: 1;
     accent-color: #4a90e2;
   }
+  .score-status {
+    font-size: 11px;
+    color: #666;
+    margin-top: 6px;
+    text-align: right;
+  }
+  .score-status.set {
+    color: #8fd48f;
+  }
   
   .notes-section {
     margin-top: 24px;
@@ -136,6 +164,7 @@
     display: flex;
     gap: 12px;
     justify-content: flex-end;
+    flex-wrap: wrap;
   }
   button.primary {
     padding: 10px 20px;
@@ -158,6 +187,16 @@
     font-size: 14px;
   }
   button.secondary:hover { background: #444; }
+  button.danger {
+    padding: 10px 20px;
+    background: #5a2d2d;
+    color: #f0a8a8;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  button.danger:hover { background: #703838; }
   
   .anchor-note {
     margin-top: 16px;
@@ -177,6 +216,27 @@
     color: #666;
     text-align: center;
   }
+  
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    padding: 12px 20px;
+    background: #2d5a2d;
+    color: #d4f0d4;
+    border-radius: 6px;
+    font-size: 14px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.3s, transform 0.3s;
+    pointer-events: none;
+    z-index: 1000;
+  }
+  .toast.show {
+    opacity: 1;
+    transform: translateY(0);
+  }
 </style>
 </head>
 <body>
@@ -187,17 +247,14 @@
   점수: 0(매우 다름) ~ 100(원본과 동일)
 </div>
 
-<div class="tabs">
-  <button class="tab active" data-tab="topgun">탑건 (Top Gun)</button>
-  <button class="tab" data-tab="lalaland">라라랜드 (La La Land)</button>
-</div>
+<div class="tabs" id="tabBar"></div>
 
 <div class="controls">
   <div class="toggle-blind">
     <input type="checkbox" id="blindMode" checked>
     <label for="blindMode">🔒 Blind 모드 (레이블 무작위 표시)</label>
   </div>
-  <button class="secondary" onclick="reshuffleBlind()">🔀 다시 섞기</button>
+  <button class="secondary" onclick="reshuffleBlind()">🔀 다시 섞기 (현재 영상 점수 리셋)</button>
 </div>
 
 <div id="clipContainer"></div>
@@ -213,13 +270,15 @@
 </div>
 
 <div class="actions">
-  <button class="secondary" onclick="resetScores()">점수 리셋</button>
+  <button class="danger" onclick="resetScores()">전체 점수 리셋</button>
   <button class="primary" onclick="downloadResults()">💾 결과 다운로드 (JSON)</button>
 </div>
 
 <div class="footer-info">
-  Mood-EQ Plan B Player · webMUSHRA 12s 제한 우회용 비공식 데모
+  Mood-EQ Plan B Player v2 · webMUSHRA 12s 제한 우회용 비공식 데모
 </div>
+
+<div id="toast" class="toast"></div>
 
 <script>
 // ============================================================
@@ -250,8 +309,13 @@ const CONDITIONS = [
 // ============================================================
 let currentTab = 'topgun';
 let blindMode = true;
-let blindMaps = {}; // { topgun: ['B', 'A', 'D', 'C'], lalaland: [...] }
-const scores = {}; // { 'topgun_original': 75, ... }
+
+// blindMaps[videoKey] = { 'original': 'B', 'v3_1': 'D', ... }
+let blindMaps = {};
+
+// scores[videoKey][conditionKey] = { score: 75, blindLabel: 'C' }
+// 점수가 매겨졌을 때만 entry 존재. undefined = 미평가
+const scores = {};
 
 // ============================================================
 // Blind 무작위화
@@ -265,26 +329,75 @@ function shuffleArray(arr) {
   return a;
 }
 
-function reshuffleBlind() {
+function generateBlindMapForVideo(videoKey) {
+  const labels = ['A', 'B', 'C', 'D'];
+  const shuffled = shuffleArray(labels);
+  blindMaps[videoKey] = {};
+  CONDITIONS.forEach((cond, i) => {
+    blindMaps[videoKey][cond.key] = shuffled[i];
+  });
+}
+
+function generateAllBlindMaps() {
   for (const videoKey of Object.keys(VIDEOS)) {
-    const labels = ['A', 'B', 'C', 'D'];
-    const shuffled = shuffleArray(labels);
-    blindMaps[videoKey] = {};
-    CONDITIONS.forEach((cond, i) => {
-      blindMaps[videoKey][cond.key] = shuffled[i];
-    });
+    generateBlindMapForVideo(videoKey);
   }
+}
+
+function reshuffleBlind() {
+  // 현재 영상에 점수가 매겨져 있으면 confirm
+  const hasScores = scores[currentTab] && Object.keys(scores[currentTab]).length > 0;
+  if (hasScores) {
+    const ok = confirm(
+      `다시 섞으면 현재 영상(${VIDEOS[currentTab].title})의 점수가 모두 리셋됩니다.\n\n` +
+      `이전 점수는 새로 섞인 매핑과 의미가 달라지므로 보존할 수 없습니다.\n\n` +
+      `진행할까요?`
+    );
+    if (!ok) return;
+  }
+  // 현재 영상 매핑 재생성 + 점수 클리어
+  generateBlindMapForVideo(currentTab);
+  if (scores[currentTab]) delete scores[currentTab];
   renderClips();
+  renderTabs();
+  showToast(`${VIDEOS[currentTab].title} 매핑 재생성 + 점수 리셋`);
 }
 
 // ============================================================
 // 렌더링
 // ============================================================
+function renderTabs() {
+  const tabBar = document.getElementById('tabBar');
+  tabBar.innerHTML = Object.entries(VIDEOS).map(([key, video]) => {
+    const scored = scores[key] ? Object.keys(scores[key]).length : 0;
+    const total = CONDITIONS.length;
+    const badge = scored === total
+      ? `<span class="progress-badge complete">✓ ${scored}/${total}</span>`
+      : (scored > 0 ? `<span class="progress-badge">${scored}/${total}</span>` : '');
+    return `
+      <button class="tab ${key === currentTab ? 'active' : ''}" data-tab="${key}">
+        ${video.title}${badge}
+      </button>
+    `;
+  }).join('');
+  
+  // 이벤트 재등록
+  tabBar.querySelectorAll('.tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      currentTab = btn.dataset.tab;
+      renderClips();
+      renderTabs();
+    });
+  });
+}
+
 function renderClips() {
   const container = document.getElementById('clipContainer');
   const video = VIDEOS[currentTab];
   const map = blindMaps[currentTab];
+  const videoScores = scores[currentTab] || {};
   
+  // 블라인드 모드면 A→B→C→D 순으로 정렬, 아니면 정의 순서 (Original/V3.1/V3.2/Anchor)
   const sortedConditions = blindMode
     ? [...CONDITIONS].sort((a, b) => map[a.key].localeCompare(map[b.key]))
     : CONDITIONS;
@@ -294,13 +407,20 @@ function renderClips() {
       ${sortedConditions.map(cond => {
         const blindLabel = map[cond.key];
         const displayLabel = blindMode ? `Condition ${blindLabel}` : cond.label;
+        // 블라인드 OFF 시에만 hint 표시 (블라인드 ON 시 hint는 정보 누설)
         const hint = blindMode 
           ? '레이블 가려짐 (블라인드 평가 중)' 
-          : (cond.key === 'anchor' ? '의도적 저품질 (sanity check용)' : '');
-        const scoreKey = `${currentTab}_${cond.key}`;
-        const currentScore = scores[scoreKey] !== undefined ? scores[scoreKey] : 50;
+          : (cond.key === 'anchor' ? '⚠️ 의도적 저품질 (sanity check용)' : '\u00A0');
+        
+        const scoreEntry = videoScores[cond.key];
+        const hasScore = scoreEntry !== undefined;
+        const currentScore = hasScore ? scoreEntry.score : 50;
+        const statusText = hasScore 
+          ? `✓ 점수 입력됨: ${currentScore}` 
+          : '아직 평가 안 함 (슬라이더 움직이면 등록)';
+        
         return `
-          <div class="clip">
+          <div class="clip ${hasScore ? 'scored' : ''}">
             <div class="clip-label">${displayLabel}</div>
             <div class="clip-hint">${hint}</div>
             <audio controls preload="metadata"
@@ -309,13 +429,16 @@ function renderClips() {
               <label>점수:</label>
               <input type="range" min="0" max="100" value="${currentScore}"
                      class="score-slider"
-                     data-key="${scoreKey}"
-                     oninput="updateScore('${scoreKey}', this.value)">
+                     data-cond="${cond.key}"
+                     data-blind="${blindLabel}"
+                     oninput="updateScore('${cond.key}', '${blindLabel}', this.value)">
               <input type="number" min="0" max="100" value="${currentScore}"
                      class="score-input"
-                     data-key="${scoreKey}"
-                     oninput="updateScoreFromInput('${scoreKey}', this.value)">
+                     data-cond="${cond.key}"
+                     data-blind="${blindLabel}"
+                     oninput="updateScoreFromInput('${cond.key}', '${blindLabel}', this.value)">
             </div>
+            <div class="score-status ${hasScore ? 'set' : ''}">${statusText}</div>
           </div>
         `;
       }).join('')}
@@ -323,48 +446,95 @@ function renderClips() {
   `;
 }
 
-function updateScore(key, value) {
-  scores[key] = parseInt(value, 10);
-  // 같은 키의 number input 동기화
-  const numInput = document.querySelector(`input.score-input[data-key="${key}"]`);
-  if (numInput) numInput.value = value;
+function ensureScoresVideo(videoKey) {
+  if (!scores[videoKey]) scores[videoKey] = {};
 }
 
-function updateScoreFromInput(key, value) {
+function updateScore(condKey, blindLabel, value) {
+  ensureScoresVideo(currentTab);
+  scores[currentTab][condKey] = {
+    score: parseInt(value, 10),
+    blindLabel: blindLabel,
+  };
+  // 같은 condition의 number input 동기화
+  const numInput = document.querySelector(
+    `input.score-input[data-cond="${condKey}"]`
+  );
+  if (numInput) numInput.value = value;
+  // 상태 텍스트 + 탭 뱃지 업데이트
+  renderClips();
+  renderTabs();
+}
+
+function updateScoreFromInput(condKey, blindLabel, value) {
   const v = parseInt(value, 10);
   if (isNaN(v)) return;
-  scores[key] = Math.max(0, Math.min(100, v));
-  const slider = document.querySelector(`input.score-slider[data-key="${key}"]`);
-  if (slider) slider.value = scores[key];
+  const clamped = Math.max(0, Math.min(100, v));
+  ensureScoresVideo(currentTab);
+  scores[currentTab][condKey] = {
+    score: clamped,
+    blindLabel: blindLabel,
+  };
+  const slider = document.querySelector(
+    `input.score-slider[data-cond="${condKey}"]`
+  );
+  if (slider) slider.value = clamped;
+  renderClips();
+  renderTabs();
 }
 
 // ============================================================
-// 탭 전환
+// 블라인드 토글
 // ============================================================
-document.querySelectorAll('.tab').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    currentTab = btn.dataset.tab;
-    renderClips();
-  });
-});
-
 document.getElementById('blindMode').addEventListener('change', (e) => {
-  blindMode = e.target.checked;
+  const newBlind = e.target.checked;
+  // OFF → ON 전환 시 매핑 재생성 옵션 (정보 누설 방지)
+  if (newBlind && !blindMode) {
+    const hasAnyScores = Object.values(scores).some(v => Object.keys(v).length > 0);
+    if (hasAnyScores) {
+      const reshuffle = confirm(
+        '블라인드 모드를 다시 켭니다.\n\n' +
+        '직전에 본 매핑(어느 게 V3.1/V3.2였는지)을 그대로 두면 의미 없는 블라인드입니다.\n\n' +
+        '확인: 매핑을 새로 섞고 모든 점수를 리셋합니다.\n' +
+        '취소: 매핑/점수 유지 (블라인드 무의미, 디버깅 용도)'
+      );
+      if (reshuffle) {
+        generateAllBlindMaps();
+        for (const k of Object.keys(scores)) delete scores[k];
+        showToast('매핑 재생성 + 모든 점수 리셋');
+      }
+    } else {
+      // 점수 없으면 조용히 매핑만 재생성
+      generateAllBlindMaps();
+    }
+  }
+  blindMode = newBlind;
   renderClips();
+  renderTabs();
 });
 
 // ============================================================
 // 결과 다운로드
 // ============================================================
 function downloadResults() {
+  // 점수 매겨진 영상이 있는지 체크
+  const totalScored = Object.values(scores).reduce(
+    (sum, v) => sum + Object.keys(v).length, 0
+  );
+  if (totalScored === 0) {
+    if (!confirm('아직 점수를 한 개도 매기지 않았습니다. 그래도 다운로드할까요?')) {
+      return;
+    }
+  }
+  
   const result = {
     metadata: {
       session_id: `mood_eq_planb_${new Date().toISOString().replace(/[:.]/g, '-')}`,
       timestamp: new Date().toISOString(),
-      mode: 'plan_b_html_player',
-      blind_mode_used: blindMode,
+      mode: 'plan_b_html_player_v2',
+      blind_mode_at_export: blindMode,
+      total_scored: totalScored,
+      total_possible: Object.keys(VIDEOS).length * CONDITIONS.length,
     },
     blind_maps: blindMaps,
     scores: scores,
@@ -381,19 +551,44 @@ function downloadResults() {
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
   
-  alert('결과가 다운로드 폴더에 저장되었습니다.\n파일명: ' + a.download);
+  showToast(`결과 저장: ${a.download}`);
 }
 
 function resetScores() {
-  if (!confirm('현재 입력한 점수를 모두 초기화합니다. 진행할까요?')) return;
+  const totalScored = Object.values(scores).reduce(
+    (sum, v) => sum + Object.keys(v).length, 0
+  );
+  if (totalScored === 0) {
+    showToast('리셋할 점수가 없습니다');
+    return;
+  }
+  if (!confirm(`현재 입력한 점수 ${totalScored}개를 모두 초기화합니다. 진행할까요?`)) return;
   for (const k of Object.keys(scores)) delete scores[k];
   renderClips();
+  renderTabs();
+  showToast('모든 점수 리셋됨');
+}
+
+// ============================================================
+// Toast
+// ============================================================
+let toastTimer = null;
+function showToast(message) {
+  const toast = document.getElementById('toast');
+  toast.textContent = message;
+  toast.classList.add('show');
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => {
+    toast.classList.remove('show');
+  }, 2500);
 }
 
 // ============================================================
 // 초기화
 // ============================================================
-reshuffleBlind();  // 첫 무작위 배정
+generateAllBlindMaps();
+renderTabs();
+renderClips();
 </script>
 
 </body>
