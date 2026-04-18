@@ -346,7 +346,7 @@
 <div class="actions">
   <button class="danger" onclick="resetScores()">전체 점수 리셋</button>
   <button class="secondary" onclick="reshuffleBlind()">🔀 블라인드 다시 섞기</button>
-  <button class="primary" onclick="downloadResults()">💾 결과 다운로드 (JSON)</button>
+  <button class="primary" onclick="submitResults()">📤 결과 제출 (서버 또는 다운로드)</button>
 </div>
 
 <div class="footer-info">
@@ -745,7 +745,10 @@ function downloadResults() {
       duration_sec: engine.duration,
       total_conditions: CONDITIONS.length,
       total_axes: AXES.length,
+      evaluator_id: participant.name || 'anon',
     },
+    page_type: 'full_trailer',
+    evaluator: participant.name || 'anon',
     participant,
     blind_map: blindMap,
     scores: scores,
@@ -753,18 +756,38 @@ function downloadResults() {
     notes: document.getElementById('notes').value,
   };
 
-  const blob = new Blob([JSON.stringify(result, null, 2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `${result.metadata.session_id}.json`;
-  document.body.appendChild(a); a.click(); document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-
   if (post_screening.validity === 'suspicious') {
     showToast(`⚠ Post-screening 의심: ${warnings.length}개 경고 — 세션 재검토 권장`, true);
-  } else {
-    showToast(`결과 저장: ${a.download}`);
+  }
+
+  trySubmitResults(result, `${result.metadata.session_id}.json`);
+}
+
+function submitResults() { downloadResults(); }
+
+async function trySubmitResults(result, fallbackFilename) {
+  const payload = JSON.stringify(result, null, 2);
+  try {
+    const r = await fetch('/save_results', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: payload,
+    });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const body = await r.json();
+    if (!body.ok) throw new Error(body.error || 'server returned ok:false');
+    showToast(`✓ 서버 저장 완료: ${body.filename}`);
+    return { mode: 'server', path: body.path };
+  } catch (e) {
+    const blob = new Blob([payload], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fallbackFilename;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast(`⚠ 서버 저장 실패 (${e.message}) — 파일 다운로드됨: ${fallbackFilename}`, true);
+    return { mode: 'download', filename: fallbackFilename };
   }
 }
 

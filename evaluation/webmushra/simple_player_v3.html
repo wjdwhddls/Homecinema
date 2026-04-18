@@ -547,8 +547,13 @@
 </div>
 
 <div class="actions">
+  <label style="display:flex; align-items:center; gap:8px; font-size:13px; color:#aaa; margin-right:auto;">
+    평가자 ID:
+    <input type="text" id="evaluatorId" placeholder="예: yun"
+           style="padding:6px 10px; background:#1a1a1a; border:1px solid #444; border-radius:4px; color:#fff; font-size:13px; width:140px;">
+  </label>
   <button class="danger" onclick="resetScores()">전체 점수 리셋</button>
-  <button class="primary" onclick="downloadResults()">💾 결과 다운로드 (JSON)</button>
+  <button class="primary" onclick="submitResults()">📤 결과 제출 (서버 또는 다운로드)</button>
 </div>
 
 <div class="footer-info">
@@ -1246,17 +1251,46 @@ function downloadResults() {
     );
   }
 
-  const blob = new Blob([JSON.stringify(result, null, 2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `${result.metadata.session_id}.json`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  // evaluator_id 추가 → save_server가 파일명에 사용
+  const evaluatorId = (document.getElementById('evaluatorId')?.value || '').trim();
+  result.metadata.evaluator_id = evaluatorId || 'anon';
+  result.page_type = 'segment_mushra';
+  result.evaluator = evaluatorId || 'anon';
 
-  showToast(`결과 저장: ${a.download}`);
+  // 서버 POST 먼저 시도, 실패 시 Blob 다운로드 fallback
+  trySubmitResults(result, `${result.metadata.session_id}.json`);
+}
+
+// alias — 신규 submit 버튼에서 사용. 기존 downloadResults() 호출 경로 유지.
+function submitResults() { downloadResults(); }
+
+async function trySubmitResults(result, fallbackFilename) {
+  const payload = JSON.stringify(result, null, 2);
+  try {
+    const r = await fetch('/save_results', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: payload,
+    });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const body = await r.json();
+    if (!body.ok) throw new Error(body.error || 'server returned ok:false');
+    showToast(`✓ 서버 저장 완료: ${body.filename}`);
+    return { mode: 'server', path: body.path };
+  } catch (e) {
+    // Fallback: Blob 다운로드
+    const blob = new Blob([payload], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fallbackFilename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast(`⚠ 서버 저장 실패 (${e.message}) — 파일 다운로드됨: ${fallbackFilename}`, true);
+    return { mode: 'download', filename: fallbackFilename };
+  }
 }
 
 function resetScores() {
