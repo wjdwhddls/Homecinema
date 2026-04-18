@@ -171,6 +171,7 @@ def apply_v3_5_5(
     output_wav_path: Path,
     eq_intensity: float = 1.0,
     dialogue_protection_no_vocals: bool = True,  # B-1 default
+    use_crossfade: bool = True,  # cut 0.3s / dissolve 2.0s 차등 크로스페이드
 ) -> dict:
     """V3.5.5 시변 파이프라인 (B-1: no_vocals에 dialogue protection 적용).
 
@@ -205,6 +206,7 @@ def apply_v3_5_5(
         alpha_d=0.5,
         intensity=eq_intensity,
         confidence_scaling=True,
+        use_crossfade=use_crossfade,
         dialogue_protection=dialogue_protection_no_vocals,
         presets=EQ_PRESETS_V3_3,
         prevent_clipping=False,  # 합산·압축 후에 한꺼번에 관리

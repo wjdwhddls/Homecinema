@@ -15,7 +15,7 @@ from pedalboard import Pedalboard, PeakFilter
 from pedalboard.io import AudioFile
 
 from .eq_engine import BAND_FREQS, BAND_Q
-from .smoothing import get_eq_at_time
+from .smoothing import get_eq_at_time, get_eq_at_time_simple
 
 
 # ────────────────────────────────────────────────────────
@@ -66,13 +66,19 @@ def _apply_blocks_with_chain(
     scenes_eq: list[dict],
     block_sec: float = 0.5,
     prevent_clipping: bool = True,
+    use_crossfade: bool = True,
 ) -> np.ndarray:
     """시변 EQ 블록 처리 코어. audio shape: (channels, samples).
 
     block_sec 단위로 EQ 체인을 갱신. 각 블록의 중심 시각으로 get_eq_at_time
     조회 → 크로스페이드 보간 결과 게인을 사용. 호출자가 입력의 시간축 좌표계와
     scenes_eq의 시간축 좌표계가 일치하도록 보장해야 함 (예: 클립의 0초 = scenes_eq의 0초).
+
+    use_crossfade=True (기본): cut 0.3s / dissolve 2.0s 차등 크로스페이드.
+    False: 씬 경계에서 EQ 급변 (폴백, 비교/디버깅용).
     """
+    eq_getter = get_eq_at_time if use_crossfade else get_eq_at_time_simple
+
     block_samples = int(block_sec * sr)
     out = np.zeros_like(audio)
 
@@ -80,7 +86,7 @@ def _apply_blocks_with_chain(
         end = min(start + block_samples, audio.shape[-1])
         t_center = (start + end) / 2 / sr
 
-        gains = get_eq_at_time(t_center, scenes_eq)
+        gains = eq_getter(t_center, scenes_eq)
         chain = build_eq_chain(gains)
 
         block = audio[..., start:end]
@@ -137,6 +143,7 @@ def apply_timevarying_eq_array(
     presets: dict | None = None,
     block_sec: float = 0.5,
     prevent_clipping: bool = False,
+    use_crossfade: bool = True,
 ) -> np.ndarray:
     """메모리 배열 입출력 시변 EQ. timeline scenes에서 [clip_start, clip_end] 윈도우
     추출 + 씬별 effective_gains 계산 + 시변 EQ 적용.
@@ -206,6 +213,7 @@ def apply_timevarying_eq_array(
     out = _apply_blocks_with_chain(
         audio, sample_rate, scenes_eq_local,
         block_sec=block_sec, prevent_clipping=prevent_clipping,
+        use_crossfade=use_crossfade,
     )
 
     return out[0] if one_d else out
