@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>Mood-EQ 청취 평가 (Plan B v3.1 — V3.3 지원)</title>
+<title>Mood-EQ 청취 평가 (Plan B v3.2 — V3.3 + V3.5.5 PoC)</title>
 <style>
   * { box-sizing: border-box; }
   body {
@@ -403,8 +403,9 @@
 
 <h1>Mood-EQ 청취 평가</h1>
 <div class="subtitle">
-  원본 + 처리본 4종 (V3.1 / V3.2 / V3.3 / Anchor)을 비교 평가합니다.
-  점수: 0(매우 다름) ~ 100(원본과 동일)
+  원본 + 처리본 5종 (V3.1 / V3.2 / V3.3 / V3.5.5 / Anchor)을 비교 평가합니다.
+  점수: 0(매우 다름) ~ 100(원본과 동일).
+  V3.5.5는 v3_3과 동일 LUFS로 매칭됨 (라우드니스 편향 제거).
 </div>
 
 <!-- ===== v3 신규: 캘리브레이션 섹션 ===== -->
@@ -466,7 +467,7 @@
 </div>
 
 <div class="anchor-note">
-  💡 <strong>Anchor 안내</strong>: 4개 비교군 중 하나는 의도적으로 품질을 낮춘 anchor입니다.
+  💡 <strong>Anchor 안내</strong>: 6개 비교군 중 하나는 의도적으로 품질을 낮춘 anchor입니다.
   진지한 평가의 sanity check 용도이며, anchor에 높은 점수가 나오면 평가 신뢰도 검토 필요.
 </div>
 
@@ -476,7 +477,7 @@
 </div>
 
 <div class="footer-info">
-  Mood-EQ Plan B Player v3.1 · A/B 즉시 전환 + JND 캘리브레이션 + V3.3 (±6dB + Compressor) 지원
+  Mood-EQ Plan B Player v3.2 · A/B 즉시 전환 + JND 캘리브레이션 + V3.3 + V3.5.5 PoC (Demucs, LUFS-matched)
 </div>
 
 <div id="toast" class="toast"></div>
@@ -485,25 +486,31 @@
 // ============================================================
 // 설정
 // ============================================================
+// V3.5.5 PoC (Step 4.6/5): VIDEOS를 풀 트레일러 → 큐레이션 11s 씬으로 전환.
+// v3_5_5.wav는 씬 디렉토리에만 존재하며, 11s 클립이 A/B 청취 비교에 더 적합.
+// 풀 트레일러 비교 capability는 simple_player_v3_full_trailer 등으로 분리 가능 (현재 없음).
 const VIDEOS = {
-  topgun: {
-    title: '탑건 (Top Gun)',
-    audioBase: 'configs/resources/audio/trailer_topgun_full',
-    duration: 144.4,
+  topgun_category_eq: {
+    title: '탑건 — Category EQ (11s)',
+    audioBase: 'configs/resources/audio/scene_topgun_category_eq',
+    duration: 11.0,
   },
-  lalaland: {
-    title: '라라랜드 (La La Land)',
-    audioBase: 'configs/resources/audio/trailer_lalaland_full',
-    duration: 131.2,
+  lalaland_wonder: {
+    title: '라라랜드 — Wonder (11s)',
+    audioBase: 'configs/resources/audio/scene_lalaland_wonder',
+    duration: 11.0,
   },
 };
 
+// V3.5.5 PoC: 6th condition F 추가. v3_5_5_matched.wav는 v3_3과 동일 LUFS로 매칭됨
+// (loudness_match.py 결과 — Δ ≤ 0.01 LU, peak ≤ -1.0 dBFS).
 const CONDITIONS = [
-  { key: 'original', label: 'Original (원본)',            file: 'original.wav' },
-  { key: 'v3_1',     label: 'V3.1 처리본 (±3dB baseline)', file: 'v3_1.wav' },
-  { key: 'v3_2',     label: 'V3.2 처리본 (±4dB dramatic)', file: 'v3_2.wav' },
-  { key: 'v3_3',     label: 'V3.3 처리본 (±6dB + Comp)',   file: 'v3_3.wav' },
-  { key: 'anchor',   label: 'Anchor (저품질)',            file: 'anchor.wav' },
+  { key: 'original', label: 'Original (원본)',                  file: 'original.wav' },
+  { key: 'v3_1',     label: 'V3.1 처리본 (±3dB baseline)',       file: 'v3_1.wav' },
+  { key: 'v3_2',     label: 'V3.2 처리본 (±4dB dramatic)',       file: 'v3_2.wav' },
+  { key: 'v3_3',     label: 'V3.3 처리본 (±6dB + Comp)',         file: 'v3_3.wav' },
+  { key: 'anchor',   label: 'Anchor (저품질)',                  file: 'anchor.wav' },
+  { key: 'v3_5_5',   label: 'V3.5.5 (Demucs+EQ+Comp, matched)', file: 'v3_5_5_matched.wav' },
 ];
 
 const CALIBRATION_BASE = 'configs/resources/audio/calibration';

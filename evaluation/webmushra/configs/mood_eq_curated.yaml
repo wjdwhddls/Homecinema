@@ -59,6 +59,7 @@ pages:
       original_hidden: configs/resources/audio/scene_topgun_category_eq/original.wav
       v3_1: configs/resources/audio/scene_topgun_category_eq/v3_1.wav
       v3_2: configs/resources/audio/scene_topgun_category_eq/v3_2.wav
+      v3_5_5: configs/resources/audio/scene_topgun_category_eq/v3_5_5_matched.wav
       anchor: configs/resources/audio/scene_topgun_category_eq/anchor.wav
 
   - type: mushra
@@ -104,6 +105,7 @@ pages:
       original_hidden: configs/resources/audio/scene_lalaland_wonder/original.wav
       v3_1: configs/resources/audio/scene_lalaland_wonder/v3_1.wav
       v3_2: configs/resources/audio/scene_lalaland_wonder/v3_2.wav
+      v3_5_5: configs/resources/audio/scene_lalaland_wonder/v3_5_5_matched.wav
       anchor: configs/resources/audio/scene_lalaland_wonder/anchor.wav
 
   - type: finish
