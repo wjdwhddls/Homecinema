@@ -463,11 +463,12 @@
 </head>
 <body>
 
-<h1>Mood-EQ 청취 평가 (4조건 MUSHRA)</h1>
+<h1>Mood-EQ 청취 평가 (4조건 MUSHRA — 풀 트레일러 Segment)</h1>
 <div class="subtitle">
-  Reference + Anchor + V3.3 + V3.5.5 (4조건) — V3.5.5 정식 채택 평가.
+  Reference + Anchor + V3.3 + V3.5.5 (4조건) × 탑건 풀 트레일러 4 segment (각 10초, diversity 선정).
   점수: 0(매우 다름) ~ 100(원본과 동일).
   4조건 모두 v3_3.wav LUFS로 매칭 (라우드니스 편향 제거, MUSHRA 표준 anchor: 3.5 kHz LPF).
+  각 segment는 서로 다른 mood 카테고리를 대표함 (Joyful / Power / Peacefulness / Sadness).
 </div>
 
 <!-- ===== v3.4 신규: 평가 방법 안내 ===== -->
@@ -551,7 +552,7 @@
 </div>
 
 <div class="footer-info">
-  Mood-EQ Plan B Player v3.3 · 4조건 MUSHRA (Reference/Anchor/V3.3/V3.5.5) · LUFS-matched · V3.5.5 정식 채택 평가
+  Mood-EQ Plan B Player v3.4 · 4조건 MUSHRA × 풀 트레일러 4 segments · LUFS-matched + post-screening · V3.5.5 정식 채택 평가
 </div>
 
 <div id="toast" class="toast"></div>
@@ -560,19 +561,29 @@
 // ============================================================
 // 설정
 // ============================================================
-// V3.5.5 최종 (Phase 3): 4조건 MUSHRA 평가 (Reference / Anchor / V3.3 / V3.5.5).
-// 모든 조건은 v3_3.wav LUFS로 매칭 (loudness_match.py / generate_anchor.py 결과).
-// 풀 트레일러 비교 capability는 simple_player_v3_full_trailer 등으로 분리 가능 (현재 없음).
+// 트랙 5+ Phase X5: 11s 큐레이션 씬 → 풀 트레일러 자동 추출 4 segments로 교체.
+// trailer_segments/topgun/ 하 4개 서브디렉토리, 각 10s, diversity 기반 선정.
+// 모든 조건은 v3_3.wav LUFS로 매칭 (tools/auto_select_segments.py 결과).
 const VIDEOS = {
-  topgun_category_eq: {
-    title: '탑건 — Category EQ (11s)',
-    audioBase: 'configs/resources/audio/scene_topgun_category_eq',
-    duration: 11.0,
+  seg01_joyful_withdial_dissol: {
+    title: '탑건 #1 — Joyful (11~21s, 대사·dissolve)',
+    audioBase: 'configs/resources/audio/trailer_segments/topgun/seg01_joyful_withdial_dissol',
+    duration: 10.0,
   },
-  lalaland_wonder: {
-    title: '라라랜드 — Wonder (11s)',
-    audioBase: 'configs/resources/audio/scene_lalaland_wonder',
-    duration: 11.0,
+  seg02_power_withdial_dissol: {
+    title: '탑건 #2 — Power (41~51s, 대사·dissolve)',
+    audioBase: 'configs/resources/audio/trailer_segments/topgun/seg02_power_withdial_dissol',
+    duration: 10.0,
+  },
+  seg03_peacefu_middial_dissol: {
+    title: '탑건 #3 — Peacefulness (80~90s, 대사·dissolve)',
+    audioBase: 'configs/resources/audio/trailer_segments/topgun/seg03_peacefu_middial_dissol',
+    duration: 10.0,
+  },
+  seg04_sadness_middial_dissol: {
+    title: '탑건 #4 — Sadness (99~109s, 대사·dissolve)',
+    audioBase: 'configs/resources/audio/trailer_segments/topgun/seg04_sadness_middial_dissol',
+    duration: 10.0,
   },
 };
 
@@ -591,7 +602,7 @@ const CROSSFADE_SEC = 0.005; // 5ms
 // ============================================================
 // 상태
 // ============================================================
-let currentTab = 'topgun';
+let currentTab = Object.keys(VIDEOS)[0];
 let blindMode = true;
 let instantMode = true;
 let loadedVideoForEngine = null; // 현재 AudioEngine에 로드된 videoKey
@@ -1189,6 +1200,27 @@ function downloadResults() {
     }
   }
 
+  // MUSHRA post-screening (BS.1534-3):
+  //   - Reference가 90점 미만인 segment가 15% 초과이거나
+  //   - Anchor가 90점 초과인 segment가 존재하면 세션 신뢰도 낮음 플래그
+  const segmentKeys = Object.keys(VIDEOS);
+  const screening = { reference_low: [], anchor_high: [], n_complete: 0, flagged: false };
+  for (const segKey of segmentKeys) {
+    const segScores = scores[segKey] || {};
+    const refEntry = segScores.reference;
+    const ancEntry = segScores.anchor;
+    if (refEntry && ancEntry) {
+      screening.n_complete += 1;
+      if (refEntry.score < 90) screening.reference_low.push({ seg: segKey, score: refEntry.score });
+      if (ancEntry.score > 90) screening.anchor_high.push({ seg: segKey, score: ancEntry.score });
+    }
+  }
+  const n_seg = segmentKeys.length;
+  screening.flagged = (
+    screening.anchor_high.length > 0 ||
+    screening.reference_low.length > Math.ceil(n_seg * 0.15)
+  );
+
   const result = {
     metadata: {
       session_id: `mood_eq_planb_${new Date().toISOString().replace(/[:.]/g, '-')}`,
@@ -1198,11 +1230,21 @@ function downloadResults() {
       blind_mode_at_export: blindMode,
       total_scored: totalScored,
       total_possible: Object.keys(VIDEOS).length * CONDITIONS.length,
+      trailer_segments: segmentKeys,
     },
+    post_screening: screening,
     blind_maps: blindMaps,
     scores: scores,
     notes: document.getElementById('notes').value,
   };
+
+  if (screening.flagged) {
+    showToast(
+      `⚠ Post-screening 플래그: anchor>90 [${screening.anchor_high.length}] / ` +
+      `reference<90 [${screening.reference_low.length}] — 세션 재검토 권장`,
+      true
+    );
+  }
 
   const blob = new Blob([JSON.stringify(result, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
