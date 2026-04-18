@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>Mood-EQ 청취 평가 (Plan B v3)</title>
+<title>Mood-EQ 청취 평가 (Plan B v3.1 — V3.3 지원)</title>
 <style>
   * { box-sizing: border-box; }
   body {
@@ -207,7 +207,7 @@
 
   .clip-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 16px;
     margin-bottom: 24px;
   }
@@ -403,7 +403,7 @@
 
 <h1>Mood-EQ 청취 평가</h1>
 <div class="subtitle">
-  원본 + 처리본 3종 (V3.1, V3.2, Anchor)을 비교 평가합니다.
+  원본 + 처리본 4종 (V3.1 / V3.2 / V3.3 / Anchor)을 비교 평가합니다.
   점수: 0(매우 다름) ~ 100(원본과 동일)
 </div>
 
@@ -476,7 +476,7 @@
 </div>
 
 <div class="footer-info">
-  Mood-EQ Plan B Player v3 · A/B 즉시 전환 + JND 캘리브레이션
+  Mood-EQ Plan B Player v3.1 · A/B 즉시 전환 + JND 캘리브레이션 + V3.3 (±6dB + Compressor) 지원
 </div>
 
 <div id="toast" class="toast"></div>
@@ -499,10 +499,11 @@ const VIDEOS = {
 };
 
 const CONDITIONS = [
-  { key: 'original', label: 'Original (원본)', file: 'original.wav' },
-  { key: 'v3_1',     label: 'V3.1 처리본',    file: 'v3_1.wav' },
-  { key: 'v3_2',     label: 'V3.2 처리본',    file: 'v3_2.wav' },
-  { key: 'anchor',   label: 'Anchor (저품질)', file: 'anchor.wav' },
+  { key: 'original', label: 'Original (원본)',            file: 'original.wav' },
+  { key: 'v3_1',     label: 'V3.1 처리본 (±3dB baseline)', file: 'v3_1.wav' },
+  { key: 'v3_2',     label: 'V3.2 처리본 (±4dB dramatic)', file: 'v3_2.wav' },
+  { key: 'v3_3',     label: 'V3.3 처리본 (±6dB + Comp)',   file: 'v3_3.wav' },
+  { key: 'anchor',   label: 'Anchor (저품질)',            file: 'anchor.wav' },
 ];
 
 const CALIBRATION_BASE = 'configs/resources/audio/calibration';
@@ -782,7 +783,8 @@ function shuffleArray(arr) {
 }
 
 function generateBlindMapForVideo(videoKey) {
-  const labels = ['A', 'B', 'C', 'D'];
+  // CONDITIONS 개수만큼 A, B, C, ... 자동 생성 (5 condition이면 A~E)
+  const labels = CONDITIONS.map((_, i) => String.fromCharCode(65 + i));
   const shuffled = shuffleArray(labels);
   blindMaps[videoKey] = {};
   CONDITIONS.forEach((cond, i) => {
