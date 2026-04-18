@@ -1,0 +1,1180 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>Mood-EQ 청취 평가 (Plan B v3)</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    max-width: 980px;
+    margin: 24px auto;
+    padding: 0 20px;
+    background: #1a1a1a;
+    color: #e8e8e8;
+    line-height: 1.5;
+  }
+  h1 { color: #fff; margin-bottom: 8px; }
+  .subtitle { color: #999; margin-bottom: 24px; font-size: 14px; }
+
+  .tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    border-bottom: 2px solid #333;
+  }
+  .tab {
+    padding: 10px 20px;
+    background: transparent;
+    border: none;
+    color: #999;
+    cursor: pointer;
+    font-size: 16px;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    position: relative;
+  }
+  .tab.active {
+    color: #fff;
+    border-bottom-color: #4a90e2;
+  }
+  .tab .progress-badge {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 2px 7px;
+    background: #383838;
+    color: #aaa;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 500;
+  }
+  .tab .progress-badge.complete {
+    background: #2d5a2d;
+    color: #8fd48f;
+  }
+
+  .controls {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 12px;
+    background: #252525;
+    border-radius: 6px;
+    flex-wrap: wrap;
+  }
+  .toggle-blind {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .toggle-blind input { width: 18px; height: 18px; cursor: pointer; }
+  .toggle-blind label { cursor: pointer; user-select: none; }
+
+  /* ===== v3 신규: 캘리브레이션 섹션 ===== */
+  .calibration-section {
+    margin-bottom: 20px;
+    background: #1e2530;
+    border: 1px solid #2f4060;
+    border-radius: 8px;
+    padding: 14px 18px;
+  }
+  .calibration-section summary {
+    cursor: pointer;
+    font-weight: 600;
+    color: #8ab4e8;
+    user-select: none;
+    padding: 2px 0;
+    list-style: none;
+  }
+  .calibration-section summary::before {
+    content: "▸ ";
+    display: inline-block;
+    transition: transform 0.15s;
+  }
+  .calibration-section[open] summary::before {
+    content: "▾ ";
+  }
+  .calibration-body {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px dashed #2f4060;
+    font-size: 13px;
+    color: #c0c8d0;
+  }
+  .calibration-body p { margin: 6px 0; }
+  .calib-buttons {
+    display: flex;
+    gap: 10px;
+    margin: 12px 0;
+    flex-wrap: wrap;
+  }
+  .calib-buttons button {
+    padding: 8px 14px;
+    background: #2a3a52;
+    color: #dce7f5;
+    border: 1px solid #3d577a;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+  }
+  .calib-buttons button:hover { background: #3a4d6b; }
+  .calib-buttons button.playing {
+    background: #4a90e2;
+    color: #fff;
+    border-color: #4a90e2;
+  }
+  .hint {
+    font-size: 12px;
+    color: #8a9098;
+    font-style: italic;
+  }
+
+  /* ===== v3 신규: 즉시 전환 모드 playbar ===== */
+  .playbar {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 16px;
+    margin-bottom: 18px;
+    background: #1e2b1e;
+    border: 1px solid #2d5a2d;
+    border-radius: 8px;
+    flex-wrap: wrap;
+  }
+  .playbar button {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+  }
+  .playbar .btn-play {
+    background: #4a90e2;
+    color: #fff;
+    min-width: 96px;
+  }
+  .playbar .btn-play:hover { background: #357abd; }
+  .playbar .btn-stop {
+    background: #383838;
+    color: #e8e8e8;
+  }
+  .playbar .btn-stop:hover { background: #444; }
+  .playbar .progress {
+    flex: 1;
+    min-width: 200px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .progress-bar {
+    flex: 1;
+    height: 8px;
+    background: #2a3a2a;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: #4a90e2;
+    width: 0%;
+    transition: width 0.05s linear;
+  }
+  .progress-text {
+    font-variant-numeric: tabular-nums;
+    font-size: 13px;
+    color: #aaa;
+    min-width: 90px;
+    text-align: right;
+  }
+  .current-cond {
+    font-size: 13px;
+    color: #8fd48f;
+  }
+  .current-cond strong {
+    color: #fff;
+    font-size: 15px;
+  }
+  .playbar.loading {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+  .playbar.error {
+    background: #3a1e1e;
+    border-color: #5a2d2d;
+  }
+
+  .clip-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .clip {
+    background: #252525;
+    border: 1px solid #383838;
+    border-radius: 8px;
+    padding: 16px;
+  }
+  .clip.scored {
+    border-color: #4a90e2;
+  }
+  .clip.current-playing {
+    border-color: #8fd48f;
+    box-shadow: 0 0 0 1px #8fd48f;
+  }
+  .clip-label {
+    font-weight: 600;
+    margin-bottom: 4px;
+    color: #4a90e2;
+    font-size: 18px;
+  }
+  .clip-hint {
+    font-size: 12px;
+    color: #888;
+    margin-bottom: 12px;
+    min-height: 16px;
+  }
+  audio {
+    width: 100%;
+    margin-bottom: 12px;
+  }
+  .listen-btn {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 12px;
+    background: #2a3a52;
+    color: #dce7f5;
+    border: 1px solid #3d577a;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+  }
+  .listen-btn:hover { background: #3a4d6b; }
+  .listen-btn.active {
+    background: #4a90e2;
+    color: #fff;
+    border-color: #4a90e2;
+  }
+  .score-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .score-row label {
+    font-size: 13px;
+    color: #aaa;
+    min-width: 50px;
+  }
+  .score-input {
+    width: 80px;
+    padding: 6px 8px;
+    background: #1a1a1a;
+    border: 1px solid #444;
+    color: #fff;
+    border-radius: 4px;
+    font-size: 14px;
+  }
+  .score-slider {
+    flex: 1;
+    accent-color: #4a90e2;
+  }
+  .score-status {
+    font-size: 11px;
+    color: #666;
+    margin-top: 6px;
+    text-align: right;
+  }
+  .score-status.set {
+    color: #8fd48f;
+  }
+
+  .notes-section {
+    margin-top: 24px;
+    padding: 16px;
+    background: #252525;
+    border-radius: 8px;
+  }
+  .notes-section h3 {
+    margin-top: 0;
+    color: #fff;
+    font-size: 16px;
+  }
+  textarea {
+    width: 100%;
+    min-height: 100px;
+    background: #1a1a1a;
+    color: #e8e8e8;
+    border: 1px solid #444;
+    border-radius: 4px;
+    padding: 10px;
+    font-family: inherit;
+    font-size: 14px;
+    resize: vertical;
+  }
+
+  .actions {
+    margin-top: 24px;
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+  }
+  button.primary {
+    padding: 10px 20px;
+    background: #4a90e2;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+  }
+  button.primary:hover { background: #357abd; }
+  button.secondary {
+    padding: 10px 20px;
+    background: #383838;
+    color: #e8e8e8;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  button.secondary:hover { background: #444; }
+  button.danger {
+    padding: 10px 20px;
+    background: #5a2d2d;
+    color: #f0a8a8;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  button.danger:hover { background: #703838; }
+
+  .anchor-note {
+    margin-top: 16px;
+    padding: 10px 12px;
+    background: #2a2418;
+    border-left: 3px solid #d4a647;
+    border-radius: 4px;
+    font-size: 13px;
+    color: #d4a647;
+  }
+
+  .footer-info {
+    margin-top: 32px;
+    padding-top: 16px;
+    border-top: 1px solid #333;
+    font-size: 12px;
+    color: #666;
+    text-align: center;
+  }
+
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    padding: 12px 20px;
+    background: #2d5a2d;
+    color: #d4f0d4;
+    border-radius: 6px;
+    font-size: 14px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.3s, transform 0.3s;
+    pointer-events: none;
+    z-index: 1000;
+  }
+  .toast.show {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .toast.error {
+    background: #5a2d2d;
+    color: #f0d4d4;
+  }
+</style>
+</head>
+<body>
+
+<h1>Mood-EQ 청취 평가</h1>
+<div class="subtitle">
+  원본 + 처리본 3종 (V3.1, V3.2, Anchor)을 비교 평가합니다.
+  점수: 0(매우 다름) ~ 100(원본과 동일)
+</div>
+
+<!-- ===== v3 신규: 캘리브레이션 섹션 ===== -->
+<details class="calibration-section">
+  <summary>🎧 청취 환경 캘리브레이션 (평가 시작 전 1분 확인)</summary>
+  <div class="calibration-body">
+    <p>
+      <strong>이어폰 필수</strong>. 조용한 환경에서 진행하세요.
+      아래 3개 톤이 <strong>서로 다르게</strong> 들리면 평가 진행 OK.
+      구분 안 되면 이어폰/환경/볼륨을 먼저 조정하세요.
+    </p>
+    <p class="hint">
+      근거: JND ≈ 1 dB (일반), 0.25 dB (즉시 전환 청취, Toole &amp; Olive 1988).
+      +3 dB은 본 시스템의 EQ 수준.
+    </p>
+    <div class="calib-buttons">
+      <button data-calib="tone_reference"  onclick="playCalibrationTone(this, 'tone_reference.wav')">🔊 기준 톤 (-20 dBFS)</button>
+      <button data-calib="tone_plus_1db"   onclick="playCalibrationTone(this, 'tone_plus_1db.wav')">🔊 +1 dB (JND 임계)</button>
+      <button data-calib="tone_plus_3db"   onclick="playCalibrationTone(this, 'tone_plus_3db.wav')">🔊 +3 dB (본 EQ 수준)</button>
+    </div>
+    <p class="hint">
+      구분 안 되면: ① 이어폰 교체 ② 주변 소음 제거 ③ 시스템 볼륨 조정.
+    </p>
+  </div>
+</details>
+
+<div class="tabs" id="tabBar"></div>
+
+<div class="controls">
+  <div class="toggle-blind">
+    <input type="checkbox" id="blindMode" checked>
+    <label for="blindMode">🔒 Blind 모드 (레이블 무작위 표시)</label>
+  </div>
+  <div class="toggle-blind">
+    <input type="checkbox" id="instantMode" checked>
+    <label for="instantMode">⚡ 즉시 전환 모드 (Web Audio)</label>
+  </div>
+  <button class="secondary" onclick="reshuffleBlind()">🔀 다시 섞기 (현재 영상 점수 리셋)</button>
+</div>
+
+<!-- v3 신규: 즉시 전환 모드 playbar (instantMode일 때만 표시) -->
+<div id="playbar" class="playbar" style="display:none">
+  <button class="btn-play" id="playbarPlayBtn" onclick="togglePlay()">▶ 재생</button>
+  <button class="btn-stop" onclick="stopPlayback()">⏹ 정지</button>
+  <div class="progress">
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="progress-text" id="progressText">0.00 / 0.00s</div>
+  </div>
+  <div class="current-cond">
+    현재: <strong id="currentCondDisplay">—</strong>
+  </div>
+</div>
+
+<div id="clipContainer"></div>
+
+<div class="notes-section">
+  <h3>📝 평가 메모 (선택)</h3>
+  <textarea id="notes" placeholder="강사 코멘트, 인상 깊은 부분, 의견 등 자유 기록..."></textarea>
+</div>
+
+<div class="anchor-note">
+  💡 <strong>Anchor 안내</strong>: 4개 비교군 중 하나는 의도적으로 품질을 낮춘 anchor입니다.
+  진지한 평가의 sanity check 용도이며, anchor에 높은 점수가 나오면 평가 신뢰도 검토 필요.
+</div>
+
+<div class="actions">
+  <button class="danger" onclick="resetScores()">전체 점수 리셋</button>
+  <button class="primary" onclick="downloadResults()">💾 결과 다운로드 (JSON)</button>
+</div>
+
+<div class="footer-info">
+  Mood-EQ Plan B Player v3 · A/B 즉시 전환 + JND 캘리브레이션
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+// ============================================================
+// 설정
+// ============================================================
+const VIDEOS = {
+  topgun: {
+    title: '탑건 (Top Gun)',
+    audioBase: 'configs/resources/audio/trailer_topgun_full',
+    duration: 144.4,
+  },
+  lalaland: {
+    title: '라라랜드 (La La Land)',
+    audioBase: 'configs/resources/audio/trailer_lalaland_full',
+    duration: 131.2,
+  },
+};
+
+const CONDITIONS = [
+  { key: 'original', label: 'Original (원본)', file: 'original.wav' },
+  { key: 'v3_1',     label: 'V3.1 처리본',    file: 'v3_1.wav' },
+  { key: 'v3_2',     label: 'V3.2 처리본',    file: 'v3_2.wav' },
+  { key: 'anchor',   label: 'Anchor (저품질)', file: 'anchor.wav' },
+];
+
+const CALIBRATION_BASE = 'configs/resources/audio/calibration';
+const CROSSFADE_SEC = 0.005; // 5ms
+
+// ============================================================
+// 상태
+// ============================================================
+let currentTab = 'topgun';
+let blindMode = true;
+let instantMode = true;
+let loadedVideoForEngine = null; // 현재 AudioEngine에 로드된 videoKey
+let engineLoading = false;
+
+let blindMaps = {};
+const scores = {};
+
+// ============================================================
+// AudioEngine (v3 핵심)
+// ============================================================
+class AudioEngine {
+  constructor() {
+    this.ctx = null;
+    this.buffers = {};        // { condKey: AudioBuffer }
+    this.currentCond = null;
+    this.source = null;       // 현재 활성 BufferSource
+    this.gainNode = null;
+    this.isPlaying = false;
+    this.startCtxTime = 0;    // 현재 source가 시작된 ctx 시각
+    this.startOffset = 0;     // 그 시점에 재생하기 시작한 버퍼 오프셋
+    this.pausedAt = 0;        // 일시정지 시 저장한 오프셋
+    this.onTimeUpdate = null; // (currentSec, durationSec) => void
+    this.onEnded = null;
+    this._rafId = null;
+  }
+
+  async ensureCtx() {
+    if (!this.ctx) {
+      const Ctor = window.AudioContext || window.webkitAudioContext;
+      this.ctx = new Ctor();
+    }
+    if (this.ctx.state === 'suspended') {
+      await this.ctx.resume();
+    }
+  }
+
+  async loadScene(basePath, conditions) {
+    await this.ensureCtx();
+    this.stop();
+    this.buffers = {};
+    this.pausedAt = 0;
+
+    const loadOne = async (cond) => {
+      const url = `${basePath}/${cond.file}`;
+      const resp = await fetch(url);
+      if (!resp.ok) throw new Error(`fetch ${url} → ${resp.status}`);
+      const arr = await resp.arrayBuffer();
+      const buf = await this.ctx.decodeAudioData(arr);
+      return [cond.key, buf];
+    };
+
+    const results = await Promise.all(conditions.map(loadOne));
+    for (const [key, buf] of results) {
+      this.buffers[key] = buf;
+    }
+
+    const durs = Object.entries(this.buffers).map(([k, b]) => [k, b.duration]);
+    const maxD = Math.max(...durs.map(d => d[1]));
+    const minD = Math.min(...durs.map(d => d[1]));
+    if (maxD - minD > 0.05) {
+      console.warn(
+        `[AudioEngine] 버퍼 길이 편차 ${((maxD - minD) * 1000) | 0}ms (>50ms):`,
+        durs
+      );
+    }
+
+    if (!this.currentCond || !this.buffers[this.currentCond]) {
+      this.currentCond = conditions[0].key;
+    }
+  }
+
+  _makeSource(condKey, offset, fadeIn) {
+    const buf = this.buffers[condKey];
+    const now = this.ctx.currentTime;
+    const src = this.ctx.createBufferSource();
+    src.buffer = buf;
+    const gain = this.ctx.createGain();
+    if (fadeIn) {
+      gain.gain.setValueAtTime(0, now);
+      gain.gain.linearRampToValueAtTime(1.0, now + CROSSFADE_SEC);
+    } else {
+      gain.gain.setValueAtTime(1.0, now);
+    }
+    src.connect(gain).connect(this.ctx.destination);
+    src.start(now, offset);
+    src.onended = () => {
+      if (this.source === src) {
+        this.isPlaying = false;
+        this.pausedAt = 0;
+        this._stopRaf();
+        if (this.onEnded) this.onEnded();
+      }
+    };
+    this.source = src;
+    this.gainNode = gain;
+    this.startCtxTime = now;
+    this.startOffset = offset;
+  }
+
+  play() {
+    if (!this.currentCond || !this.buffers[this.currentCond]) return;
+    if (this.isPlaying) return;
+    this._makeSource(this.currentCond, this.pausedAt, false);
+    this.isPlaying = true;
+    this._startRaf();
+  }
+
+  pause() {
+    if (!this.isPlaying) return;
+    this.pausedAt = this.getCurrentTime();
+    this._stopCurrent(false);
+    this.isPlaying = false;
+    this._stopRaf();
+  }
+
+  stop() {
+    this._stopCurrent(false);
+    this.isPlaying = false;
+    this.pausedAt = 0;
+    this._stopRaf();
+  }
+
+  _stopCurrent(withFadeOut) {
+    if (this.source) {
+      const now = this.ctx ? this.ctx.currentTime : 0;
+      if (withFadeOut && this.gainNode && this.ctx) {
+        this.gainNode.gain.cancelScheduledValues(now);
+        this.gainNode.gain.setValueAtTime(this.gainNode.gain.value, now);
+        this.gainNode.gain.linearRampToValueAtTime(0, now + CROSSFADE_SEC);
+        try { this.source.stop(now + CROSSFADE_SEC + 0.01); } catch (e) {}
+      } else {
+        try { this.source.stop(); } catch (e) {}
+        try { this.source.disconnect(); } catch (e) {}
+      }
+      this.source = null;
+      this.gainNode = null;
+    }
+  }
+
+  switchCondition(newCondKey) {
+    if (!this.buffers[newCondKey]) return;
+    if (newCondKey === this.currentCond && this.isPlaying) return;
+
+    if (!this.isPlaying) {
+      this.currentCond = newCondKey;
+      return;
+    }
+
+    const offset = this.getCurrentTime();
+    const newBuf = this.buffers[newCondKey];
+    if (offset >= newBuf.duration) {
+      this.stop();
+      return;
+    }
+
+    // 기존 소스 페이드아웃 + 정리
+    const oldSrc = this.source;
+    const oldGain = this.gainNode;
+    const now = this.ctx.currentTime;
+    if (oldGain) {
+      oldGain.gain.cancelScheduledValues(now);
+      oldGain.gain.setValueAtTime(oldGain.gain.value, now);
+      oldGain.gain.linearRampToValueAtTime(0, now + CROSSFADE_SEC);
+    }
+    if (oldSrc) {
+      try { oldSrc.onended = null; } catch (e) {}
+      try { oldSrc.stop(now + CROSSFADE_SEC + 0.01); } catch (e) {}
+    }
+
+    // 새 소스 페이드인
+    this._makeSource(newCondKey, offset, true);
+    this.currentCond = newCondKey;
+  }
+
+  getCurrentTime() {
+    if (!this.isPlaying) return this.pausedAt;
+    if (!this.ctx) return 0;
+    const elapsed = this.ctx.currentTime - this.startCtxTime;
+    return Math.min(this.startOffset + elapsed, this.getDuration());
+  }
+
+  getDuration() {
+    if (!this.currentCond || !this.buffers[this.currentCond]) return 0;
+    return this.buffers[this.currentCond].duration;
+  }
+
+  _startRaf() {
+    const tick = () => {
+      if (!this.isPlaying) return;
+      if (this.onTimeUpdate) {
+        this.onTimeUpdate(this.getCurrentTime(), this.getDuration());
+      }
+      this._rafId = requestAnimationFrame(tick);
+    };
+    this._rafId = requestAnimationFrame(tick);
+  }
+
+  _stopRaf() {
+    if (this._rafId) cancelAnimationFrame(this._rafId);
+    this._rafId = null;
+  }
+}
+
+const engine = new AudioEngine();
+engine.onTimeUpdate = (cur, dur) => updatePlaybarProgress(cur, dur);
+engine.onEnded = () => {
+  setPlaybarState({ playing: false });
+  updatePlaybarProgress(0, engine.getDuration());
+};
+
+// ============================================================
+// 캘리브레이션 톤 (별도 AudioContext 공유)
+// ============================================================
+const calibCache = {}; // filename -> AudioBuffer
+let calibPlayingSrc = null;
+
+async function playCalibrationTone(btnEl, filename) {
+  try {
+    await engine.ensureCtx();
+  } catch (e) {
+    showToast('오디오 초기화 실패: ' + e.message, true);
+    return;
+  }
+  // 기존 재생 중단
+  if (calibPlayingSrc) {
+    try { calibPlayingSrc.stop(); } catch (e) {}
+    calibPlayingSrc = null;
+  }
+  document.querySelectorAll('.calib-buttons button.playing').forEach(b => b.classList.remove('playing'));
+
+  let buf = calibCache[filename];
+  if (!buf) {
+    try {
+      const resp = await fetch(`${CALIBRATION_BASE}/${filename}`);
+      if (!resp.ok) throw new Error(`${resp.status}`);
+      const arr = await resp.arrayBuffer();
+      buf = await engine.ctx.decodeAudioData(arr);
+      calibCache[filename] = buf;
+    } catch (e) {
+      showToast(`캘리브레이션 톤 로딩 실패: ${filename} (${e.message})`, true);
+      return;
+    }
+  }
+
+  const src = engine.ctx.createBufferSource();
+  src.buffer = buf;
+  src.connect(engine.ctx.destination);
+  src.start(0);
+  calibPlayingSrc = src;
+  btnEl.classList.add('playing');
+  src.onended = () => {
+    btnEl.classList.remove('playing');
+    if (calibPlayingSrc === src) calibPlayingSrc = null;
+  };
+}
+
+// ============================================================
+// Blind 무작위화
+// ============================================================
+function shuffleArray(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function generateBlindMapForVideo(videoKey) {
+  const labels = ['A', 'B', 'C', 'D'];
+  const shuffled = shuffleArray(labels);
+  blindMaps[videoKey] = {};
+  CONDITIONS.forEach((cond, i) => {
+    blindMaps[videoKey][cond.key] = shuffled[i];
+  });
+}
+
+function generateAllBlindMaps() {
+  for (const videoKey of Object.keys(VIDEOS)) {
+    generateBlindMapForVideo(videoKey);
+  }
+}
+
+function reshuffleBlind() {
+  const hasScores = scores[currentTab] && Object.keys(scores[currentTab]).length > 0;
+  if (hasScores) {
+    const ok = confirm(
+      `다시 섞으면 현재 영상(${VIDEOS[currentTab].title})의 점수가 모두 리셋됩니다.\n\n` +
+      `이전 점수는 새로 섞인 매핑과 의미가 달라지므로 보존할 수 없습니다.\n\n` +
+      `진행할까요?`
+    );
+    if (!ok) return;
+  }
+  generateBlindMapForVideo(currentTab);
+  if (scores[currentTab]) delete scores[currentTab];
+  renderClips();
+  renderTabs();
+  showToast(`${VIDEOS[currentTab].title} 매핑 재생성 + 점수 리셋`);
+}
+
+// ============================================================
+// 탭 + 클립 렌더링
+// ============================================================
+function renderTabs() {
+  const tabBar = document.getElementById('tabBar');
+  tabBar.innerHTML = Object.entries(VIDEOS).map(([key, video]) => {
+    const scored = scores[key] ? Object.keys(scores[key]).length : 0;
+    const total = CONDITIONS.length;
+    const badge = scored === total
+      ? `<span class="progress-badge complete">✓ ${scored}/${total}</span>`
+      : (scored > 0 ? `<span class="progress-badge">${scored}/${total}</span>` : '');
+    return `
+      <button class="tab ${key === currentTab ? 'active' : ''}" data-tab="${key}">
+        ${video.title}${badge}
+      </button>
+    `;
+  }).join('');
+
+  tabBar.querySelectorAll('.tab').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      if (btn.dataset.tab === currentTab) return;
+      currentTab = btn.dataset.tab;
+      renderTabs();
+      renderClips();
+      if (instantMode) {
+        await loadSceneIntoEngine();
+      }
+    });
+  });
+}
+
+function renderClips() {
+  const container = document.getElementById('clipContainer');
+  const video = VIDEOS[currentTab];
+  const map = blindMaps[currentTab];
+  const videoScores = scores[currentTab] || {};
+
+  const sortedConditions = blindMode
+    ? [...CONDITIONS].sort((a, b) => map[a.key].localeCompare(map[b.key]))
+    : CONDITIONS;
+
+  container.innerHTML = `
+    <div class="clip-grid">
+      ${sortedConditions.map(cond => {
+        const blindLabel = map[cond.key];
+        const displayLabel = blindMode ? `Condition ${blindLabel}` : cond.label;
+        const hint = blindMode
+          ? '레이블 가려짐 (블라인드 평가 중)'
+          : (cond.key === 'anchor' ? '⚠️ 의도적 저품질 (sanity check용)' : '\u00A0');
+
+        const scoreEntry = videoScores[cond.key];
+        const hasScore = scoreEntry !== undefined;
+        const currentScore = hasScore ? scoreEntry.score : 50;
+        const statusText = hasScore
+          ? `✓ 점수 입력됨: ${currentScore}`
+          : '아직 평가 안 함 (슬라이더 움직이면 등록)';
+
+        const isCurrentPlaying = instantMode && engine.currentCond === cond.key && engine.isPlaying;
+        const classList = [
+          'clip',
+          hasScore ? 'scored' : '',
+          isCurrentPlaying ? 'current-playing' : '',
+        ].filter(Boolean).join(' ');
+
+        const playerEl = instantMode
+          ? `<button class="listen-btn ${engine.currentCond === cond.key ? 'active' : ''}"
+                     onclick="pickCondition('${cond.key}')">
+               ${engine.currentCond === cond.key && engine.isPlaying ? '🔊 재생 중' : '🎧 이 버전 듣기'}
+             </button>`
+          : `<audio controls preload="metadata" src="${video.audioBase}/${cond.file}"></audio>`;
+
+        return `
+          <div class="${classList}">
+            <div class="clip-label">${displayLabel}</div>
+            <div class="clip-hint">${hint}</div>
+            ${playerEl}
+            <div class="score-row">
+              <label>점수:</label>
+              <input type="range" min="0" max="100" value="${currentScore}"
+                     class="score-slider"
+                     data-cond="${cond.key}"
+                     data-blind="${blindLabel}"
+                     oninput="updateScore('${cond.key}', '${blindLabel}', this.value)">
+              <input type="number" min="0" max="100" value="${currentScore}"
+                     class="score-input"
+                     data-cond="${cond.key}"
+                     data-blind="${blindLabel}"
+                     oninput="updateScoreFromInput('${cond.key}', '${blindLabel}', this.value)">
+            </div>
+            <div class="score-status ${hasScore ? 'set' : ''}">${statusText}</div>
+          </div>
+        `;
+      }).join('')}
+    </div>
+  `;
+}
+
+function ensureScoresVideo(videoKey) {
+  if (!scores[videoKey]) scores[videoKey] = {};
+}
+
+function updateScore(condKey, blindLabel, value) {
+  ensureScoresVideo(currentTab);
+  scores[currentTab][condKey] = {
+    score: parseInt(value, 10),
+    blindLabel: blindLabel,
+  };
+  const numInput = document.querySelector(`input.score-input[data-cond="${condKey}"]`);
+  if (numInput) numInput.value = value;
+  renderClips();
+  renderTabs();
+}
+
+function updateScoreFromInput(condKey, blindLabel, value) {
+  const v = parseInt(value, 10);
+  if (isNaN(v)) return;
+  const clamped = Math.max(0, Math.min(100, v));
+  ensureScoresVideo(currentTab);
+  scores[currentTab][condKey] = {
+    score: clamped,
+    blindLabel: blindLabel,
+  };
+  const slider = document.querySelector(`input.score-slider[data-cond="${condKey}"]`);
+  if (slider) slider.value = clamped;
+  renderClips();
+  renderTabs();
+}
+
+// ============================================================
+// Playbar + 즉시 전환
+// ============================================================
+async function loadSceneIntoEngine() {
+  const video = VIDEOS[currentTab];
+  const playbar = document.getElementById('playbar');
+  engineLoading = true;
+  playbar.classList.add('loading');
+  playbar.classList.remove('error');
+  setPlaybarState({ playing: false });
+  updatePlaybarProgress(0, 0);
+  document.getElementById('currentCondDisplay').textContent = '로딩 중...';
+
+  try {
+    await engine.loadScene(video.audioBase, CONDITIONS);
+    loadedVideoForEngine = currentTab;
+    updateCurrentCondDisplay();
+    updatePlaybarProgress(0, engine.getDuration());
+  } catch (e) {
+    console.error('[loadSceneIntoEngine]', e);
+    playbar.classList.add('error');
+    document.getElementById('currentCondDisplay').textContent = '로딩 실패';
+    showToast(`씬 로딩 실패: ${e.message}`, true);
+  } finally {
+    engineLoading = false;
+    playbar.classList.remove('loading');
+    renderClips();
+  }
+}
+
+async function togglePlay() {
+  if (!instantMode) return;
+  if (engineLoading) return;
+  if (loadedVideoForEngine !== currentTab) {
+    await loadSceneIntoEngine();
+  }
+  if (engine.isPlaying) {
+    engine.pause();
+    setPlaybarState({ playing: false });
+  } else {
+    engine.play();
+    setPlaybarState({ playing: true });
+  }
+  renderClips();
+}
+
+function stopPlayback() {
+  engine.stop();
+  setPlaybarState({ playing: false });
+  updatePlaybarProgress(0, engine.getDuration());
+  renderClips();
+}
+
+async function pickCondition(condKey) {
+  if (!instantMode) return;
+  if (engineLoading) {
+    showToast('로딩 중... 잠시 후 다시 시도', true);
+    return;
+  }
+  if (loadedVideoForEngine !== currentTab) {
+    await loadSceneIntoEngine();
+  }
+  if (engine.isPlaying) {
+    engine.switchCondition(condKey);
+  } else {
+    engine.currentCond = condKey;
+    engine.play();
+    setPlaybarState({ playing: true });
+  }
+  updateCurrentCondDisplay();
+  renderClips();
+}
+
+function setPlaybarState({ playing }) {
+  const btn = document.getElementById('playbarPlayBtn');
+  btn.textContent = playing ? '⏸ 일시정지' : '▶ 재생';
+}
+
+function updatePlaybarProgress(cur, dur) {
+  const fill = document.getElementById('progressFill');
+  const text = document.getElementById('progressText');
+  const pct = dur > 0 ? (cur / dur) * 100 : 0;
+  fill.style.width = `${pct}%`;
+  text.textContent = `${cur.toFixed(2)} / ${dur.toFixed(2)}s`;
+}
+
+function updateCurrentCondDisplay() {
+  const display = document.getElementById('currentCondDisplay');
+  if (!engine.currentCond) {
+    display.textContent = '—';
+    return;
+  }
+  const map = blindMaps[currentTab];
+  const blindLabel = map ? map[engine.currentCond] : '?';
+  const condObj = CONDITIONS.find(c => c.key === engine.currentCond);
+  display.textContent = blindMode
+    ? `Condition ${blindLabel}`
+    : (condObj ? condObj.label : engine.currentCond);
+}
+
+// ============================================================
+// 블라인드 토글
+// ============================================================
+document.getElementById('blindMode').addEventListener('change', (e) => {
+  const newBlind = e.target.checked;
+  if (newBlind && !blindMode) {
+    const hasAnyScores = Object.values(scores).some(v => Object.keys(v).length > 0);
+    if (hasAnyScores) {
+      const reshuffle = confirm(
+        '블라인드 모드를 다시 켭니다.\n\n' +
+        '직전에 본 매핑(어느 게 V3.1/V3.2였는지)을 그대로 두면 의미 없는 블라인드입니다.\n\n' +
+        '확인: 매핑을 새로 섞고 모든 점수를 리셋합니다.\n' +
+        '취소: 매핑/점수 유지 (블라인드 무의미, 디버깅 용도)'
+      );
+      if (reshuffle) {
+        generateAllBlindMaps();
+        for (const k of Object.keys(scores)) delete scores[k];
+        showToast('매핑 재생성 + 모든 점수 리셋');
+      }
+    } else {
+      generateAllBlindMaps();
+    }
+  }
+  blindMode = newBlind;
+  updateCurrentCondDisplay();
+  renderClips();
+  renderTabs();
+});
+
+// ============================================================
+// 즉시 전환 모드 토글
+// ============================================================
+document.getElementById('instantMode').addEventListener('change', async (e) => {
+  instantMode = e.target.checked;
+  const playbar = document.getElementById('playbar');
+  if (instantMode) {
+    playbar.style.display = 'flex';
+    if (loadedVideoForEngine !== currentTab) {
+      await loadSceneIntoEngine();
+    } else {
+      updateCurrentCondDisplay();
+      updatePlaybarProgress(engine.getCurrentTime(), engine.getDuration());
+    }
+  } else {
+    engine.stop();
+    setPlaybarState({ playing: false });
+    playbar.style.display = 'none';
+  }
+  renderClips();
+});
+
+// ============================================================
+// 결과 다운로드
+// ============================================================
+function downloadResults() {
+  const totalScored = Object.values(scores).reduce(
+    (sum, v) => sum + Object.keys(v).length, 0
+  );
+  if (totalScored === 0) {
+    if (!confirm('아직 점수를 한 개도 매기지 않았습니다. 그래도 다운로드할까요?')) {
+      return;
+    }
+  }
+
+  const result = {
+    metadata: {
+      session_id: `mood_eq_planb_${new Date().toISOString().replace(/[:.]/g, '-')}`,
+      timestamp: new Date().toISOString(),
+      mode: 'plan_b_html_player_v3',
+      instant_mode_at_export: instantMode,
+      blind_mode_at_export: blindMode,
+      total_scored: totalScored,
+      total_possible: Object.keys(VIDEOS).length * CONDITIONS.length,
+    },
+    blind_maps: blindMaps,
+    scores: scores,
+    notes: document.getElementById('notes').value,
+  };
+
+  const blob = new Blob([JSON.stringify(result, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${result.metadata.session_id}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+
+  showToast(`결과 저장: ${a.download}`);
+}
+
+function resetScores() {
+  const totalScored = Object.values(scores).reduce(
+    (sum, v) => sum + Object.keys(v).length, 0
+  );
+  if (totalScored === 0) {
+    showToast('리셋할 점수가 없습니다');
+    return;
+  }
+  if (!confirm(`현재 입력한 점수 ${totalScored}개를 모두 초기화합니다. 진행할까요?`)) return;
+  for (const k of Object.keys(scores)) delete scores[k];
+  renderClips();
+  renderTabs();
+  showToast('모든 점수 리셋됨');
+}
+
+// ============================================================
+// Toast
+// ============================================================
+let toastTimer = null;
+function showToast(message, isError) {
+  const toast = document.getElementById('toast');
+  toast.textContent = message;
+  toast.classList.toggle('error', !!isError);
+  toast.classList.add('show');
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => {
+    toast.classList.remove('show');
+  }, 2800);
+}
+
+// ============================================================
+// 초기화
+// ============================================================
+generateAllBlindMaps();
+renderTabs();
+renderClips();
+
+// 즉시 전환 모드가 기본 ON이므로 playbar 표시 + 로드 시도
+// (AudioContext는 첫 사용자 제스처가 와야 resume되므로 fetch/decode만 먼저 해둠)
+document.getElementById('playbar').style.display = 'flex';
+loadSceneIntoEngine();
+</script>
+
+</body>
+</html>

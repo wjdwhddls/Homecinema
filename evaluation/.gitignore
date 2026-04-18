@@ -1,11 +1,21 @@
 # webMUSHRA 본체는 별도 클론 (git submodule 안 씀)
 webmushra/*
-# 예외: Plan B 단독 플레이어 (12s 제한 우회 솔루션)
+# 예외: Plan B 단독 플레이어 v2 (12s 제한 우회 솔루션)
 !webmushra/simple_player.html
+# 예외: Plan B 단독 플레이어 v3 (A/B 즉시 전환 + JND 캘리브레이션)
+!webmushra/simple_player_v3.html
 # 예외: 큐레이션 YAML (Day 11~14 정식 평가 설정)
 !webmushra/configs/
 webmushra/configs/*
 !webmushra/configs/mood_eq_curated.yaml
+# 예외: 캘리브레이션 톤 wav (JND 검증용, 3개 ~1.1MB)
+!webmushra/configs/resources/
+webmushra/configs/resources/*
+!webmushra/configs/resources/audio/
+webmushra/configs/resources/audio/*
+!webmushra/configs/resources/audio/calibration/
+webmushra/configs/resources/audio/calibration/*
+!webmushra/configs/resources/audio/calibration/*.wav
 
 # raw 결과 CSV (개별 평가자별 원본 — 용량/프라이버시)
 results/raw/
