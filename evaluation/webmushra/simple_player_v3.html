@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>Mood-EQ 청취 평가 (Plan B v3.2 — V3.3 + V3.5.5 PoC)</title>
+<title>Mood-EQ 청취 평가 (Plan B v3.3 — 4조건 MUSHRA, V3.5.5 최종)</title>
 <style>
   * { box-sizing: border-box; }
   body {
@@ -401,11 +401,11 @@
 </head>
 <body>
 
-<h1>Mood-EQ 청취 평가</h1>
+<h1>Mood-EQ 청취 평가 (4조건 MUSHRA)</h1>
 <div class="subtitle">
-  원본 + 처리본 5종 (V3.1 / V3.2 / V3.3 / V3.5.5 / Anchor)을 비교 평가합니다.
+  Reference + Anchor + V3.3 + V3.5.5 (4조건) — V3.5.5 정식 채택 평가.
   점수: 0(매우 다름) ~ 100(원본과 동일).
-  V3.5.5는 v3_3과 동일 LUFS로 매칭됨 (라우드니스 편향 제거).
+  4조건 모두 v3_3.wav LUFS로 매칭 (라우드니스 편향 제거, MUSHRA 표준 anchor: 3.5 kHz LPF).
 </div>
 
 <!-- ===== v3 신규: 캘리브레이션 섹션 ===== -->
@@ -467,8 +467,9 @@
 </div>
 
 <div class="anchor-note">
-  💡 <strong>Anchor 안내</strong>: 6개 비교군 중 하나는 의도적으로 품질을 낮춘 anchor입니다.
-  진지한 평가의 sanity check 용도이며, anchor에 높은 점수가 나오면 평가 신뢰도 검토 필요.
+  💡 <strong>Anchor 안내</strong>: 4개 비교군 중 하나는 MUSHRA 표준 low anchor (3.5 kHz LPF) 입니다.
+  명백한 고역 손실로 "낮은 품질" 임이 즉시 인지되는 척도 하한 기준점이며,
+  anchor에 높은 점수가 나오면 평가 신뢰도 검토 필요.
 </div>
 
 <div class="actions">
@@ -477,7 +478,7 @@
 </div>
 
 <div class="footer-info">
-  Mood-EQ Plan B Player v3.2 · A/B 즉시 전환 + JND 캘리브레이션 + V3.3 + V3.5.5 PoC (Demucs, LUFS-matched)
+  Mood-EQ Plan B Player v3.3 · 4조건 MUSHRA (Reference/Anchor/V3.3/V3.5.5) · LUFS-matched · V3.5.5 정식 채택 평가
 </div>
 
 <div id="toast" class="toast"></div>
@@ -486,8 +487,8 @@
 // ============================================================
 // 설정
 // ============================================================
-// V3.5.5 PoC (Step 4.6/5): VIDEOS를 풀 트레일러 → 큐레이션 11s 씬으로 전환.
-// v3_5_5.wav는 씬 디렉토리에만 존재하며, 11s 클립이 A/B 청취 비교에 더 적합.
+// V3.5.5 최종 (Phase 3): 4조건 MUSHRA 평가 (Reference / Anchor / V3.3 / V3.5.5).
+// 모든 조건은 v3_3.wav LUFS로 매칭 (loudness_match.py / generate_anchor.py 결과).
 // 풀 트레일러 비교 capability는 simple_player_v3_full_trailer 등으로 분리 가능 (현재 없음).
 const VIDEOS = {
   topgun_category_eq: {
@@ -502,15 +503,13 @@ const VIDEOS = {
   },
 };
 
-// V3.5.5 PoC: 6th condition F 추가. v3_5_5_matched.wav는 v3_3과 동일 LUFS로 매칭됨
-// (loudness_match.py 결과 — Δ ≤ 0.01 LU, peak ≤ -1.0 dBFS).
+// MUSHRA 4조건 — 모두 v3_3 LUFS로 매칭됨 (Δ ≤ 0.4 LU, peak ≤ -1.0 dBFS).
+// Anchor: 3.5 kHz Butterworth 8차 LPF (ITU-R BS.1534-3 표준 low anchor).
 const CONDITIONS = [
-  { key: 'original', label: 'Original (원본)',                  file: 'original.wav' },
-  { key: 'v3_1',     label: 'V3.1 처리본 (±3dB baseline)',       file: 'v3_1.wav' },
-  { key: 'v3_2',     label: 'V3.2 처리본 (±4dB dramatic)',       file: 'v3_2.wav' },
-  { key: 'v3_3',     label: 'V3.3 처리본 (±6dB + Comp)',         file: 'v3_3.wav' },
-  { key: 'anchor',   label: 'Anchor (저품질)',                  file: 'anchor.wav' },
-  { key: 'v3_5_5',   label: 'V3.5.5 (Demucs+EQ+Comp, matched)', file: 'v3_5_5_matched.wav' },
+  { key: 'reference', label: 'Reference (원본, 매칭)',           file: 'original_matched.wav' },
+  { key: 'anchor',    label: 'Anchor (3.5kHz LPF, 표준 저품질)',  file: 'anchor_matched.wav' },
+  { key: 'v3_3',      label: 'V3.3 (±6dB EQ + Compressor)',      file: 'v3_3_matched.wav' },
+  { key: 'v3_5_5',    label: 'V3.5.5 (Demucs+EQ+Comp) — 채택본', file: 'v3_5_5_matched.wav' },
 ];
 
 const CALIBRATION_BASE = 'configs/resources/audio/calibration';
