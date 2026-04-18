@@ -2,6 +2,10 @@
 webmushra/*
 # 예외: Plan B 단독 플레이어 (12s 제한 우회 솔루션)
 !webmushra/simple_player.html
+# 예외: 큐레이션 YAML (Day 11~14 정식 평가 설정)
+!webmushra/configs/
+webmushra/configs/*
+!webmushra/configs/mood_eq_curated.yaml
 
 # raw 결과 CSV (개별 평가자별 원본 — 용량/프라이버시)
 results/raw/
