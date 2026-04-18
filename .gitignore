@@ -22,6 +22,14 @@ data/trailers/*.wav
 model/autoEQ/assets/*.pth
 model/autoEQ/assets/audioset_tagging_cnn/
 
+# 트랙 5: Bandit v2 외부 clone + 체크포인트 (446MB)
+# git clone https://github.com/ZFTurbo/Music-Source-Separation-Training.git tools/mss-training
+# checkpoint: zenodo.org/records/12701995/files/checkpoint-eng.ckpt
+tools/mss-training/
+
+# 실험 임시 산출물 (분리 stem wav, backup wav 등 — 재생성 가능)
+tmp/
+
 # 백엔드 jobs (사용자 업로드 데이터)
 backend/data/jobs/*/
 !backend/data/jobs/.gitkeep
