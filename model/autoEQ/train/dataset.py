@@ -63,6 +63,88 @@ def film_level_split(
     return train_ids, val_ids, test_ids
 
 
+def _va_quadrant(valence: float, arousal: float) -> str:
+    """HVHA / HVLA / LVHA / LVLA (sign-based 4-quadrant label)."""
+    v = "H" if valence >= 0 else "L"
+    a = "H" if arousal >= 0 else "L"
+    return f"{v}V{a}A"
+
+
+def stratified_film_level_split(
+    movie_va: dict[int, tuple[float, float]],
+    train_ratio: float = 0.75,
+    val_ratio: float = 0.125,
+    test_ratio: float = 0.125,
+    seed: int = 42,
+) -> tuple[set[int], set[int], set[int]]:
+    """Film-level split stratified by the film's mean V/A quadrant (spec 2-3).
+
+    Each movie is placed in one of 4 quadrants (HVHA/HVLA/LVHA/LVLA) by the
+    sign of its mean valence/arousal, then split independently within each
+    quadrant. Guarantees film-level disjoint train/val/test and balanced
+    emotion-quadrant coverage in every split.
+
+    Args:
+        movie_va: {movie_id: (mean_valence, mean_arousal)}
+    """
+    del test_ratio  # test gets the remainder; kept for signature symmetry
+
+    quadrants: dict[str, list[int]] = {"HVHA": [], "HVLA": [], "LVHA": [], "LVLA": []}
+    for mid in sorted(movie_va):
+        v, a = movie_va[mid]
+        quadrants[_va_quadrant(v, a)].append(mid)
+
+    train_ids: set[int] = set()
+    val_ids: set[int] = set()
+    test_ids: set[int] = set()
+
+    for i, (_, mids) in enumerate(sorted(quadrants.items())):
+        if not mids:
+            continue
+        rng = torch.Generator().manual_seed(seed + i)
+        perm = torch.randperm(len(mids), generator=rng).tolist()
+        shuffled = [mids[j] for j in perm]
+        n = len(shuffled)
+
+        # Always guarantee at least 1 train; reserve remainder for val/test.
+        if n == 1:
+            n_train, n_val = 1, 0
+        else:
+            n_train = max(1, min(n - 1, round(n * train_ratio)))
+            remaining = n - n_train
+            if remaining <= 1:
+                n_val = remaining
+            else:
+                n_val = max(1, min(remaining - 1, round(n * val_ratio)))
+        train_ids.update(shuffled[:n_train])
+        val_ids.update(shuffled[n_train : n_train + n_val])
+        test_ids.update(shuffled[n_train + n_val :])
+
+    return train_ids, val_ids, test_ids
+
+
+def compute_movie_va(
+    movie_ids: list[int],
+    valences: list[float] | Tensor,
+    arousals: list[float] | Tensor,
+) -> dict[int, tuple[float, float]]:
+    """Aggregate per-sample V/A into per-movie mean V/A."""
+    if isinstance(valences, Tensor):
+        valences = valences.tolist()
+    if isinstance(arousals, Tensor):
+        arousals = arousals.tolist()
+    sums: dict[int, list[float]] = {}
+    counts: dict[int, int] = {}
+    for mid, v, a in zip(movie_ids, valences, arousals):
+        if mid not in sums:
+            sums[mid] = [0.0, 0.0]
+            counts[mid] = 0
+        sums[mid][0] += float(v)
+        sums[mid][1] += float(a)
+        counts[mid] += 1
+    return {mid: (sums[mid][0] / counts[mid], sums[mid][1] / counts[mid]) for mid in sums}
+
+
 # --- Synthetic dataset ---
 
 
@@ -166,6 +248,48 @@ def create_dataloaders(
     )
 
     return train_loader, val_loader
+
+
+class PrecomputedFeatureDataset(Dataset):
+    """Loads pre-extracted visual/audio features from .pt files produced by
+    `precompute.py`. Serves items in the same dict schema as
+    SyntheticAutoEQDataset (minus `audio_waveform`, which only synthetic data
+    needs for alignment tests).
+    """
+
+    def __init__(self, feature_dir: str, split_name: str):
+        super().__init__()
+        from pathlib import Path as _P
+
+        d = _P(feature_dir)
+        self.visual: dict[str, Tensor] = torch.load(d / f"{split_name}_visual.pt", weights_only=False)
+        self.audio: dict[str, Tensor] = torch.load(d / f"{split_name}_audio.pt", weights_only=False)
+        self.metadata: dict[str, dict] = torch.load(d / f"{split_name}_metadata.pt", weights_only=False)
+        self.window_ids: list[str] = sorted(self.metadata.keys())
+        self.movie_ids: list[int] = [int(self.metadata[w]["movie_id"]) for w in self.window_ids]
+
+    def __len__(self) -> int:
+        return len(self.window_ids)
+
+    def __getitem__(self, idx: int) -> dict:
+        wid = self.window_ids[idx]
+        m = self.metadata[wid]
+        valence = float(m["valence"])
+        arousal = float(m["arousal"])
+        return {
+            "visual_feat": self.visual[wid],
+            "audio_feat": self.audio[wid],
+            "valence": torch.tensor(valence, dtype=torch.float32),
+            "arousal": torch.tensor(arousal, dtype=torch.float32),
+            "mood": torch.tensor(va_to_mood(valence, arousal), dtype=torch.long),
+            "cong_label": torch.tensor(0, dtype=torch.long),
+            "movie_id": self.movie_ids[idx],
+        }
+
+    def compute_per_movie_va(self) -> dict[int, tuple[float, float]]:
+        valences = [float(self.metadata[w]["valence"]) for w in self.window_ids]
+        arousals = [float(self.metadata[w]["arousal"]) for w in self.window_ids]
+        return compute_movie_va(self.movie_ids, valences, arousals)
 
 
 def align_audio(waveform: Tensor, target_samples: int = 64000) -> Tensor:

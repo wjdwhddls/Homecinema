@@ -49,3 +49,8 @@ desktop.ini
 
 # 한국어 경로 이슈로 임시 생성된 OneDrive 잔존물 (있으면)
 *.tmp
+
+/dataset
+
+# 외부 repo clone (가중치 포함. git clone + gdown으로 재현 가능)
+third_party/
