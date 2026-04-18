@@ -412,11 +412,19 @@ class SyncEngine {
   }
 
   async ensureCtx() {
+    // 페이지 로드 시 컨텍스트만 생성 (suspended 상태 허용).
+    // Chrome autoplay policy: resume()은 반드시 사용자 gesture 콜백 안에서 호출해야 함.
     if (!this.ctx) {
       const Ctor = window.AudioContext || window.webkitAudioContext;
       this.ctx = new Ctor();
     }
-    if (this.ctx.state === 'suspended') await this.ctx.resume();
+  }
+
+  async resumeIfSuspended() {
+    // 사용자 클릭(play/seek/switch) 핸들러에서 호출. suspended → running.
+    if (this.ctx && this.ctx.state === 'suspended') {
+      try { await this.ctx.resume(); } catch (e) { console.warn('[SyncEngine] resume failed:', e); }
+    }
   }
 
   async loadAll(basePath, conditions, onProgress) {
@@ -686,7 +694,8 @@ function fmtTime(sec) {
 // ============================================================
 // 조작
 // ============================================================
-function togglePlay() {
+async function togglePlay() {
+  await engine.resumeIfSuspended();   // Chrome autoplay: 사용자 gesture에서 활성화
   if (engine.isPlaying) {
     engine.pause();
     document.getElementById('playBtn').textContent = '▶ 재생';
@@ -702,12 +711,14 @@ function stopAll() {
   updateProgressDisplay(0, engine.duration);
 }
 
-function pickCondition(condKey) {
+async function pickCondition(condKey) {
+  await engine.resumeIfSuspended();
   engine.switchCondition(condKey);
   updateCurrentLabel();
 }
 
-function seekClick(e) {
+async function seekClick(e) {
+  await engine.resumeIfSuspended();
   const bar = document.getElementById('progressBar');
   const rect = bar.getBoundingClientRect();
   const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
