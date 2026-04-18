@@ -47,7 +47,29 @@ EQ_PRESETS_V3_2 = {
 PRESET_VERSIONS = {
     "v3_1": EQ_PRESETS_V3_1,
     "v3_2": EQ_PRESETS_V3_2,
+    "v3_3": None,  # V3_3 아래에서 정의 후 채움 (forward declaration 회피)
 }
+
+# ────────────────────────────────────────────────────────
+# V3.3 Extended: ±6dB, 강한 mood 확대 (Compressor 후처리와 함께)
+# 방식 C(하이브리드): PRESET_VERSIONS에는 미등록 — 별도 wrapper에서만 사용.
+# 청취 평가 결과에 따라 PRESET_VERSIONS 등록 여부 결정.
+# ────────────────────────────────────────────────────────
+EQ_PRESETS_V3_3 = {
+    # 강한 mood — 시그니처 밴드를 ±6dB까지 확대 (V3.2 V-shape/tilt 유지)
+    "Tension":           np.array([+5.0, +5.0, +2.0, -3.0, -3.5, -1.5, +5.5, +6.0, +2.5, -1.0]),
+    "Sadness":           np.array([+3.0, +6.0, +6.0, +4.5, +1.0, -1.5, -5.0, -5.0, -4.5, -3.5]),
+    "Joyful Activation": np.array([+2.5, +1.5, -1.5, -1.0, +2.0, +4.0, +6.0, +6.0, +4.5, +3.0]),
+    "Power":             np.array([+6.0, +6.0, +3.5, +0.5, -2.0, -0.5, +4.0, +5.5, +3.5, +1.5]),
+    "Wonder":            np.array([-0.5, -0.5,  0.0, -1.5, -0.5, +1.5, +3.0, +4.5, +6.0, +6.0]),
+    # 약한 mood — V3.2 그대로 (균질화 방지, 영화 음향 디자인 원칙)
+    "Tenderness":        np.array([-0.5, +1.0, +2.5, +3.0, +2.0, +0.5, -1.5, -2.5, -2.0, -1.0]),
+    "Peacefulness":      np.array([+0.5, +1.0, +1.5, +1.5,  0.0, -0.5, -1.5, -2.0, -1.0,  0.0]),
+}
+
+# PRESET_VERSIONS에 V3.3 정식 등록 (청취 평가 후 채택)
+# analyzer.py의 for-loop가 자동으로 processed_v3_3.mp4도 생성하게 됨
+PRESET_VERSIONS["v3_3"] = EQ_PRESETS_V3_3
 
 # 기본 프리셋 — 청취 평가 후 변경 가능
 DEFAULT_PRESET_VERSION = "v3_1"
@@ -136,16 +158,18 @@ def compute_effective_eq_both_versions(
     alpha_d: float = 0.5,
     intensity: float = 1.0,
 ) -> dict[str, np.ndarray]:
-    """V3.1과 V3.2를 동시에 계산해서 dict로 반환."""
+    """PRESET_VERSIONS에 등록된 모든 버전에 대해 effective EQ를 동시 계산.
+
+    함수명은 '_both_versions' 레거시 (V3.1/V3.2 2개 시절). 지금은 PRESET_VERSIONS
+    등록 키 전부 동적 반환. analyzer.py가 이 함수의 반환 dict을 그대로 alt_versions로 쓰므로
+    새 프리셋 등록 시 추가 수정 없이 자동 반영됨.
+    """
     return {
-        "v3_1": compute_effective_eq(
+        version: compute_effective_eq(
             mood_probabilities, dialogue_density,
-            alpha_d, intensity, presets=EQ_PRESETS_V3_1,
-        ),
-        "v3_2": compute_effective_eq(
-            mood_probabilities, dialogue_density,
-            alpha_d, intensity, presets=EQ_PRESETS_V3_2,
-        ),
+            alpha_d, intensity, presets=presets,
+        )
+        for version, presets in PRESET_VERSIONS.items()
     }
 
 
@@ -175,7 +199,7 @@ def verify_eq_presets() -> None:
         for name, gains in presets.items():
             assert len(gains) == 10, f"{version_name}/{name}: {len(gains)}밴드 ≠ 10"
 
-        max_allowed = 3.0 if version_name == "v3_1" else 5.0
+        max_allowed = {"v3_1": 3.0, "v3_2": 5.0, "v3_3": 6.0}.get(version_name, 6.0)
         for name, gains in presets.items():
             max_gain = np.abs(gains).max()
             assert max_gain <= max_allowed, \
