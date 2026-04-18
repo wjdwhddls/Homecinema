@@ -4,6 +4,8 @@ webmushra/*
 !webmushra/simple_player.html
 # 예외: Plan B 단독 플레이어 v3 (A/B 즉시 전환 + JND 캘리브레이션)
 !webmushra/simple_player_v3.html
+# 예외: 풀 트레일러 5조건 동기 비교 (V3.5.6 평가용)
+!webmushra/full_trailer_comparison.html
 # 예외: 큐레이션 YAML (Day 11~14 정식 평가 설정)
 !webmushra/configs/
 webmushra/configs/*
