@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>Mood-EQ 풀 트레일러 비교 (5조건, V3.5.6 PoC)</title>
+<title>Mood-EQ 풀 트레일러 비교 (3조건 — Reference vs Anchor vs V3.5.6)</title>
 <style>
   * { box-sizing: border-box; }
   body {
@@ -269,9 +269,10 @@
 </head>
 <body>
 
-<h1>Mood-EQ 풀 트레일러 비교 (5조건)</h1>
+<h1>Mood-EQ 풀 트레일러 비교 (3조건)</h1>
 <div class="subtitle">
-  탑건 트레일러(144s) 전체를 5조건으로 동기 비교: Reference / V3.3 / V3.5.5 / V3.5.6 / Anchor.
+  탑건 트레일러(144s) 전체를 3조건으로 동기 비교: <strong>Reference / Anchor / V3.5.6</strong>.
+  핵심 질문 — <strong>"최선 버전(V3.5.6)이 원본(Reference)보다 나은가?"</strong>
   모두 동일 LUFS 매칭, 동시 재생 후 한 조건만 언뮤트 → 다른 조건 클릭 시 끊김 없이 전환.
   평가: 각 조건에 대해 <strong>전반적 선호도 / 명료도 / 자연스러움</strong> 0~100 점.
 </div>
@@ -279,8 +280,8 @@
 <div class="instruction-box">
   <p><strong>평가 방법</strong></p>
   <ul>
-    <li>▶ 재생 시작 후 <strong>A~E 버튼</strong> (또는 키보드 <span class="kbd-inline">1</span>~<span class="kbd-inline">5</span>) 눌러 조건 간 즉시 전환</li>
-    <li>5조건은 <strong>블라인드</strong>로 무작위 배치 — 매 세션 셔플</li>
+    <li>▶ 재생 시작 후 <strong>A~C 버튼</strong> (또는 키보드 <span class="kbd-inline">1</span>~<span class="kbd-inline">3</span>) 눌러 조건 간 즉시 전환</li>
+    <li>3조건은 <strong>블라인드</strong>로 무작위 배치 — 매 세션 셔플</li>
     <li>중간 재탐색: 진행바 클릭 (모든 조건 동시 seek)</li>
     <li>각 조건에 대해 <strong>3가지 축</strong>으로 점수 부여:
       <ul>
@@ -338,9 +339,10 @@
 </div>
 
 <div class="anchor-note">
-  💡 <strong>Anchor 안내</strong>: 5조건 중 하나는 MUSHRA 표준 low anchor (3.5 kHz LPF) 입니다.
-  명백히 답답한 "저품질" 음향이 즉시 인지되는 척도 하한점 — 이 조건에 <strong>선호도 90 이상</strong>을
-  준다면 평가 신뢰도 재검토가 필요합니다 (post-screening 자동 플래그).
+  💡 <strong>Anchor 안내</strong>: 3조건 중 하나는 MUSHRA 표준 low anchor (3.5 kHz LPF) 입니다.
+  명백히 답답한 "저품질" 음향이 즉시 인지되는 척도 하한점 — 이 조건에 <strong>선호도 30 초과</strong>를
+  준다면 평가 신뢰도 재검토가 필요합니다 (post-screening 자동 플래그). 또한 Reference에
+  <strong>선호도 85 미만</strong>이면 레퍼런스 식별 실패로 분류.
 </div>
 
 <div class="actions">
@@ -350,7 +352,7 @@
 </div>
 
 <div class="footer-info">
-  Mood-EQ Full-Trailer Comparison Player v1.0 · 5조건 동기 비교 · 3축 평가 · LUFS-matched · post-screening
+  Mood-EQ Full-Trailer Comparison Player v1.1 · 3조건 동기 비교 (Reference/Anchor/V3.5.6) · 3축 평가 · LUFS-matched · post-screening
 </div>
 
 <div id="toast" class="toast"></div>
@@ -362,11 +364,11 @@
 // ============================================================
 const AUDIO_BASE = 'configs/resources/audio/full_trailer/topgun';
 
+// Phase Z1: 5조건 → 3조건 축소. V3.3 / V3.5.5 wav는 archive/ 디렉토리로 이동
+// (보존, 향후 ablation 페이지 재사용 가능). 핵심 메시지 "최선 vs 원본" 집중.
 const CONDITIONS = [
   { key: 'reference', label: 'Reference',  file: 'original_matched.wav' },
   { key: 'anchor',    label: 'Anchor',     file: 'anchor_matched.wav' },
-  { key: 'v3_3',      label: 'V3.3',       file: 'v3_3_matched.wav' },
-  { key: 'v3_5_5',    label: 'V3.5.5',     file: 'v3_5_5_matched.wav' },
   { key: 'v3_5_6',    label: 'V3.5.6',     file: 'v3_5_6_matched.wav' },
 ];
 
@@ -717,11 +719,12 @@ function downloadResults() {
   const refScore    = (scores[refKey] || {}).preference;
   const anchorScore = (scores[anchorKey] || {}).preference;
   const warnings = [];
-  if (anchorScore !== undefined && anchorScore > 90) {
-    warnings.push(`anchor preference ${anchorScore} > 90 — anchor를 고품질로 오인`);
+  // Phase Z1 임계값 강화: 3조건 축소에 따라 anchor/reference 구분 기대치 상향
+  if (anchorScore !== undefined && anchorScore > 30) {
+    warnings.push(`anchor preference ${anchorScore} > 30 — anchor를 비교적 고품질로 오인 (임계 강화)`);
   }
-  if (refScore !== undefined && refScore < 90) {
-    warnings.push(`reference preference ${refScore} < 90 — 레퍼런스 식별 실패 의심`);
+  if (refScore !== undefined && refScore < 85) {
+    warnings.push(`reference preference ${refScore} < 85 — 레퍼런스 식별 실패 의심 (임계 강화)`);
   }
   const post_screening = {
     reference_preference: refScore,
@@ -810,7 +813,7 @@ function showToast(msg, isError) {
 document.addEventListener('keydown', (e) => {
   const tag = e.target.tagName;
   if (tag === 'TEXTAREA' || tag === 'INPUT' || tag === 'SELECT') return;
-  if (e.key >= '1' && e.key <= '5') {
+  if (e.key >= '1' && e.key <= '3') {
     e.preventDefault();
     const idx = parseInt(e.key, 10) - 1;
     const label = String.fromCharCode(65 + idx);
@@ -842,7 +845,7 @@ renderScoreCards();
     document.getElementById('playBtn').disabled = false;
     updateProgressDisplay(0, engine.duration);
     overlay.classList.add('hidden');
-    showToast(`5 조건 로딩 완료 (${fmtTime(engine.duration)})`);
+    showToast(`3 조건 로딩 완료 (${fmtTime(engine.duration)})`);
   } catch (e) {
     overlay.textContent = `오디오 로딩 실패: ${e.message}`;
     overlay.style.background = 'rgba(90, 45, 45, 0.85)';
