@@ -356,7 +356,17 @@
 </div>
 
 <div id="toast" class="toast"></div>
-<div id="loadingOverlay" class="loading-overlay">오디오 파일 로딩 중...</div>
+<div id="loadingOverlay" class="loading-overlay">
+  <div style="text-align:center; min-width:320px;">
+    <div id="loadingTitle" style="font-size:18px; margin-bottom:14px;">오디오 파일 로딩 중...</div>
+    <div style="width:100%; background:#2a2a2a; border-radius:6px; overflow:hidden; height:10px; margin-bottom:8px;">
+      <div id="loadingBar" style="height:100%; background:#4a90e2; width:0%; transition:width 0.15s ease;"></div>
+    </div>
+    <div id="loadingDetail" style="font-size:13px; color:#aaa; font-variant-numeric:tabular-nums;">
+      준비 중...
+    </div>
+  </div>
+</div>
 
 <script>
 // ============================================================
@@ -364,12 +374,13 @@
 // ============================================================
 const AUDIO_BASE = 'configs/resources/audio/full_trailer/topgun';
 
-// Phase Z1: 5조건 → 3조건 축소. V3.3 / V3.5.5 wav는 archive/ 디렉토리로 이동
-// (보존, 향후 ablation 페이지 재사용 가능). 핵심 메시지 "최선 vs 원본" 집중.
+// Phase Z1: 5조건 → 3조건 축소. V3.3 / V3.5.5 wav는 archive/ 디렉토리로 이동.
+// Phase Z2: wav → opus 320kbps 변환 (~5MB/file, 80% 감소). ffmpeg libopus,
+// 320 kbps는 transparent 품질 (웹 stereo 48kHz 기준). wav 원본은 archive/에 보존.
 const CONDITIONS = [
-  { key: 'reference', label: 'Reference',  file: 'original_matched.wav' },
-  { key: 'anchor',    label: 'Anchor',     file: 'anchor_matched.wav' },
-  { key: 'v3_5_6',    label: 'V3.5.6',     file: 'v3_5_6_matched.wav' },
+  { key: 'reference', label: 'Reference',  file: 'original_matched.opus' },
+  { key: 'anchor',    label: 'Anchor',     file: 'anchor_matched.opus' },
+  { key: 'v3_5_6',    label: 'V3.5.6',     file: 'v3_5_6_matched.opus' },
 ];
 
 const AXES = [
@@ -408,17 +419,29 @@ class SyncEngine {
     if (this.ctx.state === 'suspended') await this.ctx.resume();
   }
 
-  async loadAll(basePath, conditions) {
+  async loadAll(basePath, conditions, onProgress) {
     await this.ensureCtx();
     this.stop();
     this.buffers = {};
 
+    const total = conditions.length;
+    let fetched = 0, decoded = 0;
+
+    const emit = (stage, cond) => {
+      if (onProgress) onProgress({ stage, cond, fetched, decoded, total });
+    };
+
     const loadOne = async (cond) => {
       const url = `${basePath}/${cond.file}`;
+      emit('fetch_start', cond);
       const r = await fetch(url);
       if (!r.ok) throw new Error(`${url} → ${r.status}`);
       const ab = await r.arrayBuffer();
+      fetched += 1;
+      emit('fetch_done', cond);
       const buf = await this.ctx.decodeAudioData(ab);
+      decoded += 1;
+      emit('decode_done', cond);
       return [cond.key, buf];
     };
 
@@ -838,16 +861,40 @@ generateBlindMap();
 renderConditionButtons();
 renderScoreCards();
 
+function updateLoadingUI(p) {
+  const bar = document.getElementById('loadingBar');
+  const detail = document.getElementById('loadingDetail');
+  // fetched + decoded 를 합산해 2*total 기준 진행률
+  const progress = (p.fetched + p.decoded) / (2 * p.total);
+  const pct = Math.round(progress * 100);
+  bar.style.width = `${pct}%`;
+  const condLabel = p.cond ? (p.cond.label || p.cond.key) : '';
+  const stageKo = ({
+    fetch_start: '받는 중',
+    fetch_done:  '받기 완료',
+    decode_done: '디코드 완료',
+  })[p.stage] || p.stage;
+  detail.textContent = `${pct}%  ·  ${p.fetched}/${p.total} 받음  ·  ${p.decoded}/${p.total} 디코드  ·  현재: ${condLabel} ${stageKo}`;
+}
+
 (async function init() {
   const overlay = document.getElementById('loadingOverlay');
+  const t0 = performance.now();
   try {
-    await engine.loadAll(AUDIO_BASE, CONDITIONS);
+    await engine.loadAll(AUDIO_BASE, CONDITIONS, updateLoadingUI);
+    const elapsed = ((performance.now() - t0) / 1000).toFixed(1);
     document.getElementById('playBtn').disabled = false;
     updateProgressDisplay(0, engine.duration);
     overlay.classList.add('hidden');
-    showToast(`3 조건 로딩 완료 (${fmtTime(engine.duration)})`);
+    showToast(`3 조건 로딩 완료 (${fmtTime(engine.duration)}, ${elapsed}s)`);
   } catch (e) {
-    overlay.textContent = `오디오 로딩 실패: ${e.message}`;
+    overlay.innerHTML = `<div style="text-align:center; padding:24px;">
+      <div style="font-size:18px; color:#f0a8a8; margin-bottom:8px;">오디오 로딩 실패</div>
+      <div style="font-size:13px; color:#aaa;">${e.message}</div>
+      <div style="font-size:12px; color:#888; margin-top:12px;">
+        브라우저 콘솔 확인. 서버(save_server.py)가 실행 중인지, 파일 경로가 올바른지 확인하세요.
+      </div>
+    </div>`;
     overlay.style.background = 'rgba(90, 45, 45, 0.85)';
     console.error(e);
   }
