@@ -87,9 +87,10 @@ def build(
     # 대신 'test_gold'로 split 재지정
     df.loc[gold_rows, "split"] = "test_gold"
 
-    # disagreement queue — train+val films의 source=disagreement 에서 샘플
+    # disagreement queue — train+val films의 Layer1↔Gemini 불일치 샘플 (source=gemini_only)
+    # Gemini 단독으로 라벨했지만 Layer 1과 불일치했던 것들 → human 재검증 후보
     dis_pool = df[
-        (df["source"] == "disagreement") & df["split"].isin(["train", "val"])
+        (df["source"] == "gemini_only") & df["split"].isin(["train", "val"])
     ]
     n_dis = min(disagreement_sample, len(dis_pool))
     dis_idx = rng.choice(dis_pool.index, size=n_dis, replace=False) if n_dis > 0 else []

@@ -227,7 +227,41 @@ BLENDER_EXTRA_ENTRIES: list[FilmEntry] = [
 ]
 
 
-ALL_FILMS: list[FilmEntry] = EMO_FILM_ENTRIES + BLENDER_EXTRA_ENTRIES
+# Live-action 확장 (2026-04-19 추가): 애니메이션 편향 완화 목적.
+# 각 영화 full feature 중 runtime 25%/50%/75% 지점의 4분씩 × 3 segment = 12분 highlight 사용.
+# 원본 mp4는 films/_sources/에 백업, highlight만 films/에 노출.
+LIVE_ACTION_HIGHLIGHTS: list[FilmEntry] = [
+    FilmEntry(
+        film_id="his_girl_friday_highlight",
+        title="His Girl Friday (1940) - highlights",
+        duration_sec=720,
+        license="Public Domain",
+        source="archive",
+        download_url="https://archive.org/download/his-girl-friday-1940_202109/His%20Girl%20Friday%20%281940%29.ia.mp4",
+        notes="Howard Hawks 1940 스크루볼 코미디. 공공영역. 25%/50%/75% × 4min highlights.",
+    ),
+    FilmEntry(
+        film_id="doa_highlight",
+        title="D.O.A. (1950) - highlights",
+        duration_sec=720,
+        license="Public Domain",
+        source="archive",
+        download_url="https://archive.org/download/d.-o.-a.-with-edmond-o-brien-1950-1080p-hd-film/D.%20O.%20A.%20with%20Edmond%20O%27Brien%201950%20-%201080p%20HD%20Film.mp4",
+        notes="Rudolph Maté 1950 film noir. 공공영역. 25%/50%/75% × 4min highlights.",
+    ),
+    FilmEntry(
+        film_id="valkaama_highlight",
+        title="Valkaama (2010) - highlights",
+        duration_sec=720,
+        license="CC-BY-SA-3.0",
+        source="archive",
+        download_url="https://archive.org/download/PA6827366/PA_682_7366.mp4",
+        notes="Tim Baumann 2010 open source drama. CC-BY-SA 3.0 (파생물도 SA). 25%/50%/75% × 4min highlights.",
+    ),
+]
+
+
+ALL_FILMS: list[FilmEntry] = EMO_FILM_ENTRIES + BLENDER_EXTRA_ENTRIES + LIVE_ACTION_HIGHLIGHTS
 
 
 def get_downloadable_films() -> list[FilmEntry]:

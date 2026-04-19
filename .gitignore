@@ -54,3 +54,9 @@ desktop.ini
 
 # 외부 repo clone (가중치 포함. git clone + gdown으로 재현 가능)
 third_party/
+
+# 학습/추론 산출물 (재현 가능, GitHub 100MB 파일 제한 회피)
+runs/
+
+# Precomputed frozen features (재현 가능: ccmovies_preprocess.py)
+data/features/

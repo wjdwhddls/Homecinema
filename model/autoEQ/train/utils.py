@@ -86,7 +86,7 @@ def compute_va_regression_metrics(
 ) -> dict[str, float]:
     """MAE / RMSE / Pearson for valence & arousal. Complements existing CCC.
 
-    RMSE added per train_cog spec (AVEC/MediaEval reporting convention).
+    RMSE added per train_pseudo spec (AVEC/MediaEval reporting convention).
     Backward compatible — existing callers see new rmse_* keys but other
     keys unchanged.
     """
