@@ -3,7 +3,8 @@
 작업 10, 10-2, 14 (Day 4~5, 8~9):
 - build_eq_chain: 10밴드 게인 → pedalboard 필터 체인
 - apply_eq_to_file: 단일 EQ를 파일 전체에 적용
-- apply_timevarying_eq: 씬별 EQ + 크로스페이드를 시간축으로 적용
+- apply_timevarying_eq: 씬별 EQ + 크로스페이드를 시간축으로 적용 (파일 I/O)
+- apply_timevarying_eq_array: 메모리 배열 입출력 (V3.5.5 PoC: 스템별 처리)
 - should_apply_eq: 무음 / 저신뢰도 엣지 케이스 처리
 """
 
@@ -14,7 +15,7 @@ from pedalboard import Pedalboard, PeakFilter
 from pedalboard.io import AudioFile
 
 from .eq_engine import BAND_FREQS, BAND_Q
-from .smoothing import get_eq_at_time
+from .smoothing import get_eq_at_time, get_eq_at_time_simple
 
 
 # ────────────────────────────────────────────────────────
@@ -57,7 +58,51 @@ def apply_eq_to_file(input_wav, output_wav, gains, prevent_clipping: bool = True
 
 
 # ────────────────────────────────────────────────────────
-# 시간축 EQ 적용
+# 시간축 EQ 적용 — 코어 (파일/배열 공용)
+# ────────────────────────────────────────────────────────
+def _apply_blocks_with_chain(
+    audio: np.ndarray,
+    sr: int,
+    scenes_eq: list[dict],
+    block_sec: float = 0.5,
+    prevent_clipping: bool = True,
+    use_crossfade: bool = True,
+) -> np.ndarray:
+    """시변 EQ 블록 처리 코어. audio shape: (channels, samples).
+
+    block_sec 단위로 EQ 체인을 갱신. 각 블록의 중심 시각으로 get_eq_at_time
+    조회 → 크로스페이드 보간 결과 게인을 사용. 호출자가 입력의 시간축 좌표계와
+    scenes_eq의 시간축 좌표계가 일치하도록 보장해야 함 (예: 클립의 0초 = scenes_eq의 0초).
+
+    use_crossfade=True (기본): cut 0.3s / dissolve 2.0s 차등 크로스페이드.
+    False: 씬 경계에서 EQ 급변 (폴백, 비교/디버깅용).
+    """
+    eq_getter = get_eq_at_time if use_crossfade else get_eq_at_time_simple
+
+    block_samples = int(block_sec * sr)
+    out = np.zeros_like(audio)
+
+    for start in range(0, audio.shape[-1], block_samples):
+        end = min(start + block_samples, audio.shape[-1])
+        t_center = (start + end) / 2 / sr
+
+        gains = eq_getter(t_center, scenes_eq)
+        chain = build_eq_chain(gains)
+
+        block = audio[..., start:end]
+        out[..., start:end] = chain(block, sr)
+
+    if prevent_clipping:
+        peak = float(np.abs(out).max())
+        if peak > 0.99:
+            out = out * (0.95 / peak)
+            print(f"    ⚠️ 클리핑 방지: peak {peak:.3f} → 0.95")
+
+    return out
+
+
+# ────────────────────────────────────────────────────────
+# 시간축 EQ 적용 — 파일 I/O (기존 시그니처 유지, backward compat)
 # ────────────────────────────────────────────────────────
 def apply_timevarying_eq(
     input_wav, output_wav, scenes_eq: list[dict],
@@ -76,27 +121,102 @@ def apply_timevarying_eq(
         audio = f.read(f.frames)
         sr = f.samplerate
 
-    block_samples = int(block_sec * sr)
-    out = np.zeros_like(audio)
-
-    for start in range(0, audio.shape[-1], block_samples):
-        end = min(start + block_samples, audio.shape[-1])
-        t_center = (start + end) / 2 / sr
-
-        gains = get_eq_at_time(t_center, scenes_eq)
-        chain = build_eq_chain(gains)
-
-        block = audio[..., start:end]
-        out[..., start:end] = chain(block, sr)
-
-    if prevent_clipping:
-        peak = np.abs(out).max()
-        if peak > 0.99:
-            out = out * (0.95 / peak)
-            print(f"    ⚠️ 클리핑 방지: peak {peak:.3f} → 0.95")
+    out = _apply_blocks_with_chain(audio, sr, scenes_eq, block_sec, prevent_clipping)
 
     with AudioFile(str(output_wav), "w", sr, audio.shape[0]) as f:
         f.write(out)
+
+
+# ────────────────────────────────────────────────────────
+# 시간축 EQ 적용 — 메모리 배열 (V3.5.5 PoC: 스템별 처리)
+# ────────────────────────────────────────────────────────
+def apply_timevarying_eq_array(
+    audio_array: np.ndarray,
+    sample_rate: int,
+    scenes: list[dict],
+    clip_start_sec: float,
+    clip_end_sec: float,
+    alpha_d: float = 0.5,
+    intensity: float = 1.0,
+    confidence_scaling: bool = True,
+    dialogue_protection: bool = True,
+    presets: dict | None = None,
+    block_sec: float = 0.5,
+    prevent_clipping: bool = False,
+    use_crossfade: bool = True,
+) -> np.ndarray:
+    """메모리 배열 입출력 시변 EQ. timeline scenes에서 [clip_start, clip_end] 윈도우
+    추출 + 씬별 effective_gains 계산 + 시변 EQ 적용.
+
+    파일 기반 apply_timevarying_eq와 동일한 _apply_blocks_with_chain 코어를 공유하되,
+    입출력은 메모리 배열. V3.5.5 wrapper에서 vocals/no_vocals 스템에 각각 호출하기 위함.
+
+    Args:
+        audio_array:        shape (channels, samples) 또는 (samples,)
+                            — 클립의 [clip_start_sec, clip_end_sec] 구간 오디오
+        sample_rate:        샘플 레이트
+        scenes:             timeline.json의 raw scenes (각 항목에 aggregated.mood_probs_mean,
+                            dialogue.density 포함)
+        clip_start_sec:     풀 트레일러 내 클립 시작 시각 (씬 좌표 변환용)
+        clip_end_sec:       풀 트레일러 내 클립 종료 시각
+        alpha_d:            dialogue protection 강도 (0=완전 보호, 1=보호 없음)
+        intensity:          EQ 게인 스케일 (1.0=프리셋 그대로)
+        confidence_scaling: True면 지배 mood 확률에 따라 EQ 강도 보정
+        dialogue_protection: False면 density를 0으로 강제 (no_vocals 스템처럼 vocal이
+                            거의 없는 신호에서 voice 대역 보호가 의미 없을 때 사용 가능)
+        presets:            EQ_PRESETS_V3_3 등 프리셋 dict (기본 V3.3)
+        block_sec:          블록 단위 (기본 0.5초)
+        prevent_clipping:   True면 peak>0.99 시 0.95로 정규화. wrapper에서 합산·압축 후
+                            관리하는 게 일반적이라 기본 False.
+
+    Returns:
+        같은 shape의 처리된 배열.
+    """
+    from .eq_engine import EQ_PRESETS_V3_3, compute_effective_eq
+
+    if presets is None:
+        presets = EQ_PRESETS_V3_3
+
+    # 클립 윈도우와 겹치는 씬만 추출 + 씬 시각을 클립 좌표(0=clip_start_sec)로 변환
+    clip_dur = clip_end_sec - clip_start_sec
+    scenes_eq_local: list[dict] = []
+    for s in scenes:
+        if s["end_sec"] <= clip_start_sec or s["start_sec"] >= clip_end_sec:
+            continue
+        rel_start = max(0.0, s["start_sec"] - clip_start_sec)
+        rel_end   = min(clip_dur, s["end_sec"] - clip_start_sec)
+
+        probs = s["aggregated"]["mood_probs_mean"]
+        density = s["dialogue"]["density"] if dialogue_protection else 0.0
+
+        gains = compute_effective_eq(
+            probs, density,
+            alpha_d=alpha_d, intensity=intensity,
+            confidence_scaling=confidence_scaling,
+            presets=presets,
+        )
+        scenes_eq_local.append({
+            "start_sec":      rel_start,
+            "end_sec":        rel_end,
+            "transition_out": s.get("transition_out", "cut"),
+            "effective_gains": gains,
+        })
+
+    if not scenes_eq_local:
+        return audio_array.copy()
+
+    one_d = (audio_array.ndim == 1)
+    audio = (audio_array[np.newaxis, :] if one_d else audio_array).astype(
+        np.float32, copy=False
+    )
+
+    out = _apply_blocks_with_chain(
+        audio, sample_rate, scenes_eq_local,
+        block_sec=block_sec, prevent_clipping=prevent_clipping,
+        use_crossfade=use_crossfade,
+    )
+
+    return out[0] if one_d else out
 
 
 # ────────────────────────────────────────────────────────

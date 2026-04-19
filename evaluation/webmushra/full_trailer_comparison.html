@@ -1,0 +1,1060 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>Mood-EQ 풀 트레일러 비교 (3조건 — Reference vs Anchor vs V3.5.7)</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    max-width: 1100px;
+    margin: 24px auto;
+    padding: 0 20px;
+    background: #1a1a1a;
+    color: #e8e8e8;
+    line-height: 1.5;
+  }
+  h1 { color: #fff; margin-bottom: 8px; }
+  .subtitle { color: #999; margin-bottom: 24px; font-size: 14px; }
+
+  .instruction-box {
+    margin-bottom: 20px;
+    padding: 14px 18px;
+    background: linear-gradient(135deg, #1e2530, #1a2030);
+    border: 1px solid #2f4060;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #c0c8d0;
+  }
+  .instruction-box p { margin: 0 0 6px 0; }
+  .instruction-box strong { color: #fff; }
+  .instruction-box ul { margin: 6px 0 0 20px; padding: 0; }
+  .instruction-box li { margin: 3px 0; }
+  .instruction-box .kbd-inline {
+    display: inline-block;
+    padding: 1px 6px;
+    background: #1a1a1a;
+    border: 1px solid #444;
+    border-radius: 4px;
+    font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+    font-size: 11px;
+    color: #8ab4e8;
+  }
+
+  .participant-box {
+    margin-bottom: 20px;
+    padding: 14px 18px;
+    background: #252525;
+    border: 1px solid #383838;
+    border-radius: 8px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    align-items: end;
+  }
+  .participant-box label { display: block; font-size: 12px; color: #888; margin-bottom: 4px; }
+  .participant-box input, .participant-box select {
+    width: 100%; padding: 6px 8px;
+    background: #1a1a1a; color: #fff;
+    border: 1px solid #444; border-radius: 4px;
+    font-size: 14px; font-family: inherit;
+  }
+  .participant-box input[readonly] {
+    color: #8ab4e8; font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+    font-size: 13px; background: #15191f; cursor: text;
+  }
+
+  /* W2: 블라인드 토글 행 */
+  .blind-row {
+    margin-bottom: 16px;
+    padding: 10px 16px;
+    background: #1f2530;
+    border: 1px solid #2f4060;
+    border-radius: 8px;
+    display: flex; align-items: center; gap: 12px;
+    flex-wrap: wrap; font-size: 13px;
+  }
+  .blind-row .switch { display: flex; align-items: center; gap: 8px; }
+  .blind-row input[type=checkbox] { width: 18px; height: 18px; cursor: pointer; accent-color: #4a90e2; }
+  .blind-row label { cursor: pointer; user-select: none; color: #c0c8d0; }
+  .blind-row .blind-status {
+    margin-left: auto; padding: 4px 10px;
+    border-radius: 4px; font-size: 12px; font-weight: 600;
+  }
+  .blind-row .blind-status.on  { background: #1e3a1e; color: #8fd48f; border: 1px solid #2d5a2d; }
+  .blind-row .blind-status.off { background: #3a2a1e; color: #d4a647; border: 1px solid #5a4030; }
+
+  /* 동기화 playbar */
+  .sync-playbar {
+    padding: 16px 20px;
+    margin-bottom: 20px;
+    background: #1e2b1e;
+    border: 1px solid #2d5a2d;
+    border-radius: 10px;
+  }
+  .sync-playbar-top {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+  }
+  .sync-playbar .btn-play, .sync-playbar .btn-stop {
+    padding: 10px 20px;
+    border: none; border-radius: 6px;
+    cursor: pointer; font-size: 14px; font-weight: 600;
+  }
+  .sync-playbar .btn-play { background: #4a90e2; color: #fff; min-width: 100px; }
+  .sync-playbar .btn-play:hover { background: #357abd; }
+  .sync-playbar .btn-stop { background: #383838; color: #e8e8e8; }
+  .sync-playbar .progress {
+    flex: 1; min-width: 240px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .progress-bar {
+    flex: 1; height: 10px;
+    background: #2a3a2a; border-radius: 5px; overflow: hidden;
+    cursor: pointer;
+  }
+  .progress-fill {
+    height: 100%; background: #4a90e2;
+    width: 0%; transition: width 0.05s linear;
+  }
+  .progress-text {
+    font-variant-numeric: tabular-nums;
+    font-size: 13px; color: #aaa;
+    min-width: 110px; text-align: right;
+  }
+  .current-indicator {
+    padding: 8px 14px;
+    background: #0f2a0f; border: 1px solid #2d5a2d; border-radius: 6px;
+    font-size: 13px;
+  }
+  .current-indicator strong { color: #8fd48f; font-size: 16px; margin-left: 6px; }
+
+  .condition-buttons {
+    display: flex; gap: 10px; flex-wrap: wrap;
+  }
+  .cond-btn {
+    flex: 1 1 120px;
+    padding: 12px 10px;
+    background: #252525;
+    color: #e8e8e8;
+    border: 2px solid #383838;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 600;
+    transition: all 0.15s ease;
+    display: flex; flex-direction: column;
+    align-items: center; gap: 4px;
+  }
+  .cond-btn:hover {
+    background: #2f2f2f; border-color: #4a90e2;
+  }
+  .cond-btn.active {
+    background: #2a5a7a;
+    border-color: #8fd48f;
+    box-shadow: 0 0 0 2px rgba(143, 212, 143, 0.35);
+    animation: btn-pulse 1.6s ease-in-out infinite;
+  }
+  @keyframes btn-pulse {
+    0%, 100% { box-shadow: 0 0 0 2px rgba(143, 212, 143, 0.35); }
+    50%      { box-shadow: 0 0 0 3px rgba(143, 212, 143, 0.65); }
+  }
+  .cond-btn .label-big { font-size: 20px; }
+  .cond-btn .kbd-hint {
+    padding: 1px 6px;
+    background: rgba(0,0,0,0.35);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 4px;
+    font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+    font-size: 11px;
+    color: rgba(255,255,255,0.7);
+  }
+
+  /* 점수 카드 5×3 */
+  .score-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .score-card {
+    background: #252525;
+    border: 1px solid #383838;
+    border-radius: 10px;
+    padding: 18px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    position: relative;
+  }
+  .score-card.touched { border-color: #2d5a2d; }
+  .score-card .untouched-badge {
+    position: absolute; top: 10px; right: 12px;
+    font-size: 11px; padding: 2px 8px;
+    background: #3a2a1e; color: #d4a647;
+    border: 1px solid #5a4030; border-radius: 4px;
+  }
+  .score-card.touched .untouched-badge { display: none; }
+  .score-card h3 {
+    margin: 0 0 12px 0;
+    color: #4a90e2;
+    font-size: 18px;
+  }
+  .axis-row {
+    margin-bottom: 10px;
+    display: flex; flex-direction: column;
+    gap: 6px;
+  }
+  .axis-label {
+    font-size: 12px; color: #aaa;
+    display: flex; justify-content: space-between;
+  }
+  .axis-label .val {
+    color: #8fd48f;
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+  }
+  .axis-slider {
+    width: 100%;
+    accent-color: #4a90e2;
+    cursor: pointer;
+  }
+
+  .notes-section {
+    margin-top: 24px;
+    padding: 16px;
+    background: #252525;
+    border-radius: 8px;
+  }
+  .notes-section h3 { margin-top: 0; color: #fff; font-size: 16px; }
+  textarea {
+    width: 100%; min-height: 90px;
+    background: #1a1a1a; color: #e8e8e8;
+    border: 1px solid #444; border-radius: 4px;
+    padding: 10px; font-family: inherit; font-size: 14px;
+    resize: vertical;
+  }
+
+  .actions {
+    margin-top: 20px;
+    display: flex; gap: 12px;
+    justify-content: flex-end; flex-wrap: wrap;
+  }
+  button.primary {
+    padding: 10px 22px;
+    background: #4a90e2; color: white;
+    border: none; border-radius: 6px;
+    cursor: pointer; font-size: 14px; font-weight: 600;
+  }
+  button.primary:hover { background: #357abd; }
+  button.secondary {
+    padding: 10px 20px;
+    background: #383838; color: #e8e8e8;
+    border: none; border-radius: 6px;
+    cursor: pointer; font-size: 14px;
+  }
+  button.danger {
+    padding: 10px 20px;
+    background: #5a2d2d; color: #f0a8a8;
+    border: none; border-radius: 6px;
+    cursor: pointer; font-size: 14px;
+  }
+
+  .anchor-note {
+    margin-top: 14px;
+    padding: 10px 14px;
+    background: #2a2418;
+    border-left: 3px solid #d4a647;
+    border-radius: 4px;
+    font-size: 13px; color: #d4a647;
+  }
+
+  .footer-info {
+    margin-top: 32px;
+    padding-top: 16px;
+    border-top: 1px solid #333;
+    font-size: 12px; color: #666;
+    text-align: center;
+  }
+
+  .toast {
+    position: fixed;
+    bottom: 24px; right: 24px;
+    padding: 12px 20px;
+    background: #2d5a2d; color: #d4f0d4;
+    border-radius: 6px; font-size: 14px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    opacity: 0; transform: translateY(20px);
+    transition: opacity 0.3s, transform 0.3s;
+    pointer-events: none; z-index: 1000;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+  .toast.error { background: #5a2d2d; color: #f0d4d4; }
+  .loading-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 500; color: #fff; font-size: 16px;
+  }
+  .loading-overlay.hidden { display: none; }
+</style>
+</head>
+<body>
+
+<h1>Mood-EQ 풀 트레일러 비교 (3조건)</h1>
+<div class="subtitle">
+  탑건 트레일러(144s) 전체를 3조건으로 동기 비교: <strong>Reference / Anchor / V3.5.7</strong>.
+  핵심 질문 — <strong>"V3.5.7 처리 버전이 원본(Reference)보다 더 듣기 좋은가?"</strong>
+  모두 동일 LUFS 매칭, 동시 재생 후 한 조건만 언뮤트 → 다른 조건 클릭 시 끊김 없이 전환.
+  평가: 각 조건에 대해 <strong>"얼마나 듣기 좋은가?"</strong> 단일 0~100 점.
+</div>
+
+<div class="instruction-box">
+  <p><strong>평가 방법</strong></p>
+  <ul>
+    <li>▶ 재생 시작 후 <strong>A~C 버튼</strong> (또는 키보드 <span class="kbd-inline">1</span>~<span class="kbd-inline">3</span>) 눌러 조건 간 즉시 전환</li>
+    <li>3조건은 <strong>블라인드</strong>로 무작위 배치 — 매 세션 셔플</li>
+    <li>중간 재탐색: 진행바 클릭 (모든 조건 동시 seek)</li>
+    <li>각 조건에 대해 <strong>"얼마나 듣기 좋은가?"</strong> 단일 슬라이더로 점수 부여 — 전반적 음향 인상 (선호도·명료도·자연스러움 통합)</li>
+    <li>점수: <strong>0</strong>(매우 나쁨) ~ <strong>50</strong>(중간) ~ <strong>100</strong>(매우 좋음)</li>
+  </ul>
+</div>
+
+<div class="participant-box">
+  <div>
+    <label for="pId">Session ID (자동 생성, 브라우저별 유지)</label>
+    <input type="text" id="pId" readonly>
+  </div>
+  <div>
+    <label for="pEnv">청취 환경</label>
+    <select id="pEnv">
+      <option value="earphones">이어폰</option>
+      <option value="headphones">헤드폰</option>
+      <option value="speakers">스피커</option>
+      <option value="laptop">노트북 스피커</option>
+    </select>
+  </div>
+  <div>
+    <label for="pExp">청취 경험</label>
+    <select id="pExp">
+      <option value="beginner">초심자</option>
+      <option value="intermediate">중간</option>
+      <option value="advanced">숙련 (믹싱/엔지니어링 경험)</option>
+    </select>
+  </div>
+</div>
+
+<div class="blind-row">
+  <div class="switch">
+    <input type="checkbox" id="blindMode" checked>
+    <label for="blindMode">🔒 블라인드 모드 (카드 라벨 A/B/C만 표시)</label>
+  </div>
+  <span style="color:#7a8088; font-size:12px;">
+    OFF 시 카드에 실제 condition 이름 노출 — 평가 중 OFF 전환은 평가 결과를 무효화할 수 있음
+  </span>
+  <span class="blind-status on" id="blindStatus">BLIND ON</span>
+</div>
+
+<div class="sync-playbar">
+  <div class="sync-playbar-top">
+    <button class="btn-play" id="playBtn" onclick="togglePlay()" disabled>▶ 재생</button>
+    <button class="btn-stop" onclick="stopAll()">⏹ 정지</button>
+    <div class="progress">
+      <div class="progress-bar" id="progressBar" onclick="seekClick(event)"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="progress-text" id="progressText">0:00 / 0:00</div>
+    </div>
+    <div class="current-indicator">현재: <strong id="currentLabel">—</strong></div>
+  </div>
+  <div class="condition-buttons" id="conditionButtons"></div>
+</div>
+
+<div id="scoreCards" class="score-cards"></div>
+
+<div class="notes-section">
+  <h3>📝 평가 메모 (선택)</h3>
+  <textarea id="notes" placeholder="인상 깊은 차이점, 의견, 전환 시 느낀 점 등 자유 기록..."></textarea>
+</div>
+
+<div class="anchor-note">
+  💡 <strong>Anchor 안내</strong>: 3조건 중 하나는 MUSHRA 표준 mid anchor (7 kHz LPF) 입니다.
+  Reference보다 약간 어둡고 명료도가 살짝 떨어지는 "중간 품질" — 이 조건에 <strong>점수 40 초과</strong>를
+  준다면 평가 신뢰도 재검토가 필요합니다 (post-screening 자동 플래그). 또한 Reference에
+  <strong>점수 85 미만</strong>이면 레퍼런스 식별 실패로 분류.
+</div>
+
+<div class="actions">
+  <button class="danger" onclick="resetScores()">전체 점수 리셋</button>
+  <button class="secondary" onclick="reshuffleBlind()">🔀 블라인드 다시 섞기</button>
+  <button class="primary" onclick="submitResults()">📤 결과 제출 (서버 또는 다운로드)</button>
+</div>
+
+<div class="footer-info">
+  Mood-EQ Full-Trailer Comparison Player v2.2 (Phase W + P + Q) · 3조건 동기 비교 (Reference / Anchor / V3.5.7 final) · 단일축 평가 · Mid Anchor (7kHz LPF) · LUFS-matched · post-screening
+</div>
+
+<div id="toast" class="toast"></div>
+<div id="loadingOverlay" class="loading-overlay">
+  <div style="text-align:center; min-width:320px;">
+    <div id="loadingTitle" style="font-size:18px; margin-bottom:14px;">오디오 파일 로딩 중...</div>
+    <div style="width:100%; background:#2a2a2a; border-radius:6px; overflow:hidden; height:10px; margin-bottom:8px;">
+      <div id="loadingBar" style="height:100%; background:#4a90e2; width:0%; transition:width 0.15s ease;"></div>
+    </div>
+    <div id="loadingDetail" style="font-size:13px; color:#aaa; font-variant-numeric:tabular-nums;">
+      준비 중...
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// 설정 — 탑건 풀 트레일러 5조건
+// ============================================================
+const AUDIO_BASE = 'configs/resources/audio/full_trailer/topgun';
+
+// Phase Z1: 5조건 → 3조건 축소. V3.3 / V3.5.5 wav는 archive/ 디렉토리로 이동.
+// Phase Z2: wav → opus 320kbps 변환 (~5MB/file, 80% 감소). ffmpeg libopus,
+// 320 kbps는 transparent 품질 (웹 stereo 48kHz 기준). wav 원본은 archive/에 보존.
+// Phase P3: V3.5.7 (aggressive 파라미터 변종) 추가 → 4조건.
+// Phase Q (현재): 1차 청취에서 V3.5.7 > V3.5.6 체감 확인 → V3.5.7 단독 채택, 3조건 복귀.
+//   V3.5.6 (subtle, archive 보존) — parameter ablation evidence
+//   V3.5.7 (aggressive, 최종 채택: mid -2 / side +2.5 / duck max 9 dB / th -36 dB)
+const CONDITIONS = [
+  { key: 'reference', label: 'Reference',  file: 'original_matched.opus' },
+  { key: 'anchor',    label: 'Anchor',     file: 'anchor_matched.opus' },
+  { key: 'v3_5_7',    label: 'V3.5.7',     file: 'v3_5_7_matched.opus' },
+];
+
+// W3: 3축 → 1축. scores[condKey]는 객체가 아니라 0~100 단일 숫자.
+const RATING_LABEL = '얼마나 듣기 좋은가?';
+const RATING_AXIS_KEY = 'overall_preference';
+
+const SWITCH_CROSSFADE_SEC = 0.005; // 5ms switch fade
+
+// ============================================================
+// AudioEngine: 5 source 동시 재생, gain으로 mute/unmute 전환
+// ============================================================
+class SyncEngine {
+  constructor() {
+    this.ctx = null;
+    this.buffers = {};       // cond.key → AudioBuffer
+    this.sources = {};       // cond.key → BufferSource (생성 시마다 새로)
+    this.gains = {};         // cond.key → GainNode
+    this.isPlaying = false;
+    this.currentCond = null;
+    this.startCtxTime = 0;
+    this.startOffset = 0;    // 현재 play session의 seek 오프셋
+    this.pausedAt = 0;
+    this.duration = 0;
+    this.onTimeUpdate = null;
+    this.onEnded = null;
+    this._rafId = null;
+  }
+
+  async ensureCtx() {
+    // 페이지 로드 시 컨텍스트만 생성 (suspended 상태 허용).
+    // Chrome autoplay policy: resume()은 반드시 사용자 gesture 콜백 안에서 호출해야 함.
+    if (!this.ctx) {
+      const Ctor = window.AudioContext || window.webkitAudioContext;
+      this.ctx = new Ctor();
+    }
+  }
+
+  async resumeIfSuspended() {
+    // 사용자 클릭(play/seek/switch) 핸들러에서 호출. suspended → running.
+    if (this.ctx && this.ctx.state === 'suspended') {
+      try { await this.ctx.resume(); } catch (e) { console.warn('[SyncEngine] resume failed:', e); }
+    }
+  }
+
+  async loadAll(basePath, conditions, onProgress) {
+    await this.ensureCtx();
+    this.stop();
+    this.buffers = {};
+
+    const total = conditions.length;
+    let fetched = 0, decoded = 0;
+
+    const emit = (stage, cond) => {
+      if (onProgress) onProgress({ stage, cond, fetched, decoded, total });
+    };
+
+    const loadOne = async (cond) => {
+      const url = `${basePath}/${cond.file}`;
+      emit('fetch_start', cond);
+      const r = await fetch(url);
+      if (!r.ok) throw new Error(`${url} → ${r.status}`);
+      const ab = await r.arrayBuffer();
+      fetched += 1;
+      emit('fetch_done', cond);
+      const buf = await this.ctx.decodeAudioData(ab);
+      decoded += 1;
+      emit('decode_done', cond);
+      return [cond.key, buf];
+    };
+
+    const results = await Promise.all(conditions.map(loadOne));
+    for (const [k, b] of results) this.buffers[k] = b;
+
+    const durs = Object.values(this.buffers).map(b => b.duration);
+    this.duration = Math.min(...durs);   // 가장 짧은 길이 기준으로 sync
+    const maxDur = Math.max(...durs);
+    if (maxDur - this.duration > 0.2) {
+      console.warn(`[SyncEngine] duration spread ${((maxDur-this.duration)*1000)|0}ms (>200ms)`);
+    }
+    if (!this.currentCond) this.currentCond = conditions[0].key;
+  }
+
+  _buildSourcesAt(offsetSec) {
+    // 기존 source / gain 해제
+    this._tearDownSources(true);
+
+    const now = this.ctx.currentTime;
+    for (const [key, buf] of Object.entries(this.buffers)) {
+      const src = this.ctx.createBufferSource();
+      src.buffer = buf;
+      const gain = this.ctx.createGain();
+      gain.gain.value = (key === this.currentCond) ? 1.0 : 0.0;
+      src.connect(gain).connect(this.ctx.destination);
+      src.start(now, offsetSec);
+      if (key === this.currentCond) {
+        src.onended = () => {
+          if (this.sources[this.currentCond] === src) {
+            this.isPlaying = false;
+            this.pausedAt = 0;
+            this._stopRaf();
+            if (this.onEnded) this.onEnded();
+          }
+        };
+      }
+      this.sources[key] = src;
+      this.gains[key] = gain;
+    }
+    this.startCtxTime = now;
+    this.startOffset = offsetSec;
+  }
+
+  _tearDownSources(immediate) {
+    for (const [k, src] of Object.entries(this.sources)) {
+      try { src.onended = null; } catch (e) {}
+      try { src.stop(); } catch (e) {}
+      try { src.disconnect(); } catch (e) {}
+    }
+    this.sources = {};
+    this.gains = {};
+  }
+
+  play() {
+    if (!Object.keys(this.buffers).length) return;
+    if (this.isPlaying) return;
+    this._buildSourcesAt(this.pausedAt);
+    this.isPlaying = true;
+    this._startRaf();
+  }
+
+  pause() {
+    if (!this.isPlaying) return;
+    this.pausedAt = this.getCurrentTime();
+    this._tearDownSources(false);
+    this.isPlaying = false;
+    this._stopRaf();
+  }
+
+  stop() {
+    this._tearDownSources(true);
+    this.isPlaying = false;
+    this.pausedAt = 0;
+    this._stopRaf();
+  }
+
+  seek(t) {
+    const clamped = Math.max(0, Math.min(t, this.duration));
+    const wasPlaying = this.isPlaying;
+    if (this.isPlaying) {
+      this._tearDownSources(true);
+      this.isPlaying = false;
+      this._stopRaf();
+    }
+    this.pausedAt = clamped;
+    if (wasPlaying) this.play();
+  }
+
+  switchCondition(newKey) {
+    if (!this.buffers[newKey]) return;
+    if (newKey === this.currentCond && this.isPlaying) return;
+    const now = this.ctx ? this.ctx.currentTime : 0;
+    const prev = this.currentCond;
+    this.currentCond = newKey;
+    if (!this.isPlaying || !this.ctx) return;
+    // gain crossfade: prev → 0, new → 1
+    if (this.gains[prev]) {
+      this.gains[prev].gain.cancelScheduledValues(now);
+      this.gains[prev].gain.setValueAtTime(this.gains[prev].gain.value, now);
+      this.gains[prev].gain.linearRampToValueAtTime(0, now + SWITCH_CROSSFADE_SEC);
+    }
+    if (this.gains[newKey]) {
+      this.gains[newKey].gain.cancelScheduledValues(now);
+      this.gains[newKey].gain.setValueAtTime(this.gains[newKey].gain.value, now);
+      this.gains[newKey].gain.linearRampToValueAtTime(1.0, now + SWITCH_CROSSFADE_SEC);
+    }
+  }
+
+  getCurrentTime() {
+    if (!this.isPlaying) return this.pausedAt;
+    if (!this.ctx) return 0;
+    const t = this.startOffset + (this.ctx.currentTime - this.startCtxTime);
+    return Math.min(t, this.duration);
+  }
+
+  _startRaf() {
+    const tick = () => {
+      if (!this.isPlaying) return;
+      if (this.onTimeUpdate) this.onTimeUpdate(this.getCurrentTime(), this.duration);
+      this._rafId = requestAnimationFrame(tick);
+    };
+    this._rafId = requestAnimationFrame(tick);
+  }
+
+  _stopRaf() { if (this._rafId) cancelAnimationFrame(this._rafId); this._rafId = null; }
+}
+
+const engine = new SyncEngine();
+
+// ============================================================
+// 상태
+// ============================================================
+let blindMap = {};        // cond.key → A/B/C
+const scores = {};        // cond.key → number (0~100)
+const touched = {};       // cond.key → bool (W3: 슬라이더가 실제로 움직였는지)
+let blindMode = true;     // W2: 블라인드 모드 (기본 ON)
+let blindToggleCount = 0; // W2: 평가 중 토글 횟수 (분석용)
+let evaluatorId = '';     // W1: localStorage 기반 자동 ID
+
+// W1: localStorage 기반 자동 evaluator ID
+function getOrCreateEvaluatorId() {
+  let id = localStorage.getItem('mushra_evaluator_id');
+  if (!id) {
+    const d = new Date();
+    const yy = String(d.getFullYear()).slice(-2);
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    const rand = Math.random().toString(36).slice(2, 6); // 4자
+    id = `p${yy}${mm}${dd}_${rand}`;
+    localStorage.setItem('mushra_evaluator_id', id);
+  }
+  return id;
+}
+
+function hasAnyScores() {
+  // W3: touched 기반 — 실제로 슬라이더가 움직인 적이 있는지
+  return Object.values(touched).some(t => t === true);
+}
+
+function shuffleArray(a) {
+  const x = [...a];
+  for (let i = x.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [x[i], x[j]] = [x[j], x[i]];
+  }
+  return x;
+}
+
+function generateBlindMap() {
+  const labels = CONDITIONS.map((_, i) => String.fromCharCode(65 + i));
+  const shuffled = shuffleArray(labels);
+  blindMap = {};
+  CONDITIONS.forEach((c, i) => blindMap[c.key] = shuffled[i]);
+}
+
+function ensureScores(key) {
+  if (scores[key] === undefined) {
+    scores[key] = 50;   // default 중간값 (W3: 단일 숫자)
+  }
+}
+
+// ============================================================
+// 렌더
+// ============================================================
+// W2: 블라인드 모드 따라 표시 라벨 결정
+function displayLabelFor(cond) {
+  const blind = blindMap[cond.key];
+  return blindMode ? blind : `${blind} — ${cond.label}`;
+}
+
+function renderConditionButtons() {
+  const container = document.getElementById('conditionButtons');
+  // blindMap 기준 A~C 순으로 정렬
+  const sorted = [...CONDITIONS].sort((a, b) => blindMap[a.key].localeCompare(blindMap[b.key]));
+  container.innerHTML = sorted.map((cond, i) => {
+    const lab = blindMap[cond.key];
+    const kbdNum = lab.charCodeAt(0) - 64;
+    const isActive = engine.currentCond === cond.key;
+    const text = blindMode ? lab : `${lab} — ${cond.label}`;
+    return `
+      <button class="cond-btn ${isActive ? 'active' : ''}"
+              onclick="pickCondition('${cond.key}')"
+              data-cond="${cond.key}"
+              data-label="${lab}">
+        <span class="label-big">${text}</span>
+        <span class="kbd-hint">${kbdNum}</span>
+      </button>
+    `;
+  }).join('');
+  updateCurrentLabel();
+}
+
+function renderScoreCards() {
+  const container = document.getElementById('scoreCards');
+  const sorted = [...CONDITIONS].sort((a, b) => blindMap[a.key].localeCompare(blindMap[b.key]));
+  container.innerHTML = sorted.map(cond => {
+    const lab = blindMap[cond.key];
+    ensureScores(cond.key);
+    const v = scores[cond.key];
+    const heading = blindMode ? `Condition ${lab}` : `Condition ${lab} — ${cond.label}`;
+    const isTouched = touched[cond.key] === true;
+    return `
+      <div class="score-card ${isTouched ? 'touched' : ''}" data-cond="${cond.key}">
+        <span class="untouched-badge">미평가</span>
+        <h3>${heading}</h3>
+        <div class="axis-row">
+          <div class="axis-label">
+            <span>${RATING_LABEL}</span>
+            <span class="val" id="val-${cond.key}">${v}</span>
+          </div>
+          <input type="range" min="0" max="100" value="${v}"
+                 class="axis-slider"
+                 data-cond="${cond.key}"
+                 oninput="onScoreInput('${cond.key}', this.value)">
+          <div style="display:flex; justify-content:space-between; font-size:11px; color:#666; margin-top:2px;">
+            <span>0 매우 나쁨</span><span>50 중간</span><span>100 매우 좋음</span>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function onScoreInput(condKey, value) {
+  const v = parseInt(value, 10);
+  scores[condKey] = v;
+  touched[condKey] = true;
+  const el = document.getElementById(`val-${condKey}`);
+  if (el) el.textContent = v;
+  const card = document.querySelector(`.score-card[data-cond="${condKey}"]`);
+  if (card) card.classList.add('touched');
+}
+
+function updateCurrentLabel() {
+  const el = document.getElementById('currentLabel');
+  if (!engine.currentCond) { el.textContent = '—'; return; }
+  const cond = CONDITIONS.find(c => c.key === engine.currentCond);
+  const lab = blindMap[engine.currentCond] || '?';
+  el.textContent = blindMode ? lab : `${lab} — ${cond.label}`;
+  // update button active state
+  document.querySelectorAll('.cond-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.cond === engine.currentCond);
+  });
+}
+
+// W2: 블라인드 토글 핸들러
+function setupBlindToggle() {
+  const cb = document.getElementById('blindMode');
+  const status = document.getElementById('blindStatus');
+  cb.addEventListener('change', (e) => {
+    const newBlind = e.target.checked;
+    if (!newBlind && hasAnyScores()) {
+      const ok = confirm(
+        '⚠ 평가 중에 블라인드 모드를 끄면 이후 점수가 편향될 수 있습니다.\n\n' +
+        '이미 입력된 점수가 있습니다. 정말 OFF 로 전환하시겠습니까?\n' +
+        '(분석 시 blind_mode_used=false 세션은 별도 처리됩니다.)'
+      );
+      if (!ok) {
+        e.target.checked = true;   // revert
+        return;
+      }
+    }
+    if (newBlind && !blindMode && hasAnyScores()) {
+      const reshuffle = confirm(
+        '블라인드를 다시 켭니다. 이미 매핑을 보았으므로 의미 있는 블라인드가 되려면\n' +
+        '매핑을 새로 섞어야 합니다.\n\n' +
+        '확인: 매핑 재생성 + 모든 점수 리셋\n' +
+        '취소: 매핑/점수 유지 (블라인드 무의미, 디버깅 용도)'
+      );
+      if (reshuffle) {
+        for (const k of Object.keys(scores)) delete scores[k];
+        generateBlindMap();
+      }
+    }
+    blindMode = newBlind;
+    blindToggleCount += 1;
+    status.textContent = blindMode ? 'BLIND ON' : 'BLIND OFF';
+    status.classList.toggle('on', blindMode);
+    status.classList.toggle('off', !blindMode);
+    renderConditionButtons();
+    renderScoreCards();
+  });
+}
+
+function updateProgressDisplay(cur, dur) {
+  const pct = dur > 0 ? (cur / dur) * 100 : 0;
+  document.getElementById('progressFill').style.width = `${pct}%`;
+  document.getElementById('progressText').textContent = `${fmtTime(cur)} / ${fmtTime(dur)}`;
+}
+
+function fmtTime(sec) {
+  if (!isFinite(sec) || sec < 0) return '0:00';
+  const m = Math.floor(sec / 60);
+  const s = Math.floor(sec % 60).toString().padStart(2, '0');
+  return `${m}:${s}`;
+}
+
+// ============================================================
+// 조작
+// ============================================================
+async function togglePlay() {
+  await engine.resumeIfSuspended();   // Chrome autoplay: 사용자 gesture에서 활성화
+  if (engine.isPlaying) {
+    engine.pause();
+    document.getElementById('playBtn').textContent = '▶ 재생';
+  } else {
+    engine.play();
+    document.getElementById('playBtn').textContent = '⏸ 일시정지';
+  }
+}
+
+function stopAll() {
+  engine.stop();
+  document.getElementById('playBtn').textContent = '▶ 재생';
+  updateProgressDisplay(0, engine.duration);
+}
+
+async function pickCondition(condKey) {
+  await engine.resumeIfSuspended();
+  engine.switchCondition(condKey);
+  updateCurrentLabel();
+}
+
+async function seekClick(e) {
+  await engine.resumeIfSuspended();
+  const bar = document.getElementById('progressBar');
+  const rect = bar.getBoundingClientRect();
+  const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+  engine.seek(ratio * engine.duration);
+  updateProgressDisplay(engine.getCurrentTime(), engine.duration);
+}
+
+function reshuffleBlind() {
+  if (hasAnyScores()) {
+    if (!confirm('블라인드 매핑을 다시 섞으면 현재 점수가 의미 없어집니다. 진행?')) return;
+    for (const k of Object.keys(scores)) delete scores[k];
+    for (const k of Object.keys(touched)) delete touched[k];
+  }
+  generateBlindMap();
+  renderConditionButtons();
+  renderScoreCards();
+  showToast('블라인드 매핑 재생성');
+}
+
+function resetScores() {
+  if (!confirm('현재 모든 점수를 50(중간값)으로 리셋?')) return;
+  for (const k of Object.keys(scores)) delete scores[k];
+  for (const k of Object.keys(touched)) delete touched[k];
+  renderScoreCards();
+  showToast('점수 리셋');
+}
+
+// W3: 모든 슬라이더가 한 번이라도 움직였는지 (touched) 검증
+function allScoresTouched() {
+  return CONDITIONS.every(c => touched[c.key] === true);
+}
+
+function downloadResults() {
+  // W3: Submit 시 모든 슬라이더 touched 검증
+  if (!allScoresTouched()) {
+    showToast('⚠ 모든 조건의 슬라이더를 한 번 이상 움직여야 제출 가능합니다.', true);
+    return;
+  }
+
+  // W3+W4: Post-screening — 단일 점수 + Mid Anchor 임계값 조정
+  const refKey = 'reference', anchorKey = 'anchor';
+  const refScore    = scores[refKey];
+  const anchorScore = scores[anchorKey];
+  const warnings = [];
+  // W4 Mid Anchor (7kHz LPF): Low Anchor (3.5kHz, ≤30) 대비 차이 덜 극단적 → 임계 ≤40
+  if (anchorScore !== undefined && anchorScore > 40) {
+    warnings.push(`anchor score ${anchorScore} > 40 — Mid anchor (7kHz LPF)를 비교적 고품질로 오인`);
+  }
+  if (refScore !== undefined && refScore < 85) {
+    warnings.push(`reference score ${refScore} < 85 — 레퍼런스 식별 실패 의심`);
+  }
+  const post_screening = {
+    reference_score: refScore,
+    anchor_score: anchorScore,
+    anchor_threshold: 40,
+    reference_threshold: 85,
+    validity: warnings.length === 0 ? 'valid' : 'suspicious',
+    warnings: warnings,
+  };
+
+  const participant = {
+    evaluator_id: evaluatorId,
+    environment: document.getElementById('pEnv').value,
+    experience: document.getElementById('pExp').value,
+  };
+
+  const result = {
+    metadata: {
+      session_id: `full_trailer_topgun_${new Date().toISOString().replace(/[:.]/g, '-')}`,
+      timestamp: new Date().toISOString(),
+      mode: 'full_trailer_comparison_v2_2',  // W: UX + P3: V3.5.7 + Q: V3.5.7 단독 채택 (3조건 복귀)
+      trailer: 'topgun',
+      duration_sec: engine.duration,
+      total_conditions: CONDITIONS.length,
+      rating_axis: RATING_AXIS_KEY,
+      rating_label: RATING_LABEL,
+      evaluator_id: evaluatorId,
+      blind_mode_used: blindMode,
+      blind_toggle_count: blindToggleCount,
+      anchor_type: 'mid_7khz_lpf',  // W4
+    },
+    page_type: 'full_trailer',
+    evaluator: { id: evaluatorId },
+    participant,
+    blind_map: blindMap,
+    scores: scores,            // {A: 65, B: 25, C: 80} 단일 숫자
+    post_screening,
+    notes: document.getElementById('notes').value,
+  };
+
+  if (post_screening.validity === 'suspicious') {
+    showToast(`⚠ Post-screening 의심: ${warnings.length}개 경고 — 세션 재검토 권장`, true);
+  }
+  if (!blindMode) {
+    showToast(`⚠ 블라인드 OFF 상태로 제출 — 분석 시 별도 처리됩니다`, true);
+  }
+
+  trySubmitResults(result, `${result.metadata.session_id}.json`);
+}
+
+function submitResults() { downloadResults(); }
+
+async function trySubmitResults(result, fallbackFilename) {
+  const payload = JSON.stringify(result, null, 2);
+  try {
+    const r = await fetch('/save_results', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: payload,
+    });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const body = await r.json();
+    if (!body.ok) throw new Error(body.error || 'server returned ok:false');
+    showToast(`✓ 서버 저장 완료: ${body.filename}`);
+    return { mode: 'server', path: body.path };
+  } catch (e) {
+    const blob = new Blob([payload], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fallbackFilename;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast(`⚠ 서버 저장 실패 (${e.message}) — 파일 다운로드됨: ${fallbackFilename}`, true);
+    return { mode: 'download', filename: fallbackFilename };
+  }
+}
+
+// ============================================================
+// Toast
+// ============================================================
+let toastTimer = null;
+function showToast(msg, isError) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.toggle('error', !!isError);
+  t.classList.add('show');
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ============================================================
+// 키보드 단축키 1~3 (+ Space = play/pause)
+// ============================================================
+document.addEventListener('keydown', (e) => {
+  const tag = e.target.tagName;
+  if (tag === 'TEXTAREA' || tag === 'INPUT' || tag === 'SELECT') return;
+  if (e.key >= '1' && e.key <= '3') {
+    e.preventDefault();
+    const idx = parseInt(e.key, 10) - 1;
+    if (idx >= CONDITIONS.length) return;
+    const label = String.fromCharCode(65 + idx);
+    const entry = Object.entries(blindMap).find(([_, v]) => v === label);
+    if (entry) pickCondition(entry[0]);
+  } else if (e.code === 'Space') {
+    e.preventDefault();
+    if (engine.duration > 0) togglePlay();
+  }
+});
+
+// ============================================================
+// 초기화
+// ============================================================
+engine.onTimeUpdate = (cur, dur) => updateProgressDisplay(cur, dur);
+engine.onEnded = () => {
+  document.getElementById('playBtn').textContent = '▶ 재생';
+  updateProgressDisplay(0, engine.duration);
+};
+
+// W1: evaluator ID 표시
+evaluatorId = getOrCreateEvaluatorId();
+document.getElementById('pId').value = evaluatorId;
+
+// W2: 블라인드 토글 핸들러 활성화
+setupBlindToggle();
+
+generateBlindMap();
+renderConditionButtons();
+renderScoreCards();
+
+function updateLoadingUI(p) {
+  const bar = document.getElementById('loadingBar');
+  const detail = document.getElementById('loadingDetail');
+  // fetched + decoded 를 합산해 2*total 기준 진행률
+  const progress = (p.fetched + p.decoded) / (2 * p.total);
+  const pct = Math.round(progress * 100);
+  bar.style.width = `${pct}%`;
+  const condLabel = p.cond ? (p.cond.label || p.cond.key) : '';
+  const stageKo = ({
+    fetch_start: '받는 중',
+    fetch_done:  '받기 완료',
+    decode_done: '디코드 완료',
+  })[p.stage] || p.stage;
+  detail.textContent = `${pct}%  ·  ${p.fetched}/${p.total} 받음  ·  ${p.decoded}/${p.total} 디코드  ·  현재: ${condLabel} ${stageKo}`;
+}
+
+(async function init() {
+  const overlay = document.getElementById('loadingOverlay');
+  const t0 = performance.now();
+  try {
+    await engine.loadAll(AUDIO_BASE, CONDITIONS, updateLoadingUI);
+    const elapsed = ((performance.now() - t0) / 1000).toFixed(1);
+    document.getElementById('playBtn').disabled = false;
+    updateProgressDisplay(0, engine.duration);
+    overlay.classList.add('hidden');
+    showToast(`${CONDITIONS.length} 조건 로딩 완료 (${fmtTime(engine.duration)}, ${elapsed}s)`);
+  } catch (e) {
+    overlay.innerHTML = `<div style="text-align:center; padding:24px;">
+      <div style="font-size:18px; color:#f0a8a8; margin-bottom:8px;">오디오 로딩 실패</div>
+      <div style="font-size:13px; color:#aaa;">${e.message}</div>
+      <div style="font-size:12px; color:#888; margin-top:12px;">
+        브라우저 콘솔 확인. 서버(save_server.py)가 실행 중인지, 파일 경로가 올바른지 확인하세요.
+      </div>
+    </div>`;
+    overlay.style.background = 'rgba(90, 45, 45, 0.85)';
+    console.error(e);
+  }
+})();
+</script>
+
+</body>
+</html>
