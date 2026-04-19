@@ -6,7 +6,7 @@
 - **영구 제약**: CogniMuse · LIRIS-ACCEDE 영구 불가 가정. LIRIS는 EULA + 기관 이메일 필수(gmail 거부) 확인 (2026-04).
 - **VEATIC 검증**: 로컬에 있으나 122/124 영상에 오디오 트랙 없음 → audio branch 독립 학습 불가.
 - **2026-04-18 재조사 완료**: "영화+audio+video+continuous V/A+즉시 다운" 완벽 조합은 존재하지 않음. 가장 근접한 후보로 **Emo-FilM** (2025 Nature Scientific Data) 발견 — CC0 license, 14편 CC 필름 리스트 확보됨.
-- **결정된 경로**: **CC-licensed 영화 원본을 수집 + 다계층 자동 라벨링(앙상블 + Gemini 2.5 Pro + human adjudication)으로 paired multimodal V/A 데이터셋 직접 구축 + 기존 train_cog의 feature-level fusion + gate 학습**.
+- **결정된 경로**: **CC-licensed 영화 원본을 수집 + 다계층 자동 라벨링(앙상블 + Gemini 2.5 Pro + human adjudication)으로 paired multimodal V/A 데이터셋 직접 구축 + 기존 train_pseudo의 feature-level fusion + gate 학습**.
 
 - **Phase 1 실제 진행 상황 (2026-04-18)**:
   - 8편 CC 영화 로컬 확보 (Blender Open Movies + Archive.org), 총 1,109 windows 분할 완료 (전부 오디오 포함)
@@ -112,16 +112,16 @@ After The Rain, Between Viewings, Big Buck Bunny, Chatter, First Bite, Lesson Le
 | `scripts/cc_movies/make_film_split.py` | 영화 단위 train/val/test split 생성 (4분면 stratified, seed 고정, `film_split.json` 출력) |
 | `model/autoEQ/pseudo_label/human_ui/` | 2D V/A slider Streamlit UI |
 | `model/autoEQ/pseudo_label/build_dataset.py` | 최종 train/disagreement/test split |
-| `model/autoEQ/train_cog/ccmovies_preprocess.py` | window → X-CLIP + PANNs feature + metadata |
-| `model/autoEQ/train_cog/run_train_ccmovies.py` | AutoEQModelCog 학습 |
-| `model/autoEQ/train_cog/tests/test_pseudo_label_pipeline.py` | Layer unit + integration 테스트 |
+| `model/autoEQ/train_pseudo/ccmovies_preprocess.py` | window → X-CLIP + PANNs feature + metadata |
+| `model/autoEQ/train_pseudo/run_train_ccmovies.py` | AutoEQModelCog 학습 |
+| `model/autoEQ/train_pseudo/tests/test_pseudo_label_pipeline.py` | Layer unit + integration 테스트 |
 
 ### 최소 수정
 
 | 파일 | 수정 |
 |---|---|
-| `train_cog/config.py` | `ccmovies_dir`, `pseudo_label_confidence_threshold`, `pseudo_label_weight_mode`, `emo_film_annotation_dir` 필드 추가 |
-| `train_cog/dataset.py` | `PrecomputedCogDataset`는 `split_name="ccmovies"`로 그대로 재사용 |
+| `train_pseudo/config.py` | `ccmovies_dir`, `pseudo_label_confidence_threshold`, `pseudo_label_weight_mode`, `emo_film_annotation_dir` 필드 추가 |
+| `train_pseudo/dataset.py` | `PrecomputedCogDataset`는 `split_name="ccmovies"`로 그대로 재사용 |
 
 ### 보존 (무수정)
 - CogniMuse 전용 파일 전부 (`cognimuse_preprocess.py`, `run_train.py`, `run_lomo.py`, etc.)

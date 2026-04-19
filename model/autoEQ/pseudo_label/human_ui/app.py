@@ -24,8 +24,8 @@ import streamlit as st
 
 
 def parse_cli() -> dict:
-    """Streamlit --에 붙은 args 파싱."""
-    argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
+    """Streamlit `--` 뒤에 붙은 args 파싱. Streamlit이 `--`를 소비하고 남은 토큰만 sys.argv로 전달."""
+    argv = sys.argv[1:]
     p = argparse.ArgumentParser()
     p.add_argument("--base_dir", type=Path, required=True)
     args = p.parse_args(argv)

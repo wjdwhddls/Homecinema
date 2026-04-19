@@ -7,7 +7,7 @@
   - va_distance.json    : 25/50/75/90 percentile, 4분면 분포, class balance
 
 CogniMuse 기본 percentile(참고용, 재사용 금지):
-  25=0.35, 50=0.55, 75=0.80, 90=1.05  (train_cog/negative_sampler.py의 관행치)
+  25=0.35, 50=0.55, 75=0.80, 90=1.05  (train_pseudo/negative_sampler.py의 관행치)
 
 Usage:
   python -m model.autoEQ.pseudo_label.analyze_va_distance \\
