@@ -14,7 +14,7 @@ from ..train.utils import (
 )
 from .config import TrainCogConfig
 from .losses import combined_loss_cog
-from .model import AutoEQModelCog
+from .model_base.model import AutoEQModelCog
 
 
 class TrainerCog:

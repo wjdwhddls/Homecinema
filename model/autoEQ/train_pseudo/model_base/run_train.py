@@ -34,9 +34,9 @@ from pathlib import Path
 import numpy as np
 import torch
 
-from .ccmovies_preprocess import CCMOVIES
-from .config import TrainCogConfig
-from .dataset import (
+from ..ccmovies_preprocess import CCMOVIES
+from ..config import TrainCogConfig
+from ..dataset import (
     COGNIMUSE_MOVIES,
     PrecomputedCogDataset,
     apply_sigma_filter,
@@ -45,7 +45,7 @@ from .dataset import (
     lomo_splits_with_time_val,
 )
 from .model import AutoEQModelCog
-from .trainer import TrainerCog
+from ..trainer import TrainerCog
 
 
 MOVIE_SETS = {
@@ -77,8 +77,11 @@ def select_device(prefer: str = "auto") -> torch.device:
     return torch.device("cpu")
 
 
-def build_config(args: argparse.Namespace) -> TrainCogConfig:
-    cfg = TrainCogConfig()
+def build_config(
+    args: argparse.Namespace,
+    config_cls: type[TrainCogConfig] = TrainCogConfig,
+) -> TrainCogConfig:
+    cfg = config_cls()
     if args.epochs is not None:
         cfg.epochs = args.epochs
     if args.batch_size is not None:
@@ -230,11 +233,24 @@ def _jsonify(obj):
         return str(obj)
 
 
-def main(argv: list[str] | None = None) -> dict:
+def main(
+    argv: list[str] | None = None,
+    model_cls: type | None = None,
+    config_cls: type[TrainCogConfig] | None = None,
+) -> dict:
+    """Single-fold training entry.
+
+    ``model_cls`` / ``config_cls`` default to the PANNs baseline
+    (``AutoEQModelCog`` / ``TrainCogConfig``). Pass alternatives (e.g.
+    ``AutoEQModelAST`` / ``TrainCogConfigAST``) to run ablations against
+    ``model_ast/``.
+    """
+    model_cls = model_cls or AutoEQModelCog
+    config_cls = config_cls or TrainCogConfig
     args = _build_parser().parse_args(argv)
     set_seed(args.seed)
     device = select_device(args.device)
-    config = build_config(args)
+    config = build_config(args, config_cls=config_cls)
 
     # Dataset + splits
     dataset = PrecomputedCogDataset(
@@ -269,7 +285,7 @@ def main(argv: list[str] | None = None) -> dict:
     train_loader, val_loader = create_dataloaders_cog(dataset, train_ids, val_ids, config)
 
     # Model
-    model = AutoEQModelCog(config)
+    model = model_cls(config)
     trainer = TrainerCog(model, train_loader, val_loader, config, device=device)
 
     # Manifest SHA passthrough (optional)

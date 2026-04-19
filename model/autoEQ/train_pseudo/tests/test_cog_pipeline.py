@@ -17,7 +17,7 @@ from model.autoEQ.train_pseudo.dataset import (
     create_dataloaders_cog,
     lomo_splits_with_time_val,
 )
-from model.autoEQ.train_pseudo.model import AutoEQModelCog
+from model.autoEQ.train_pseudo.model_base.model import AutoEQModelCog
 from model.autoEQ.train_pseudo.trainer import TrainerCog
 
 

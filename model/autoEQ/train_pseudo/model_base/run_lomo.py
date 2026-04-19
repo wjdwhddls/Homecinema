@@ -26,8 +26,8 @@ import torch
 import math
 
 from . import run_train
-from .ccmovies_preprocess import CCMOVIES
-from .dataset import COGNIMUSE_MOVIES
+from ..ccmovies_preprocess import CCMOVIES
+from ..dataset import COGNIMUSE_MOVIES
 
 
 MOVIE_SETS = {
@@ -267,7 +267,18 @@ def _write_markdown_report(report: dict, path: Path) -> None:
     path.write_text("\n".join(lines))
 
 
-def main(argv: list[str] | None = None) -> dict:
+def main(
+    argv: list[str] | None = None,
+    run_train_main=None,
+) -> dict:
+    """LOMO orchestrator entry.
+
+    ``run_train_main`` defaults to the PANNs baseline's ``run_train.main``.
+    Pass an alternative (e.g. ``model_ast.run_train.main``) to orchestrate
+    the AST ablation with the same per-fold logic.
+    """
+    if run_train_main is None:
+        run_train_main = run_train.main
     args = _build_parser().parse_args(argv)
     movie_list = MOVIE_SETS[args.movie_set]
     if args.folds:
@@ -293,7 +304,7 @@ def main(argv: list[str] | None = None) -> dict:
             "output_dir": str(fold_output),
         }
         try:
-            result = run_train.main(fold_argv)
+            result = run_train_main(fold_argv)
             fold_record["status"] = "ok"
             fold_record["best_mean_ccc"] = result["best_mean_ccc"]
             fold_record["best_mean_mae"] = result["best_mean_mae"]
