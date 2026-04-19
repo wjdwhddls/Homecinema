@@ -22,6 +22,14 @@ data/trailers/*.wav
 model/autoEQ/assets/*.pth
 model/autoEQ/assets/audioset_tagging_cnn/
 
+# 트랙 5: Bandit v2 외부 clone + 체크포인트 (446MB)
+# git clone https://github.com/ZFTurbo/Music-Source-Separation-Training.git tools/mss-training
+# checkpoint: zenodo.org/records/12701995/files/checkpoint-eng.ckpt
+tools/mss-training/
+
+# 실험 임시 산출물 (분리 stem wav, backup wav 등 — 재생성 가능)
+tmp/
+
 # 백엔드 jobs (사용자 업로드 데이터)
 backend/data/jobs/*/
 !backend/data/jobs/.gitkeep
@@ -50,6 +58,25 @@ desktop.ini
 # 한국어 경로 이슈로 임시 생성된 OneDrive 잔존물 (있으면)
 *.tmp
 
+# ============================================
+# Phase G — Push 대비 정리 (feat/v3-6-bandit-v2)
+# ============================================
+# 노트: evaluation/webmushra/ 의 audio·results 는 evaluation/.gitignore 가
+# whitelist 방식으로 이미 처리 (calibration 톤·코드만 추적). 중복 규칙 미작성.
+
+# Node modules (mobile/web 의존성 — 추가될 경우 대비)
+node_modules/
+
+# 미디어 catch-all 안전망 — 코드 디렉토리 외 위치에 audio 가 새로 생길 경우
+# (*.wav 와 *.mp4 는 calibration 톤·테스트 fixture 가능성 있어 전역 미적용)
+*.opus
+*.flac
+*.aac
+*.m4a
+
+# ============================================
+# master 추가 (jongin: train_cog + 수도라벨링)
+# ============================================
 /dataset
 
 # 외부 repo clone (가중치 포함. git clone + gdown으로 재현 가능)

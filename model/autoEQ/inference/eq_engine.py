@@ -71,6 +71,12 @@ EQ_PRESETS_V3_3 = {
 # analyzer.py의 for-loop가 자동으로 processed_v3_3.mp4도 생성하게 됨
 PRESET_VERSIONS["v3_3"] = EQ_PRESETS_V3_3
 
+# V3.5.5 PoC: Demucs 분리 + V3.3 EQ(no_vocals) + 명료도 EQ(vocals) + Compressor
+# no_vocals 스템에 적용하는 카테고리 EQ는 V3.3와 동일하므로 alias 등록.
+# V3.5.5 고유 처리(스템 분리, vocals 명료도 EQ, 합산, Compressor)는
+# tools/run_v3_5_5_pipeline.py wrapper에 위치.
+PRESET_VERSIONS["v3_5_5"] = EQ_PRESETS_V3_3
+
 # 기본 프리셋 — 청취 평가 후 변경 가능
 DEFAULT_PRESET_VERSION = "v3_1"
 EQ_PRESETS = PRESET_VERSIONS[DEFAULT_PRESET_VERSION]

@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>Mood-EQ 청취 평가 (Plan B v3.1 — V3.3 지원)</title>
+<title>Mood-EQ 청취 평가 (Plan B v3.3 — 4조건 MUSHRA, V3.5.5 최종)</title>
 <style>
   * { box-sizing: border-box; }
   body {
@@ -207,22 +207,43 @@
 
   .clip-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 16px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
     margin-bottom: 24px;
+  }
+  /* 좁은 화면 → 1열 */
+  @media (max-width: 640px) {
+    .clip-grid {
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
   }
   .clip {
     background: #252525;
     border: 1px solid #383838;
-    border-radius: 8px;
-    padding: 16px;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3), 0 4px 12px rgba(0,0,0,0.18);
+    display: flex;
+    flex-direction: column;
+    min-height: 240px;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+  }
+  .clip:hover {
+    box-shadow: 0 2px 6px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.3);
+    transform: translateY(-1px);
   }
   .clip.scored {
     border-color: #4a90e2;
   }
   .clip.current-playing {
     border-color: #8fd48f;
-    box-shadow: 0 0 0 1px #8fd48f;
+    box-shadow: 0 0 0 2px #8fd48f, 0 8px 24px rgba(143, 212, 143, 0.18);
+    animation: clip-playing-pulse 1.6s ease-in-out infinite;
+  }
+  @keyframes clip-playing-pulse {
+    0%, 100% { box-shadow: 0 0 0 2px #8fd48f, 0 8px 24px rgba(143, 212, 143, 0.18); }
+    50%      { box-shadow: 0 0 0 3px rgba(143, 212, 143, 0.55), 0 8px 28px rgba(143, 212, 143, 0.30); }
   }
   .clip-label {
     font-weight: 600;
@@ -242,26 +263,42 @@
   }
   .listen-btn {
     width: 100%;
-    padding: 10px;
-    margin-bottom: 12px;
+    padding: 12px 16px;
+    margin-bottom: 14px;
     background: #2a3a52;
     color: #dce7f5;
     border: 1px solid #3d577a;
     border-radius: 6px;
     cursor: pointer;
-    font-size: 14px;
-    font-weight: 500;
+    font-size: 15px;
+    font-weight: 600;
+    transition: background 0.12s ease, transform 0.05s ease, box-shadow 0.12s ease;
   }
   .listen-btn:hover { background: #3a4d6b; }
+  .listen-btn:active { transform: scale(0.985); }
   .listen-btn.active {
     background: #4a90e2;
     color: #fff;
     border-color: #4a90e2;
+    box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.3);
+  }
+  .listen-btn .kbd-hint {
+    margin-left: 8px;
+    padding: 2px 6px;
+    background: rgba(0,0,0,0.25);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 4px;
+    font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+    font-size: 11px;
+    color: rgba(255,255,255,0.75);
+    font-weight: 500;
   }
   .score-row {
     display: flex;
     align-items: center;
     gap: 10px;
+    margin-top: auto;       /* 카드 하단 고정 (4개 카드 높이 일치 시 시각적 정렬) */
+    padding-top: 12px;
   }
   .score-row label {
     font-size: 13px;
@@ -397,14 +434,52 @@
     background: #5a2d2d;
     color: #f0d4d4;
   }
+
+  /* ===== v3.4 신규: 평가 방법 안내 박스 ===== */
+  .instruction-box {
+    margin-bottom: 20px;
+    padding: 14px 18px;
+    background: linear-gradient(135deg, #1e2530, #1a2030);
+    border: 1px solid #2f4060;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #c0c8d0;
+  }
+  .instruction-box p { margin: 0 0 6px 0; }
+  .instruction-box p strong { color: #fff; font-size: 14px; }
+  .instruction-box ul { margin: 6px 0 0 20px; padding: 0; }
+  .instruction-box li { margin: 3px 0; }
+  .instruction-box .kbd-inline {
+    display: inline-block;
+    padding: 1px 6px;
+    background: #1a1a1a;
+    border: 1px solid #444;
+    border-radius: 4px;
+    font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+    font-size: 11px;
+    color: #8ab4e8;
+  }
 </style>
 </head>
 <body>
 
-<h1>Mood-EQ 청취 평가</h1>
+<h1>Mood-EQ 청취 평가 (4조건 MUSHRA — 풀 트레일러 Segment)</h1>
 <div class="subtitle">
-  원본 + 처리본 4종 (V3.1 / V3.2 / V3.3 / Anchor)을 비교 평가합니다.
-  점수: 0(매우 다름) ~ 100(원본과 동일)
+  Reference + Anchor + V3.3 + V3.5.5 (4조건) × 탑건 풀 트레일러 4 segment (각 10초, diversity 선정).
+  점수: 0(매우 다름) ~ 100(원본과 동일).
+  4조건 모두 v3_3.wav LUFS로 매칭 (라우드니스 편향 제거, MUSHRA 표준 anchor: 3.5 kHz LPF).
+  각 segment는 서로 다른 mood 카테고리를 대표함 (Joyful / Power / Peacefulness / Sadness).
+</div>
+
+<!-- ===== v3.4 신규: 평가 방법 안내 ===== -->
+<div class="instruction-box">
+  <p><strong>평가 방법</strong></p>
+  <ul>
+    <li>각 카드의 🎧 버튼을 눌러 들어보세요. 즉시 전환 모드에서는 다른 카드를 누르면 같은 시점에서 끊김 없이 전환됩니다.</li>
+    <li>4개 조건은 <strong>블라인드</strong>로 무작위 배치되며 (Condition A~D), 매 세션 새로 셔플됩니다.</li>
+    <li>각 조건의 음질을 <strong>0(매우 다름) ~ 100(원본과 동일)</strong> 슬라이더로 평가해주세요.</li>
+    <li>키보드 <span class="kbd-inline">1</span> <span class="kbd-inline">2</span> <span class="kbd-inline">3</span> <span class="kbd-inline">4</span> 로 빠르게 전환 가능합니다 (즉시 전환 모드 ON 필요).</li>
+  </ul>
 </div>
 
 <!-- ===== v3 신규: 캘리브레이션 섹션 ===== -->
@@ -466,17 +541,23 @@
 </div>
 
 <div class="anchor-note">
-  💡 <strong>Anchor 안내</strong>: 4개 비교군 중 하나는 의도적으로 품질을 낮춘 anchor입니다.
-  진지한 평가의 sanity check 용도이며, anchor에 높은 점수가 나오면 평가 신뢰도 검토 필요.
+  💡 <strong>Anchor 안내</strong>: 4개 비교군 중 하나는 MUSHRA 표준 low anchor (3.5 kHz LPF) 입니다.
+  명백한 고역 손실로 "낮은 품질" 임이 즉시 인지되는 척도 하한 기준점이며,
+  anchor에 높은 점수가 나오면 평가 신뢰도 검토 필요.
 </div>
 
 <div class="actions">
+  <label style="display:flex; align-items:center; gap:8px; font-size:13px; color:#aaa; margin-right:auto;">
+    평가자 ID:
+    <input type="text" id="evaluatorId" placeholder="예: yun"
+           style="padding:6px 10px; background:#1a1a1a; border:1px solid #444; border-radius:4px; color:#fff; font-size:13px; width:140px;">
+  </label>
   <button class="danger" onclick="resetScores()">전체 점수 리셋</button>
-  <button class="primary" onclick="downloadResults()">💾 결과 다운로드 (JSON)</button>
+  <button class="primary" onclick="submitResults()">📤 결과 제출 (서버 또는 다운로드)</button>
 </div>
 
 <div class="footer-info">
-  Mood-EQ Plan B Player v3.1 · A/B 즉시 전환 + JND 캘리브레이션 + V3.3 (±6dB + Compressor) 지원
+  Mood-EQ Plan B Player v3.4 · 4조건 MUSHRA × 풀 트레일러 4 segments · LUFS-matched + post-screening · V3.5.5 정식 채택 평가
 </div>
 
 <div id="toast" class="toast"></div>
@@ -485,25 +566,39 @@
 // ============================================================
 // 설정
 // ============================================================
+// 트랙 5+ Phase X5: 11s 큐레이션 씬 → 풀 트레일러 자동 추출 4 segments로 교체.
+// trailer_segments/topgun/ 하 4개 서브디렉토리, 각 10s, diversity 기반 선정.
+// 모든 조건은 v3_3.wav LUFS로 매칭 (tools/auto_select_segments.py 결과).
 const VIDEOS = {
-  topgun: {
-    title: '탑건 (Top Gun)',
-    audioBase: 'configs/resources/audio/trailer_topgun_full',
-    duration: 144.4,
+  seg01_joyful_withdial_dissol: {
+    title: '탑건 #1 — Joyful (11~21s, 대사·dissolve)',
+    audioBase: 'configs/resources/audio/trailer_segments/topgun/seg01_joyful_withdial_dissol',
+    duration: 10.0,
   },
-  lalaland: {
-    title: '라라랜드 (La La Land)',
-    audioBase: 'configs/resources/audio/trailer_lalaland_full',
-    duration: 131.2,
+  seg02_power_withdial_dissol: {
+    title: '탑건 #2 — Power (41~51s, 대사·dissolve)',
+    audioBase: 'configs/resources/audio/trailer_segments/topgun/seg02_power_withdial_dissol',
+    duration: 10.0,
+  },
+  seg03_peacefu_middial_dissol: {
+    title: '탑건 #3 — Peacefulness (80~90s, 대사·dissolve)',
+    audioBase: 'configs/resources/audio/trailer_segments/topgun/seg03_peacefu_middial_dissol',
+    duration: 10.0,
+  },
+  seg04_sadness_middial_dissol: {
+    title: '탑건 #4 — Sadness (99~109s, 대사·dissolve)',
+    audioBase: 'configs/resources/audio/trailer_segments/topgun/seg04_sadness_middial_dissol',
+    duration: 10.0,
   },
 };
 
+// MUSHRA 4조건 — 모두 v3_3 LUFS로 매칭됨 (Δ ≤ 0.4 LU, peak ≤ -1.0 dBFS).
+// Anchor: 3.5 kHz Butterworth 8차 LPF (ITU-R BS.1534-3 표준 low anchor).
 const CONDITIONS = [
-  { key: 'original', label: 'Original (원본)',            file: 'original.wav' },
-  { key: 'v3_1',     label: 'V3.1 처리본 (±3dB baseline)', file: 'v3_1.wav' },
-  { key: 'v3_2',     label: 'V3.2 처리본 (±4dB dramatic)', file: 'v3_2.wav' },
-  { key: 'v3_3',     label: 'V3.3 처리본 (±6dB + Comp)',   file: 'v3_3.wav' },
-  { key: 'anchor',   label: 'Anchor (저품질)',            file: 'anchor.wav' },
+  { key: 'reference', label: 'Reference (원본, 매칭)',           file: 'original_matched.wav' },
+  { key: 'anchor',    label: 'Anchor (3.5kHz LPF, 표준 저품질)',  file: 'anchor_matched.wav' },
+  { key: 'v3_3',      label: 'V3.3 (±6dB EQ + Compressor)',      file: 'v3_3_matched.wav' },
+  { key: 'v3_5_5',    label: 'V3.5.5 (Demucs+EQ+Comp) — 채택본', file: 'v3_5_5_matched.wav' },
 ];
 
 const CALIBRATION_BASE = 'configs/resources/audio/calibration';
@@ -512,7 +607,7 @@ const CROSSFADE_SEC = 0.005; // 5ms
 // ============================================================
 // 상태
 // ============================================================
-let currentTab = 'topgun';
+let currentTab = Object.keys(VIDEOS)[0];
 let blindMode = true;
 let instantMode = true;
 let loadedVideoForEngine = null; // 현재 AudioEngine에 로드된 videoKey
@@ -879,10 +974,13 @@ function renderClips() {
           isCurrentPlaying ? 'current-playing' : '',
         ].filter(Boolean).join(' ');
 
+        // 블라인드 라벨 A/B/C/D → 키보드 1/2/3/4 매핑
+        const kbdNum = blindLabel.charCodeAt(0) - 64; // A=65 → 1
         const playerEl = instantMode
           ? `<button class="listen-btn ${engine.currentCond === cond.key ? 'active' : ''}"
                      onclick="pickCondition('${cond.key}')">
                ${engine.currentCond === cond.key && engine.isPlaying ? '🔊 재생 중' : '🎧 이 버전 듣기'}
+               <span class="kbd-hint">${kbdNum}</span>
              </button>`
           : `<audio controls preload="metadata" src="${video.audioBase}/${cond.file}"></audio>`;
 
@@ -1107,6 +1205,27 @@ function downloadResults() {
     }
   }
 
+  // MUSHRA post-screening (BS.1534-3):
+  //   - Reference가 90점 미만인 segment가 15% 초과이거나
+  //   - Anchor가 90점 초과인 segment가 존재하면 세션 신뢰도 낮음 플래그
+  const segmentKeys = Object.keys(VIDEOS);
+  const screening = { reference_low: [], anchor_high: [], n_complete: 0, flagged: false };
+  for (const segKey of segmentKeys) {
+    const segScores = scores[segKey] || {};
+    const refEntry = segScores.reference;
+    const ancEntry = segScores.anchor;
+    if (refEntry && ancEntry) {
+      screening.n_complete += 1;
+      if (refEntry.score < 90) screening.reference_low.push({ seg: segKey, score: refEntry.score });
+      if (ancEntry.score > 90) screening.anchor_high.push({ seg: segKey, score: ancEntry.score });
+    }
+  }
+  const n_seg = segmentKeys.length;
+  screening.flagged = (
+    screening.anchor_high.length > 0 ||
+    screening.reference_low.length > Math.ceil(n_seg * 0.15)
+  );
+
   const result = {
     metadata: {
       session_id: `mood_eq_planb_${new Date().toISOString().replace(/[:.]/g, '-')}`,
@@ -1116,23 +1235,62 @@ function downloadResults() {
       blind_mode_at_export: blindMode,
       total_scored: totalScored,
       total_possible: Object.keys(VIDEOS).length * CONDITIONS.length,
+      trailer_segments: segmentKeys,
     },
+    post_screening: screening,
     blind_maps: blindMaps,
     scores: scores,
     notes: document.getElementById('notes').value,
   };
 
-  const blob = new Blob([JSON.stringify(result, null, 2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `${result.metadata.session_id}.json`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  if (screening.flagged) {
+    showToast(
+      `⚠ Post-screening 플래그: anchor>90 [${screening.anchor_high.length}] / ` +
+      `reference<90 [${screening.reference_low.length}] — 세션 재검토 권장`,
+      true
+    );
+  }
 
-  showToast(`결과 저장: ${a.download}`);
+  // evaluator_id 추가 → save_server가 파일명에 사용
+  const evaluatorId = (document.getElementById('evaluatorId')?.value || '').trim();
+  result.metadata.evaluator_id = evaluatorId || 'anon';
+  result.page_type = 'segment_mushra';
+  result.evaluator = evaluatorId || 'anon';
+
+  // 서버 POST 먼저 시도, 실패 시 Blob 다운로드 fallback
+  trySubmitResults(result, `${result.metadata.session_id}.json`);
+}
+
+// alias — 신규 submit 버튼에서 사용. 기존 downloadResults() 호출 경로 유지.
+function submitResults() { downloadResults(); }
+
+async function trySubmitResults(result, fallbackFilename) {
+  const payload = JSON.stringify(result, null, 2);
+  try {
+    const r = await fetch('/save_results', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: payload,
+    });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const body = await r.json();
+    if (!body.ok) throw new Error(body.error || 'server returned ok:false');
+    showToast(`✓ 서버 저장 완료: ${body.filename}`);
+    return { mode: 'server', path: body.path };
+  } catch (e) {
+    // Fallback: Blob 다운로드
+    const blob = new Blob([payload], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fallbackFilename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast(`⚠ 서버 저장 실패 (${e.message}) — 파일 다운로드됨: ${fallbackFilename}`, true);
+    return { mode: 'download', filename: fallbackFilename };
+  }
 }
 
 function resetScores() {
@@ -1164,6 +1322,25 @@ function showToast(message, isError) {
     toast.classList.remove('show');
   }, 2800);
 }
+
+// ============================================================
+// v3.4 신규: 키보드 단축키 (1~4 → 현재 화면의 blind A~D condition 재생)
+// ============================================================
+document.addEventListener('keydown', (e) => {
+  // 입력 폼 focus 시에는 단축키 무시
+  const tag = e.target.tagName;
+  if (tag === 'TEXTAREA' || tag === 'INPUT') return;
+  // 1~4 키만 처리, 즉시 전환 모드에서만 동작
+  if (e.key < '1' || e.key > '4' || !instantMode) return;
+  const map = blindMaps[currentTab];
+  if (!map) return;
+  const targetLabel = String.fromCharCode(65 + (parseInt(e.key, 10) - 1)); // 1→A, 2→B...
+  const entry = Object.entries(map).find(([_, v]) => v === targetLabel);
+  if (entry) {
+    e.preventDefault();
+    pickCondition(entry[0]);
+  }
+});
 
 // ============================================================
 // 초기화
