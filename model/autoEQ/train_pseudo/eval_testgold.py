@@ -35,7 +35,7 @@ from ..train.dataset import MOOD_CENTERS, va_to_mood
 from ..train.utils import compute_ccc
 from .config import TrainCogConfig
 from .dataset import va_to_quadrant
-from .model import AutoEQModelCog
+from .model_base.model import AutoEQModelCog
 
 
 GEMS_LABELS = ["Tension", "Sadness", "Peacefulness",

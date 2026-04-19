@@ -2,7 +2,7 @@ import pytest
 import torch
 
 from model.autoEQ.train_pseudo.config import TrainCogConfig
-from model.autoEQ.train_pseudo.model import AutoEQModelCog
+from model.autoEQ.train_pseudo.model_base.model import AutoEQModelCog
 
 
 def test_forward_returns_expected_keys():

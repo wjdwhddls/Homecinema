@@ -26,7 +26,7 @@ from ..train.encoders import PANNsEncoder, XCLIPEncoder
 from ..train.precompute import encode_window_batch
 from ..train_pseudo.cognimuse_preprocess import load_frames_from_mp4
 from ..train_pseudo.config import TrainCogConfig
-from ..train_pseudo.model import AutoEQModelCog
+from ..train_pseudo.model_base.model import AutoEQModelCog
 from .types import Window, WindowVA
 
 NUM_FRAMES = 8

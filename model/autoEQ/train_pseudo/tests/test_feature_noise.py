@@ -3,7 +3,7 @@
 import torch
 
 from model.autoEQ.train_pseudo.config import TrainCogConfig
-from model.autoEQ.train_pseudo.model import AutoEQModelCog
+from model.autoEQ.train_pseudo.model_base.model import AutoEQModelCog
 
 
 def _make_batch(B: int = 4, seed: int = 0) -> tuple[torch.Tensor, torch.Tensor]:
