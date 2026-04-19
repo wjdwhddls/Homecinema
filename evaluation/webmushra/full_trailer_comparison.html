@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>Mood-EQ 풀 트레일러 비교 (3조건 — Reference vs Anchor vs V3.5.6)</title>
+<title>Mood-EQ 풀 트레일러 비교 (4조건 — Reference vs Anchor vs V3.5.6 vs V3.5.7)</title>
 <style>
   * { box-sizing: border-box; }
   body {
@@ -302,10 +302,10 @@
 </head>
 <body>
 
-<h1>Mood-EQ 풀 트레일러 비교 (3조건)</h1>
+<h1>Mood-EQ 풀 트레일러 비교 (4조건)</h1>
 <div class="subtitle">
-  탑건 트레일러(144s) 전체를 3조건으로 동기 비교: <strong>Reference / Anchor / V3.5.6</strong>.
-  핵심 질문 — <strong>"최선 버전(V3.5.6)이 원본(Reference)보다 나은가?"</strong>
+  탑건 트레일러(144s) 전체를 4조건으로 동기 비교: <strong>Reference / Anchor / V3.5.6 / V3.5.7</strong>.
+  핵심 질문 — <strong>"두 처리 버전(subtle V3.5.6 vs aggressive V3.5.7) 중 어느 쪽이 더 듣기 좋은가?"</strong>
   모두 동일 LUFS 매칭, 동시 재생 후 한 조건만 언뮤트 → 다른 조건 클릭 시 끊김 없이 전환.
   평가: 각 조건에 대해 <strong>"얼마나 듣기 좋은가?"</strong> 단일 0~100 점.
 </div>
@@ -313,8 +313,8 @@
 <div class="instruction-box">
   <p><strong>평가 방법</strong></p>
   <ul>
-    <li>▶ 재생 시작 후 <strong>A~C 버튼</strong> (또는 키보드 <span class="kbd-inline">1</span>~<span class="kbd-inline">3</span>) 눌러 조건 간 즉시 전환</li>
-    <li>3조건은 <strong>블라인드</strong>로 무작위 배치 — 매 세션 셔플</li>
+    <li>▶ 재생 시작 후 <strong>A~D 버튼</strong> (또는 키보드 <span class="kbd-inline">1</span>~<span class="kbd-inline">4</span>) 눌러 조건 간 즉시 전환</li>
+    <li>4조건은 <strong>블라인드</strong>로 무작위 배치 — 매 세션 셔플</li>
     <li>중간 재탐색: 진행바 클릭 (모든 조건 동시 seek)</li>
     <li>각 조건에 대해 <strong>"얼마나 듣기 좋은가?"</strong> 단일 슬라이더로 점수 부여 — 전반적 음향 인상 (선호도·명료도·자연스러움 통합)</li>
     <li>점수: <strong>0</strong>(매우 나쁨) ~ <strong>50</strong>(중간) ~ <strong>100</strong>(매우 좋음)</li>
@@ -377,7 +377,7 @@
 </div>
 
 <div class="anchor-note">
-  💡 <strong>Anchor 안내</strong>: 3조건 중 하나는 MUSHRA 표준 mid anchor (7 kHz LPF) 입니다.
+  💡 <strong>Anchor 안내</strong>: 4조건 중 하나는 MUSHRA 표준 mid anchor (7 kHz LPF) 입니다.
   Reference보다 약간 어둡고 명료도가 살짝 떨어지는 "중간 품질" — 이 조건에 <strong>점수 40 초과</strong>를
   준다면 평가 신뢰도 재검토가 필요합니다 (post-screening 자동 플래그). 또한 Reference에
   <strong>점수 85 미만</strong>이면 레퍼런스 식별 실패로 분류.
@@ -390,7 +390,7 @@
 </div>
 
 <div class="footer-info">
-  Mood-EQ Full-Trailer Comparison Player v2.0 (Phase W) · 3조건 동기 비교 · 단일축 평가 · Mid Anchor (7kHz LPF) · LUFS-matched · post-screening
+  Mood-EQ Full-Trailer Comparison Player v2.1 (Phase W + P3) · 4조건 동기 비교 (Reference / Anchor / V3.5.6 subtle / V3.5.7 aggressive) · 단일축 평가 · Mid Anchor (7kHz LPF) · LUFS-matched · post-screening
 </div>
 
 <div id="toast" class="toast"></div>
@@ -415,10 +415,14 @@ const AUDIO_BASE = 'configs/resources/audio/full_trailer/topgun';
 // Phase Z1: 5조건 → 3조건 축소. V3.3 / V3.5.5 wav는 archive/ 디렉토리로 이동.
 // Phase Z2: wav → opus 320kbps 변환 (~5MB/file, 80% 감소). ffmpeg libopus,
 // 320 kbps는 transparent 품질 (웹 stereo 48kHz 기준). wav 원본은 archive/에 보존.
+// Phase P3: V3.5.7 (aggressive 파라미터 변종) 추가 → 4조건.
+//   V3.5.6 (subtle: mid -1 / side +1.5 / duck max 6 dB) vs
+//   V3.5.7 (aggressive: mid -2 / side +2.5 / duck max 9 dB / th -36 dB)
 const CONDITIONS = [
   { key: 'reference', label: 'Reference',  file: 'original_matched.opus' },
   { key: 'anchor',    label: 'Anchor',     file: 'anchor_matched.opus' },
   { key: 'v3_5_6',    label: 'V3.5.6',     file: 'v3_5_6_matched.opus' },
+  { key: 'v3_5_7',    label: 'V3.5.7',     file: 'v3_5_7_matched.opus' },
 ];
 
 // W3: 3축 → 1축. scores[condKey]는 객체가 아니라 0~100 단일 숫자.
@@ -902,7 +906,7 @@ function downloadResults() {
     metadata: {
       session_id: `full_trailer_topgun_${new Date().toISOString().replace(/[:.]/g, '-')}`,
       timestamp: new Date().toISOString(),
-      mode: 'full_trailer_comparison_v2',  // W: UX 개선 버전
+      mode: 'full_trailer_comparison_v2_1',  // W: UX 개선 버전 + P3: 4조건 (V3.5.7 추가)
       trailer: 'topgun',
       duration_sec: engine.duration,
       total_conditions: CONDITIONS.length,
@@ -974,14 +978,15 @@ function showToast(msg, isError) {
 }
 
 // ============================================================
-// 키보드 단축키 1~3 (+ Space = play/pause)
+// 키보드 단축키 1~4 (+ Space = play/pause)
 // ============================================================
 document.addEventListener('keydown', (e) => {
   const tag = e.target.tagName;
   if (tag === 'TEXTAREA' || tag === 'INPUT' || tag === 'SELECT') return;
-  if (e.key >= '1' && e.key <= '3') {
+  if (e.key >= '1' && e.key <= '4') {
     e.preventDefault();
     const idx = parseInt(e.key, 10) - 1;
+    if (idx >= CONDITIONS.length) return;
     const label = String.fromCharCode(65 + idx);
     const entry = Object.entries(blindMap).find(([_, v]) => v === label);
     if (entry) pickCondition(entry[0]);
@@ -1036,7 +1041,7 @@ function updateLoadingUI(p) {
     document.getElementById('playBtn').disabled = false;
     updateProgressDisplay(0, engine.duration);
     overlay.classList.add('hidden');
-    showToast(`3 조건 로딩 완료 (${fmtTime(engine.duration)}, ${elapsed}s)`);
+    showToast(`${CONDITIONS.length} 조건 로딩 완료 (${fmtTime(engine.duration)}, ${elapsed}s)`);
   } catch (e) {
     overlay.innerHTML = `<div style="text-align:center; padding:24px;">
       <div style="font-size:18px; color:#f0a8a8; margin-bottom:8px;">오디오 로딩 실패</div>
