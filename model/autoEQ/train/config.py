@@ -55,6 +55,20 @@ class TrainConfig:
     # --- Congruence noise ---
     cong_noise_std: float = 0.05
 
+    # --- Encoder paths ---
+    xclip_model: str = "microsoft/xclip-base-patch32"
+    panns_checkpoint: str = ""
+
+    # --- Dataset paths ---
+    data_dir: str = ""
+    feature_dir: str = ""
+    cognimuse_dir: str = ""
+
+    # --- Wandb logging ---
+    use_wandb: bool = False
+    wandb_project: str = "moodeq"
+    wandb_run_name: str = ""
+
     @property
     def audio_samples(self) -> int:
         return self.audio_sr * self.audio_sec

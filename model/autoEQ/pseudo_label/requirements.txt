@@ -1,0 +1,13 @@
+# Visual Layer 1 deps (torch/pandas/numpy assumed present).
+torchvision
+facenet-pytorch
+open-clip-torch
+opencv-python
+scikit-image
+einops
+gdown
+# Phase 3/4
+google-genai
+python-dotenv
+streamlit>=1.37
+matplotlib
