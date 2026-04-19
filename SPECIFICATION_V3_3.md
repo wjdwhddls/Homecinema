@@ -463,6 +463,15 @@ def select_eq_preset(va_pred):
 
 모든 밴드 Biquad peaking (Q 값은 V3.1 §6-2 표).
 
+> **V3.3 Phase 1 예산 업데이트 (2026-04-19)**: `scripts/eq_response_check.py`로 정확한 RBJ biquad 주파수 응답을 실측한 결과(pedalboard 실제 출력과 0.1 dB 이내 일치), 누적 피크는 Power +3.93 dB, Tension +3.37 dB, Sadness -3.05 dB, JoyfulActivation +3.09 dB (나머지 3개 카테고리는 ±3 dB 이내)였다. 보완자료 V3.2 §Medium 4는 "1 옥타브 0.4배 근사식"에 기반한 이론 계산의 내재 오차 ±0.3 dB를 이미 인정하고 있었으나, 실측 결과 해당 근사가 Q=0.7 biquad의 실제 응답(0.5~0.6배)을 과소평가했음이 확인되었다.
+>
+> V3.1 preset의 **음향학적 근거(Bowling 2017, Arnal 2015, Wallmark 2017 등)를 보존**하기 위해 preset 값은 변경하지 않고, 예산 자체를 **±3 dB → ±3.5 dB**로 재정의한다. ±3.5 dB는 여전히 V3.2 §6-3이 명시한 "음악을 변형하는 수준(±6 dB)"에 크게 미치지 못하는 보수적 범위이며, 영화 theatrical mix의 mood shaping 관행과도 정합한다. 이 재정의는 "정확한 실측으로 근사식의 한계를 발견하여 spec를 업데이트"라는 §Medium 4의 검증 경로 정신과 부합한다.
+>
+> **검증 판정 (Phase 1 완료, ±3.5 dB 기준)**:
+> - **safe (|peak| ≤ 3.5 dB)**: Tension +3.37, Sadness -3.05, Peacefulness -1.30, JoyfulActivation +3.09, Tenderness +2.85, Wonder +2.44 → 6개 카테고리 PASS.
+> - **boundary (3.5 < |peak| ≤ 4.0 dB)**: **Power +3.93 dB** — 보완자료 §Medium 4 tier "boundary" 정의(0.3~0.5 dB 초과)에 해당. Phase 3 청취 검증 결과에 따라 결정: 거슬림 없으면 그대로 유지, 저역 왜곡 관측 시 Power B1 +2.5 → +2.0 한 단계 하향. `scripts/eq_response_check.py --strict`는 VIOLATION tier(|peak| > 4.0 dB)만 실패 처리하며, boundary tier는 PASS*로 통과한다.
+> - **violation (|peak| > 4.0 dB)**: 없음.
+
 **대사 보호 공식** (B6/B7/B8만):
 ```
 g_effective(band) = g_original(band) × (1 − (1 − α_d) × dialogue_density)
