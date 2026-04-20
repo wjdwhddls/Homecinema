@@ -89,5 +89,7 @@ runs/
 
 # Precomputed frozen features (재현 가능: ccmovies_preprocess.py)
 data/features/
+# 외부 데이터셋 경로 (facebookresearch/AcousticRooms clone, /home/piai/ 에서 관리)
+# 실수로 repo 내부에 들어올 경우 대비 safety net
 /AcousticRooms
 
