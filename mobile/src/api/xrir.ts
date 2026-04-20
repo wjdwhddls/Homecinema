@@ -2,10 +2,6 @@
 import { Platform } from 'react-native';
 import { apiClient } from './client';
 
-// ──────────────────────────────────────────────
-// 타입 정의
-// ──────────────────────────────────────────────
-
 export interface Position {
   x: number;
   y: number;
@@ -40,14 +36,6 @@ export interface JobStatusResponse {
   error?: string;
 }
 
-// ──────────────────────────────────────────────
-// API 함수
-// ──────────────────────────────────────────────
-
-/**
- * 임시 스피커 위치 계산
- * roomplan JSON → 청취자 위치 + 임시 스피커 위치 반환
- */
 export async function getInitialPosition(
   roomplanScan: object,
   listenerHeightM: number = 1.2,
@@ -61,33 +49,47 @@ export async function getInitialPosition(
   const response = await apiClient.post<InitialPositionResponse>(
     '/api/xrir/initial-position',
     formData,
-    {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    },
+    { headers: { 'Content-Type': 'multipart/form-data' } },
   );
-
   return response.data;
 }
 
 /**
- * 최적 스피커 위치 추론 요청 (비동기)
- * roomplan JSON + ref_rir.wav → job_id 반환
- * 결과는 pollJobStatus()로 확인
+ * 최적 스피커 위치 추론 요청
+ * recorded.wav + sweep.wav → 서버에서 deconvolution → xRIR 추론
+ * mesh.bin은 선택사항 (있으면 더 정확한 depth.npy 생성)
  */
 export async function requestSpeakerOptimization(
   roomplanScan: object,
-  refRirUri: string,
+  recordedUri: string,
+  sweepUri: string,
+  meshBinUri?: string,         // ← 선택사항 (LiDAR mesh.bin)
   listenerHeightM: number = 1.2,
   speakerHeightM: number = 1.2,
   topK: number = 5,
 ): Promise<SpeakersResponse> {
   const formData = new FormData();
   formData.append('roomplan_scan', JSON.stringify(roomplanScan));
-  formData.append('ref_rir', {
-    uri: Platform.OS === 'ios' ? refRirUri : refRirUri,
+  formData.append('recorded', {
+    uri: recordedUri,
     type: 'audio/wav',
-    name: 'ref_rir.wav',
+    name: 'recorded.wav',
   } as any);
+  formData.append('sweep', {
+    uri: sweepUri,
+    type: 'audio/wav',
+    name: 'sweep.wav',
+  } as any);
+
+  // mesh.bin 있을 때만 추가
+  if (meshBinUri) {
+    formData.append('mesh', {
+      uri: meshBinUri,
+      type: 'application/octet-stream',
+      name: 'mesh.bin',
+    } as any);
+  }
+
   formData.append('listener_height_m', String(listenerHeightM));
   formData.append('speaker_height_m', String(speakerHeightM));
   formData.append('top_k', String(topK));
@@ -95,17 +97,11 @@ export async function requestSpeakerOptimization(
   const response = await apiClient.post<SpeakersResponse>(
     '/api/xrir/speakers',
     formData,
-    {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    },
+    { headers: { 'Content-Type': 'multipart/form-data' } },
   );
-
   return response.data;
 }
 
-/**
- * 추론 작업 상태 확인 (폴링용)
- */
 export async function pollJobStatus(jobId: string): Promise<JobStatusResponse> {
   const response = await apiClient.get<JobStatusResponse>(
     `/api/xrir/status/${jobId}`,
@@ -113,9 +109,6 @@ export async function pollJobStatus(jobId: string): Promise<JobStatusResponse> {
   return response.data;
 }
 
-/**
- * 완료될 때까지 폴링 (최대 maxAttempts회, intervalMs 간격)
- */
 export async function waitForJobCompletion(
   jobId: string,
   onStatusUpdate?: (status: string) => void,
@@ -133,6 +126,5 @@ export async function waitForJobCompletion(
 
     await new Promise(resolve => setTimeout(resolve, intervalMs));
   }
-
   throw new Error('추론 작업이 시간 초과되었습니다.');
 }

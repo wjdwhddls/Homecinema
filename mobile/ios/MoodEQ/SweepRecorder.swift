@@ -44,7 +44,12 @@ class SweepRecorder: NSObject {
       // 2. Sine sweep 버퍼 생성 (20Hz → 20kHz, log sweep)
       let sweepBuffer = makeSweepBuffer(format: format, frameCount: frameCount, sampleRate: sr)
 
-      // 3. AVAudioEngine 구성
+      // 3. sweep.wav 저장 (서버 deconvolution용 원본 신호)
+      let sweepURL = FileManager.default.temporaryDirectory
+        .appendingPathComponent("sweep_\(Int(Date().timeIntervalSince1970)).wav")
+      try savePCMBufferToWav(buffer: sweepBuffer, url: sweepURL, sampleRate: sr)
+
+      // 4. AVAudioEngine 구성
       let engine = AVAudioEngine()
       let player = AVAudioPlayerNode()
       self.audioEngine = engine
@@ -53,14 +58,14 @@ class SweepRecorder: NSObject {
       engine.attach(player)
       engine.connect(player, to: engine.mainMixerNode, format: format)
 
-      // 4. 녹음 파일 경로
-      let outputURL = FileManager.default.temporaryDirectory
-        .appendingPathComponent("ref_rir_\(Int(Date().timeIntervalSince1970)).wav")
+      // 5. recorded.wav 경로
+      let recordedURL = FileManager.default.temporaryDirectory
+        .appendingPathComponent("recorded_\(Int(Date().timeIntervalSince1970)).wav")
 
-      // 5. 입력(마이크) 탭 설치 → wav 파일로 저장
+      // 6. 마이크 탭 설치 → recorded.wav 저장
       let inputFormat = engine.inputNode.outputFormat(forBus: 0)
       var audioFile: AVAudioFile? = try AVAudioFile(
-        forWriting: outputURL,
+        forWriting: recordedURL,
         settings: [
           AVFormatIDKey: kAudioFormatLinearPCM,
           AVSampleRateKey: sampleRate,
@@ -74,22 +79,24 @@ class SweepRecorder: NSObject {
         try? audioFile?.write(from: buffer)
       }
 
-      // 6. 엔진 시작 + sweep 재생
+      // 7. 엔진 시작 + sweep 재생
       try engine.start()
       player.scheduleBuffer(sweepBuffer, completionCallbackType: .dataPlayedBack) { _ in
-        DispatchQueue.global().asyncAfter(deadline: .now() + 0.3) { [weak self] in
-          // 재생 완료 후 0.3초 여유를 두고 종료 (잔향 캡처)
+        // 재생 완료 후 0.5초 여유 (잔향 캡처)
+        DispatchQueue.global().asyncAfter(deadline: .now() + 0.5) { [weak self] in
           engine.inputNode.removeTap(onBus: 0)
           engine.stop()
-          audioFile = nil  // 파일 닫기
+          audioFile = nil
           self?.audioEngine = nil
           self?.playerNode = nil
 
           try? session.setActive(false)
 
+          // recorded.wav + sweep.wav 둘 다 반환
           resolve([
-            "uri": outputURL.absoluteString,
-            "durationMs": Int((durationSec + 0.3) * 1000),
+            "recordedUri": recordedURL.absoluteString,
+            "sweepUri": sweepURL.absoluteString,
+            "durationMs": Int((durationSec + 0.5) * 1000),
           ])
         }
       }
@@ -120,6 +127,22 @@ class SweepRecorder: NSObject {
     }
   }
 
+  // MARK: - PCM 버퍼 → wav 파일 저장
+
+  private func savePCMBufferToWav(buffer: AVAudioPCMBuffer, url: URL, sampleRate: Double) throws {
+    let audioFile = try AVAudioFile(
+      forWriting: url,
+      settings: [
+        AVFormatIDKey: kAudioFormatLinearPCM,
+        AVSampleRateKey: sampleRate,
+        AVNumberOfChannelsKey: 1,
+        AVLinearPCMBitDepthKey: 24,
+        AVLinearPCMIsFloatKey: false,
+      ]
+    )
+    try audioFile.write(from: buffer)
+  }
+
   // MARK: - Sine Sweep 버퍼 생성 (log sweep, 20Hz → 20kHz)
 
   private func makeSweepBuffer(
@@ -130,15 +153,14 @@ class SweepRecorder: NSObject {
     let buffer = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: frameCount)!
     buffer.frameLength = frameCount
 
-    let f0: Double = 20.0      // 시작 주파수 (Hz)
-    let f1: Double = 20000.0   // 끝 주파수 (Hz)
+    let f0: Double = 20.0
+    let f1: Double = 20000.0
     let T: Double = Double(frameCount) / sampleRate
     let K = T / log(f1 / f0)
 
     let channelData = buffer.floatChannelData![0]
     for i in 0..<Int(frameCount) {
       let t = Double(i) / sampleRate
-      // log sweep 위상 공식
       let phase = 2.0 * Double.pi * f0 * K * (exp(t / K) - 1.0)
       channelData[i] = Float(0.8 * sin(phase))
     }

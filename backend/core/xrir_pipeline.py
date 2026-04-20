@@ -1,17 +1,16 @@
 """
 xRIR 파이프라인 통합 모듈
 
-roomplan JSON + ref_rir.wav
+roomplan JSON + ref_rir.wav (+ 선택: mesh.bin)
 → listener.npy, xyzs.npy, depth.npy 생성
 → xRIR 추론
 → 최적 스피커 위치 반환
 """
 
 import sys
-import json
-import tempfile
 import numpy as np
 import soundfile as sf
+import tempfile
 from pathlib import Path
 
 sys.path.append("/home/piai/AcousticRooms/xRIR_code-main")
@@ -53,18 +52,20 @@ def run_xrir_pipeline(
     speaker_height: float = 1.2,
     grid_step: float = 0.3,
     wall_margin: float = 0.5,
+    mesh_bin_path: str = None,   # ← 추가: mesh.bin 경로 (없으면 roomplan JSON fallback)
 ) -> list:
     """
     메인 파이프라인 함수
 
     Args:
-        roomplan_json  : POST /api/optimize/speakers의 roomplan_scan dict
-        ref_rir_bytes  : ref_rir.wav 파일의 bytes (앱에서 업로드)
+        roomplan_json  : POST /api/xrir/speakers의 roomplan_scan dict
+        ref_rir_bytes  : ref_rir.wav 파일의 bytes (deconvolution 결과)
         top_k          : 상위 몇 개 위치 반환
         listener_height: 청취자 귀 높이 (m)
         speaker_height : 후보 스피커 높이 (m)
         grid_step      : 후보 격자 간격 (m)
         wall_margin    : 벽 마진 (m)
+        mesh_bin_path  : LiDAR mesh.bin 경로 (None이면 roomplan JSON fallback)
 
     Returns:
         상위 K개 위치와 점수 리스트
@@ -90,11 +91,14 @@ def run_xrir_pipeline(
             wall_margin=wall_margin,
         )
 
-        # ── 3. roomplan JSON → depth.npy ────────────────────────
+        # ── 3. depth.npy 생성 ────────────────────────────────────
+        # mesh.bin 있으면 LiDAR 메쉬 사용 (정확)
+        # 없으면 roomplan JSON ray casting (fallback)
         depth_np = convert_roomplan_to_depth(
             roomplan_json=roomplan_json,
             listener_pos=listener,
             output_dir=str(tmpdir),
+            mesh_bin_path=mesh_bin_path,
         )
 
         # ── 4. xRIR 추론 ─────────────────────────────────────────

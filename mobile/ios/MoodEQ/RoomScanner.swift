@@ -1,7 +1,7 @@
 import Foundation
 import RoomPlan
 import React
-import UIKit
+import simd
 
 @available(iOS 16.0, *)
 @objc(RoomScanner)
@@ -39,7 +39,6 @@ class RoomScanner: RCTEventEmitter {
         return
       }
 
-      // 이미 모달이 떠 있으면 그 위에 띄우기
       var topVC = rootVC
       while let presented = topVC.presentedViewController {
         topVC = presented
@@ -47,10 +46,11 @@ class RoomScanner: RCTEventEmitter {
 
       let scanVC = RoomScanViewController()
       scanVC.modalPresentationStyle = .fullScreen
-      scanVC.onComplete = { [weak self] capturedRoom in
+
+      // onComplete: CapturedRoom + mesh.bin Data 받음
+      scanVC.onComplete = { [weak self] capturedRoom, meshData in
         guard let self = self else { return }
 
-        // 스캔 결과 충분성 검증 (Phase 2/3 음향 분석 정확도를 위한 최소 조건)
         if capturedRoom.walls.count < 3 {
           reject(
             "SCAN_INSUFFICIENT",
@@ -60,18 +60,35 @@ class RoomScanner: RCTEventEmitter {
           return
         }
 
-        let json = self.encodeRoom(capturedRoom)
+        var json = self.encodeRoom(capturedRoom)
+
+        // mesh.bin 임시 파일로 저장 → URI 반환
+        if let data = meshData {
+          let meshURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent("mesh_\(Int(Date().timeIntervalSince1970)).bin")
+          do {
+            try data.write(to: meshURL)
+            json["meshBinUri"] = meshURL.absoluteString
+            print("mesh.bin 저장 완료: \(meshURL.path) (\(data.count) bytes)")
+          } catch {
+            print("mesh.bin 저장 실패: \(error)")
+            // mesh.bin 저장 실패해도 스캔 결과는 반환 (fallback 가능)
+          }
+        } else {
+          print("mesh.bin 없음 (ARMeshAnchor 수집 실패 또는 미지원 기기)")
+        }
+
         print("========== ROOM SCAN RESULT ==========")
         print("Walls: \(capturedRoom.walls.count)")
         print("Doors: \(capturedRoom.doors.count)")
         print("Windows: \(capturedRoom.windows.count)")
         print("Objects: \(capturedRoom.objects.count)")
-        for obj in capturedRoom.objects {
-          print("• \(obj.category) | size: \(obj.dimensions.x)×\(obj.dimensions.y)×\(obj.dimensions.z)m | confidence: \(obj.confidence)")
-        }
+        print("meshBinUri: \(json["meshBinUri"] ?? "없음")")
         print("======================================")
+
         resolve(json)
       }
+
       scanVC.onCancel = {
         reject("CANCELLED", "사용자가 스캔을 취소했습니다", nil)
       }
@@ -97,34 +114,22 @@ class RoomScanner: RCTEventEmitter {
 
   @available(iOS 16.0, *)
   private func encodeSurface(_ s: CapturedRoom.Surface) -> [String: Any] {
-    let t = s.transform
     return [
       "id": s.identifier.uuidString,
       "category": surfaceCategoryString(s.category),
       "dimensions": [s.dimensions.x, s.dimensions.y, s.dimensions.z],
-      "transform": [
-        t.columns.0.x, t.columns.0.y, t.columns.0.z, t.columns.0.w,
-        t.columns.1.x, t.columns.1.y, t.columns.1.z, t.columns.1.w,
-        t.columns.2.x, t.columns.2.y, t.columns.2.z, t.columns.2.w,
-        t.columns.3.x, t.columns.3.y, t.columns.3.z, t.columns.3.w
-      ],
+      "transform": flattenMatrix(s.transform),
       "confidence": confidenceString(s.confidence)
     ]
   }
 
   @available(iOS 16.0, *)
   private func encodeObject(_ o: CapturedRoom.Object) -> [String: Any] {
-    let t = o.transform
     return [
       "id": o.identifier.uuidString,
       "category": objectCategoryString(o.category),
       "dimensions": [o.dimensions.x, o.dimensions.y, o.dimensions.z],
-      "transform": [
-        t.columns.0.x, t.columns.0.y, t.columns.0.z, t.columns.0.w,
-        t.columns.1.x, t.columns.1.y, t.columns.1.z, t.columns.1.w,
-        t.columns.2.x, t.columns.2.y, t.columns.2.z, t.columns.2.w,
-        t.columns.3.x, t.columns.3.y, t.columns.3.z, t.columns.3.w
-      ],
+      "transform": flattenMatrix(o.transform),
       "confidence": confidenceString(o.confidence)
     ]
   }
@@ -174,4 +179,12 @@ class RoomScanner: RCTEventEmitter {
     }
   }
 
+  private func flattenMatrix(_ m: simd_float4x4) -> [Float] {
+    return [
+      m.columns.0.x, m.columns.0.y, m.columns.0.z, m.columns.0.w,
+      m.columns.1.x, m.columns.1.y, m.columns.1.z, m.columns.1.w,
+      m.columns.2.x, m.columns.2.y, m.columns.2.z, m.columns.2.w,
+      m.columns.3.x, m.columns.3.y, m.columns.3.z, m.columns.3.w
+    ]
+  }
 }
