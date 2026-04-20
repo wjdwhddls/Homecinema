@@ -2,169 +2,132 @@ import Foundation
 import AVFoundation
 import React
 
+/// sweep 신호 재생 + 동시 마이크 녹음 → recorded.wav 저장
+/// JS에서 NativeModules.SweepRecorder.record() 로 호출
 @objc(SweepRecorder)
 class SweepRecorder: NSObject {
 
-  private var audioEngine: AVAudioEngine?
-  private var playerNode: AVAudioPlayerNode?
+  private var audioEngine  = AVAudioEngine()
+  private var playerNode   = AVAudioPlayerNode()
+  private var recorderFile : AVAudioFile?
 
-  override static func requiresMainQueueSetup() -> Bool { false }
+  // MARK: - JS 인터페이스
 
-  // MARK: - 마이크 권한 요청
-
-  @objc(requestPermission:rejecter:)
-  func requestPermission(
-    _ resolve: @escaping RCTPromiseResolveBlock,
-    rejecter reject: @escaping RCTPromiseRejectBlock
+  /// 번들 내 sweep.wav의 file:// URI 반환 (JS에서 서버 업로드에 사용)
+  @objc(getSweepUri:rejecter:)
+  func getSweepUri(
+    _ resolve: RCTPromiseResolveBlock,
+    rejecter reject: RCTPromiseRejectBlock
   ) {
-    AVAudioSession.sharedInstance().requestRecordPermission { granted in
-      resolve(granted)
-    }
-  }
-
-  // MARK: - Sweep 재생 + 동시 녹음
-
-  @objc(recordSweep:sampleRate:resolver:rejecter:)
-  func recordSweep(
-    _ durationSec: Double,
-    sampleRate: Double,
-    resolver resolve: @escaping RCTPromiseResolveBlock,
-    rejecter reject: @escaping RCTPromiseRejectBlock
-  ) {
-    do {
-      // 1. 오디오 세션 설정 (재생 + 녹음 동시)
-      let session = AVAudioSession.sharedInstance()
-      try session.setCategory(.playAndRecord, mode: .measurement, options: [.defaultToSpeaker])
-      try session.setActive(true)
-
-      let sr = Double(sampleRate)
-      let frameCount = AVAudioFrameCount(sr * durationSec)
-      let format = AVAudioFormat(standardFormatWithSampleRate: sr, channels: 1)!
-
-      // 2. Sine sweep 버퍼 생성 (20Hz → 20kHz, log sweep)
-      let sweepBuffer = makeSweepBuffer(format: format, frameCount: frameCount, sampleRate: sr)
-
-      // 3. sweep.wav 저장 (서버 deconvolution용 원본 신호)
-      let sweepURL = FileManager.default.temporaryDirectory
-        .appendingPathComponent("sweep_\(Int(Date().timeIntervalSince1970)).wav")
-      try savePCMBufferToWav(buffer: sweepBuffer, url: sweepURL, sampleRate: sr)
-
-      // 4. AVAudioEngine 구성
-      let engine = AVAudioEngine()
-      let player = AVAudioPlayerNode()
-      self.audioEngine = engine
-      self.playerNode = player
-
-      engine.attach(player)
-      engine.connect(player, to: engine.mainMixerNode, format: format)
-
-      // 5. recorded.wav 경로
-      let recordedURL = FileManager.default.temporaryDirectory
-        .appendingPathComponent("recorded_\(Int(Date().timeIntervalSince1970)).wav")
-
-      // 6. 마이크 탭 설치 → recorded.wav 저장
-      let inputFormat = engine.inputNode.outputFormat(forBus: 0)
-      var audioFile: AVAudioFile? = try AVAudioFile(
-        forWriting: recordedURL,
-        settings: [
-          AVFormatIDKey: kAudioFormatLinearPCM,
-          AVSampleRateKey: sampleRate,
-          AVNumberOfChannelsKey: 1,
-          AVLinearPCMBitDepthKey: 24,
-          AVLinearPCMIsFloatKey: false,
-        ]
-      )
-
-      engine.inputNode.installTap(onBus: 0, bufferSize: 4096, format: inputFormat) { buffer, _ in
-        try? audioFile?.write(from: buffer)
-      }
-
-      // 7. 엔진 시작 + sweep 재생
-      try engine.start()
-      player.scheduleBuffer(sweepBuffer, completionCallbackType: .dataPlayedBack) { _ in
-        // 재생 완료 후 0.5초 여유 (잔향 캡처)
-        DispatchQueue.global().asyncAfter(deadline: .now() + 0.5) { [weak self] in
-          engine.inputNode.removeTap(onBus: 0)
-          engine.stop()
-          audioFile = nil
-          self?.audioEngine = nil
-          self?.playerNode = nil
-
-          try? session.setActive(false)
-
-          // recorded.wav + sweep.wav 둘 다 반환
-          resolve([
-            "recordedUri": recordedURL.absoluteString,
-            "sweepUri": sweepURL.absoluteString,
-            "durationMs": Int((durationSec + 0.5) * 1000),
-          ])
-        }
-      }
-      player.play()
-
-    } catch {
-      reject("SWEEP_ERROR", "Sweep 녹음 중 오류 발생: \(error.localizedDescription)", error)
-    }
-  }
-
-  // MARK: - 녹음 파일 삭제
-
-  @objc(deleteRecording:resolver:rejecter:)
-  func deleteRecording(
-    _ uri: String,
-    resolver resolve: @escaping RCTPromiseResolveBlock,
-    rejecter reject: @escaping RCTPromiseRejectBlock
-  ) {
-    guard let url = URL(string: uri) else {
-      reject("INVALID_URI", "유효하지 않은 파일 경로입니다", nil)
+    guard let url = Bundle.main.url(forResource: "sweep", withExtension: "wav") else {
+      reject("NO_SWEEP", "sweep.wav를 번들에서 찾을 수 없습니다. Xcode 빌드 타깃에 추가했는지 확인하세요.", nil)
       return
     }
-    do {
-      try FileManager.default.removeItem(at: url)
-      resolve(nil)
-    } catch {
-      reject("DELETE_ERROR", "파일 삭제 실패: \(error.localizedDescription)", error)
+    resolve(url.absoluteString)   // "file:///..."
+  }
+
+  /// sweep 재생 + 녹음 시작
+  /// - sweepAssetName: 앱 번들 내 sweep 파일명 (확장자 제외)
+  /// - Returns: 녹음된 recorded.wav 경로 (file://...)
+  @objc(record:resolver:rejecter:)
+  func record(
+    _ sweepAssetName: String,
+    resolver resolve: @escaping RCTPromiseResolveBlock,
+    rejecter reject: @escaping RCTPromiseRejectBlock
+  ) {
+    DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+      guard let self = self else { return }
+      do {
+        let outputURL = try self.startRecording(sweepAssetName: sweepAssetName)
+        resolve(outputURL.absoluteString)
+      } catch {
+        reject("SWEEP_ERROR", error.localizedDescription, error)
+      }
     }
   }
 
-  // MARK: - PCM 버퍼 → wav 파일 저장
+  // MARK: - 내부 구현
 
-  private func savePCMBufferToWav(buffer: AVAudioPCMBuffer, url: URL, sampleRate: Double) throws {
-    let audioFile = try AVAudioFile(
-      forWriting: url,
-      settings: [
-        AVFormatIDKey: kAudioFormatLinearPCM,
-        AVSampleRateKey: sampleRate,
-        AVNumberOfChannelsKey: 1,
-        AVLinearPCMBitDepthKey: 24,
-        AVLinearPCMIsFloatKey: false,
-      ]
-    )
-    try audioFile.write(from: buffer)
-  }
+  private func startRecording(sweepAssetName: String) throws -> URL {
 
-  // MARK: - Sine Sweep 버퍼 생성 (log sweep, 20Hz → 20kHz)
-
-  private func makeSweepBuffer(
-    format: AVAudioFormat,
-    frameCount: AVAudioFrameCount,
-    sampleRate: Double
-  ) -> AVAudioPCMBuffer {
-    let buffer = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: frameCount)!
-    buffer.frameLength = frameCount
-
-    let f0: Double = 20.0
-    let f1: Double = 20000.0
-    let T: Double = Double(frameCount) / sampleRate
-    let K = T / log(f1 / f0)
-
-    let channelData = buffer.floatChannelData![0]
-    for i in 0..<Int(frameCount) {
-      let t = Double(i) / sampleRate
-      let phase = 2.0 * Double.pi * f0 * K * (exp(t / K) - 1.0)
-      channelData[i] = Float(0.8 * sin(phase))
+    // ── 1. sweep 파일 로드 ────────────────────────────────────────
+    guard let sweepURL = Bundle.main.url(
+      forResource: sweepAssetName, withExtension: "wav"
+    ) else {
+      throw NSError(
+        domain: "SweepRecorder", code: 1,
+        userInfo: [NSLocalizedDescriptionKey:
+          "\(sweepAssetName).wav 파일을 찾을 수 없습니다. Xcode 번들 타깃에 추가했는지 확인하세요."]
+      )
     }
 
-    return buffer
+    let sweepFile = try AVAudioFile(forReading: sweepURL)
+    let format    = sweepFile.processingFormat
+
+    // ── 2. AVAudioSession 설정 (재생 + 녹음) ─────────────────────
+    let session = AVAudioSession.sharedInstance()
+    try session.setCategory(.playAndRecord,
+                            mode: .measurement,
+                            options: [.defaultToSpeaker, .allowBluetooth])
+    try session.setActive(true)
+
+    // ── 3. 출력 파일 준비 ─────────────────────────────────────────
+    let tmpDir    = FileManager.default.temporaryDirectory
+    let outputURL = tmpDir.appendingPathComponent("recorded_\(UUID().uuidString).wav")
+
+    let settings: [String: Any] = [
+      AVFormatIDKey:          Int(kAudioFormatLinearPCM),
+      AVSampleRateKey:        format.sampleRate,
+      AVNumberOfChannelsKey:  1,
+      AVLinearPCMBitDepthKey: 16,
+      AVLinearPCMIsFloatKey:  false,
+    ]
+    recorderFile = try AVAudioFile(forWriting: outputURL, settings: settings)
+
+    // ── 4. 오디오 그래프 구성 ─────────────────────────────────────
+    audioEngine  = AVAudioEngine()
+    playerNode   = AVAudioPlayerNode()
+    audioEngine.attach(playerNode)
+    audioEngine.connect(playerNode, to: audioEngine.mainMixerNode, format: format)
+
+    let inputNode   = audioEngine.inputNode
+    let inputFormat = inputNode.outputFormat(forBus: 0)
+
+    guard let recFile = recorderFile else {
+      throw NSError(domain: "SweepRecorder", code: 2, userInfo: nil)
+    }
+
+    inputNode.installTap(onBus: 0, bufferSize: 4096, format: inputFormat) { buffer, _ in
+      try? recFile.write(from: buffer)
+    }
+
+    // ── 5. 엔진 시작 + sweep 재생 ────────────────────────────────
+    try audioEngine.start()
+
+    let buffer = AVAudioPCMBuffer(
+      pcmFormat: format,
+      frameCapacity: AVAudioFrameCount(sweepFile.length)
+    )!
+    try sweepFile.read(into: buffer)
+
+    let semaphore = DispatchSemaphore(value: 0)
+    playerNode.scheduleBuffer(buffer, completionCallbackType: .dataPlayedBack) { _ in
+      semaphore.signal()
+    }
+    playerNode.play()
+
+    // sweep 재생 완료 대기 (최대 30초)
+    _ = semaphore.wait(timeout: .now() + 30)
+
+    // 잔향 캡처를 위한 여유 시간
+    Thread.sleep(forTimeInterval: 0.5)
+
+    // ── 6. 정리 ──────────────────────────────────────────────────
+    inputNode.removeTap(onBus: 0)
+    audioEngine.stop()
+    try? AVAudioSession.sharedInstance().setActive(false)
+
+    print("SweepRecorder: 녹음 완료 → \(outputURL.path)")
+    return outputURL
   }
 }

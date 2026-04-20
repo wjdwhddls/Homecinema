@@ -2,15 +2,12 @@
 
 @interface RCT_EXTERN_MODULE(SweepRecorder, NSObject)
 
-RCT_EXTERN_METHOD(requestPermission:(RCTPromiseResolveBlock)resolve
+// 번들 내 sweep.wav의 file:// URI 반환
+RCT_EXTERN_METHOD(getSweepUri:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 
-RCT_EXTERN_METHOD(recordSweep:(double)durationSec
-                  sampleRate:(double)sampleRate
-                  resolver:(RCTPromiseResolveBlock)resolve
-                  rejecter:(RCTPromiseRejectBlock)reject)
-
-RCT_EXTERN_METHOD(deleteRecording:(NSString *)uri
+// sweep 재생 + 마이크 녹음
+RCT_EXTERN_METHOD(record:(NSString *)sweepAssetName
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 

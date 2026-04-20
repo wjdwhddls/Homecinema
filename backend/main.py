@@ -7,31 +7,23 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from config import settings
-from api import health, upload, jobs, speaker_optimization, speaker_optimization_xrir
+from api import health, upload, jobs, speaker_optimization, speaker_optimization_xrir, eq
 
-# 서버 시작 시간 기록
+
 SERVER_STARTED_AT = datetime.now(timezone.utc).isoformat()
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """앱 시작/종료 시 실행되는 이벤트"""
-    # Startup: 필요한 디렉토리 생성
     settings.upload_tmp_path.mkdir(parents=True, exist_ok=True)
     settings.jobs_data_path.mkdir(parents=True, exist_ok=True)
-
-    # health 엔드포인트에 시작 시간 설정
     health.set_started_at(SERVER_STARTED_AT)
-
     print(f"[Mood EQ Backend] 서버 시작: {SERVER_STARTED_AT}")
     print(f"[Mood EQ Backend] 업로드 임시 디렉토리: {settings.upload_tmp_path}")
     print(f"[Mood EQ Backend] Job 데이터 디렉토리: {settings.jobs_data_path}")
     print(f"[Mood EQ Backend] 최대 업로드 크기: {settings.MAX_UPLOAD_SIZE_MB}MB")
     print(f"[Mood EQ Backend] DEV_FAKE_PROCESSED: {settings.DEV_FAKE_PROCESSED}")
-
-    yield  # 앱 실행 중
-
-    # Shutdown
+    yield
     print("[Mood EQ Backend] 서버 종료")
 
 
@@ -42,7 +34,6 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# CORS 설정 — allow_origins=["*"] 금지, 명시적 origin 사용
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins_list,
@@ -57,6 +48,7 @@ app.include_router(upload.router, prefix="/api", tags=["upload"])
 app.include_router(jobs.router, prefix="/api/jobs", tags=["jobs"])
 app.include_router(speaker_optimization.router)
 app.include_router(speaker_optimization_xrir.router)
+app.include_router(eq.router)          # ← EQ 분석 라우터 추가
 
 
 if __name__ == "__main__":

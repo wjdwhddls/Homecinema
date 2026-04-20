@@ -4,7 +4,7 @@ xRIR 파이프라인 통합 모듈
 roomplan JSON + ref_rir.wav (+ 선택: mesh.bin)
 → listener.npy, xyzs.npy, depth.npy 생성
 → xRIR 추론
-→ 최적 스피커 위치 반환
+→ 최적 스피커 위치 반환 (스테레오 left/right 포함)
 """
 
 import sys
@@ -44,6 +44,66 @@ def _get_model(device="cuda"):
     return _model
 
 
+# ── 스테레오 배치 계산 ────────────────────────────────────────────
+
+def compute_stereo_placement(
+    center_pos: np.ndarray,
+    listener_pos: np.ndarray,
+    stereo_offset_m: float = 1.0,
+) -> dict:
+    """
+    최적 단일 위치(center_pos)를 기준으로 left/right 스테레오 배치 계산.
+
+    청취자-스피커 방향 벡터에 수직인 방향으로 ±offset만큼 이동.
+
+    Args:
+        center_pos     : xRIR이 찾은 최적 단일 스피커 위치 [x, y, z]
+        listener_pos   : 청취자 위치 [x, y, z]
+        stereo_offset_m: 센터에서 left/right까지 거리 (기본 1.0m)
+
+    Returns:
+        { "left": {x,y,z}, "center": {x,y,z}, "right": {x,y,z} }
+    """
+    # 수평면(x-y)에서만 계산
+    spk_xy = center_pos[:2]
+    lis_xy = listener_pos[:2]
+
+    # 청취자 → 스피커 방향 벡터
+    forward = spk_xy - lis_xy
+    dist = np.linalg.norm(forward)
+
+    if dist < 1e-6:
+        # 청취자와 스피커가 같은 위치이면 임의 방향 사용
+        forward = np.array([1.0, 0.0])
+    else:
+        forward = forward / dist
+
+    # 수직 벡터 (왼쪽: 반시계방향 90도)
+    perp = np.array([-forward[1], forward[0]])
+
+    z = float(center_pos[2])
+    left_xy  = spk_xy + perp * stereo_offset_m
+    right_xy = spk_xy - perp * stereo_offset_m
+
+    return {
+        "left": {
+            "x": round(float(left_xy[0]), 3),
+            "y": round(float(left_xy[1]), 3),
+            "z": z,
+        },
+        "center": {
+            "x": round(float(spk_xy[0]), 3),
+            "y": round(float(spk_xy[1]), 3),
+            "z": z,
+        },
+        "right": {
+            "x": round(float(right_xy[0]), 3),
+            "y": round(float(right_xy[1]), 3),
+            "z": z,
+        },
+    }
+
+
 def run_xrir_pipeline(
     roomplan_json: dict,
     ref_rir_bytes: bytes,
@@ -52,23 +112,32 @@ def run_xrir_pipeline(
     speaker_height: float = 1.2,
     grid_step: float = 0.3,
     wall_margin: float = 0.5,
-    mesh_bin_path: str = None,   # ← 추가: mesh.bin 경로 (없으면 roomplan JSON fallback)
+    stereo_offset_m: float = 1.0,
+    mesh_bin_path: str = None,
 ) -> list:
     """
     메인 파이프라인 함수
 
-    Args:
-        roomplan_json  : POST /api/xrir/speakers의 roomplan_scan dict
-        ref_rir_bytes  : ref_rir.wav 파일의 bytes (deconvolution 결과)
-        top_k          : 상위 몇 개 위치 반환
-        listener_height: 청취자 귀 높이 (m)
-        speaker_height : 후보 스피커 높이 (m)
-        grid_step      : 후보 격자 간격 (m)
-        wall_margin    : 벽 마진 (m)
-        mesh_bin_path  : LiDAR mesh.bin 경로 (None이면 roomplan JSON fallback)
-
     Returns:
-        상위 K개 위치와 점수 리스트
+        상위 K개 결과 리스트. 각 항목:
+        {
+            "placement": {
+                "left":     {x, y, z},
+                "center":   {x, y, z},   ← xRIR 최적 위치
+                "right":    {x, y, z},
+                "listener": {x, y, z},
+            },
+            "score": float,               ← xRIR total score
+            "metrics": {
+                "rt60_seconds": float,
+                "c80_db": float,
+                "drr_db": float,
+                "rt60_score": float,
+                "c80_score": float,
+                "drr_score": float,
+            },
+            "rank": int,
+        }
     """
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -92,8 +161,6 @@ def run_xrir_pipeline(
         )
 
         # ── 3. depth.npy 생성 ────────────────────────────────────
-        # mesh.bin 있으면 LiDAR 메쉬 사용 (정확)
-        # 없으면 roomplan JSON ray casting (fallback)
         depth_np = convert_roomplan_to_depth(
             roomplan_json=roomplan_json,
             listener_pos=listener,
@@ -110,7 +177,7 @@ def run_xrir_pipeline(
 
         model = _get_model(str(device))
 
-        results = []
+        raw_results = []
         print(f"후보 위치: {len(xyzs)}개 음향 점수 예측 중...")
 
         for i, candidate_pos in enumerate(xyzs):
@@ -120,22 +187,50 @@ def run_xrir_pipeline(
                 device=str(device),
             )
             scores = score_position(pred_rir, sr=sr)
-            scores["position"] = {
-                "x": round(float(candidate_pos[0]), 3),
-                "y": round(float(candidate_pos[1]), 3),
-                "z": round(float(candidate_pos[2]), 3),
-            }
-            results.append(scores)
+            scores["_candidate_pos"] = candidate_pos
+            raw_results.append(scores)
 
             if (i + 1) % 50 == 0:
                 print(f"  {i+1}/{len(xyzs)} 완료...")
 
-        # ── 5. 상위 K개 정렬 ─────────────────────────────────────
-        results.sort(key=lambda x: x["total"], reverse=True)
-        top_results = results[:top_k]
+        # ── 5. 정렬 후 상위 K개를 앱 형식으로 변환 ───────────────
+        raw_results.sort(key=lambda x: x["total"], reverse=True)
+        top_raw = raw_results[:top_k]
 
-        for rank, r in enumerate(top_results, 1):
-            pos = r["position"]
-            print(f"{rank}위: ({pos['x']}, {pos['y']}, {pos['z']}m) | 총점: {r['total']}")
+        results = []
+        for rank, r in enumerate(top_raw):
+            candidate_pos = r["_candidate_pos"]
+            stereo = compute_stereo_placement(
+                center_pos=candidate_pos,
+                listener_pos=listener_pos,
+                stereo_offset_m=stereo_offset_m,
+            )
 
-        return top_results
+            result = {
+                "placement": {
+                    "left":     stereo["left"],
+                    "right":    stereo["right"],
+                    "listener": {
+                        "x": round(float(listener_pos[0]), 3),
+                        "y": round(float(listener_pos[1]), 3),
+                        "z": round(float(listener_pos[2]), 3),
+                    },
+                },
+                "score": round(float(r["total"]), 4),
+                "metrics": {
+                    "rt60_seconds":          round(float(r.get("rt60", 0.0)), 3),
+                    "c80_db":                round(float(r.get("c80", 0.0)), 2),
+                    "drr_db":                round(float(r.get("drr", 0.0)), 2),
+                    "rt60_score":            round(float(r.get("rt60_score", 0.0)), 3),
+                    "c80_score":             round(float(r.get("c80_score", 0.0)), 3),
+                    "drr_score":             round(float(r.get("drr_score", 0.0)), 3),
+                },
+                "rank": rank,
+            }
+            results.append(result)
+
+            pos = stereo["center"]
+            print(f"{rank+1}위: center({pos['x']}, {pos['y']}, {pos['z']}) "
+                  f"| score={r['total']:.3f}")
+
+        return results
