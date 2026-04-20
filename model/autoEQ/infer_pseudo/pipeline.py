@@ -104,6 +104,7 @@ def analyze_video(
     alpha_d: float = 0.5,
     ema_alpha: float = 0.3,
     batch_size: int = 16,
+    variant: str = "base",
     include_windows: bool = False,
     work_dir: str | Path | None = None,
     model_version: str = "train_pseudo_v3.3",
@@ -119,6 +120,9 @@ def analyze_video(
         alpha_d:       Dialogue protection strength (§5-7). 0.5 default.
         ema_alpha:     EMA smoothing α (§5-4). 0.3 default.
         batch_size:    Windows per model forward pass.
+        variant:       Training variant key — ``base`` / ``gmu`` / ``ast_gmu``.
+                       Must match the ckpt's training config. V3.3 official
+                       final is ``ast_gmu``.
         include_windows: If True, JSON includes per-window details (larger file).
         work_dir:      Scratch directory for extracted 16 kHz WAV (defaults to
                        a temp dir cleaned up on exit).
@@ -158,7 +162,8 @@ def analyze_video(
                 print(f"[info] windows: {len(windows)}")
 
             if verbose:
-                print("[info] running model inference (X-CLIP + PANNs + head)...")
+                audio_enc = "AST" if variant == "ast_gmu" else "PANNs"
+                print(f"[info] running model inference (X-CLIP + {audio_enc} + {variant} head)...")
             t_model0 = time.time()
             window_va = predict_windows(
                 windows=windows,
@@ -167,6 +172,7 @@ def analyze_video(
                 ckpt_path=ckpt_path,
                 batch_size=batch_size,
                 num_mood_classes=num_mood_classes,
+                variant=variant,
             )
             if verbose:
                 print(f"[info] model done ({time.time() - t_model0:.1f}s)")
