@@ -7,7 +7,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from config import settings
-from api import health, upload, jobs, speaker_optimization
+from api import health, upload, jobs, speaker_optimization, speaker_optimization_xrir
 
 # 서버 시작 시간 기록
 SERVER_STARTED_AT = datetime.now(timezone.utc).isoformat()
@@ -56,6 +56,7 @@ app.include_router(health.router, prefix="/api", tags=["health"])
 app.include_router(upload.router, prefix="/api", tags=["upload"])
 app.include_router(jobs.router, prefix="/api/jobs", tags=["jobs"])
 app.include_router(speaker_optimization.router)
+app.include_router(speaker_optimization_xrir.router)
 
 
 if __name__ == "__main__":
