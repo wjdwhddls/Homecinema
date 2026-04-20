@@ -22,6 +22,9 @@ def _build_parser() -> argparse.ArgumentParser:
     p.add_argument("--ckpt", type=Path, required=True)
     p.add_argument("--output", type=Path, required=True)
     p.add_argument("--num_mood_classes", type=int, default=4, choices=[4, 7])
+    p.add_argument("--variant", type=str, default="base",
+                   choices=["base", "gmu", "ast_gmu"],
+                   help="training variant (must match ckpt). ast_gmu is V3.3 official final.")
     p.add_argument("--alpha_d", type=float, default=0.5,
                    help="dialogue protection strength (0.3~0.7 tunable)")
     p.add_argument("--ema_alpha", type=float, default=0.3)
@@ -42,6 +45,7 @@ def main(argv: list[str] | None = None) -> int:
         ckpt_path=args.ckpt,
         output_json=args.output,
         num_mood_classes=args.num_mood_classes,
+        variant=args.variant,
         alpha_d=args.alpha_d,
         ema_alpha=args.ema_alpha,
         batch_size=args.batch_size,
