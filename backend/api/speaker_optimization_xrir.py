@@ -84,6 +84,9 @@ async def start_optimization(
     listener_height_m: float = Form(1.2),
     speaker_height_m: float = Form(1.2),
     top_k: int = Form(5),
+    initial_speaker_x: float = Form(...),
+    initial_speaker_y: float = Form(...),
+    initial_speaker_z: float = Form(...),
 ) -> dict:
     try:
         roomplan_json = json.loads(roomplan_scan)
@@ -95,10 +98,12 @@ async def start_optimization(
     mesh_bytes     = await mesh.read() if mesh else None
 
     job_id = _job_store.create_job()
+    ref_src_pos = np.array([initial_speaker_x, initial_speaker_y, initial_speaker_z], dtype=np.float32)
     background_tasks.add_task(
         _run_task, job_id, roomplan_json,
         recorded_bytes, sweep_bytes, mesh_bytes,
         listener_height_m, speaker_height_m, top_k,
+        ref_src_pos,
     )
 
     return {
@@ -128,6 +133,7 @@ def _run_task(
     listener_height: float,
     speaker_height: float,
     top_k: int,
+    ref_src_pos: np.ndarray
 ) -> None:
     try:
         _job_store.update_status(job_id, "processing", progress=10)
@@ -168,6 +174,7 @@ def _run_task(
             results = run_xrir_pipeline(
                 roomplan_json=roomplan_json,
                 ref_rir_bytes=ref_rir_bytes,
+                ref_src_pos=ref_src_pos,
                 top_k=top_k,
                 listener_height=listener_height,
                 speaker_height=speaker_height,

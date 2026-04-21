@@ -107,6 +107,7 @@ def compute_stereo_placement(
 def run_xrir_pipeline(
     roomplan_json: dict,
     ref_rir_bytes: bytes,
+    ref_src_pos: np.ndarray,
     top_k: int = 5,
     listener_height: float = 1.2,
     speaker_height: float = 1.2,
@@ -173,7 +174,6 @@ def run_xrir_pipeline(
         depth_coord  = convert_equirect_to_camera_coord(depth_tensor)
 
         listener_pos = listener.astype(np.float32)
-        ref_src_pos  = listener_pos.copy()
 
         model = _get_model(str(device))
 
