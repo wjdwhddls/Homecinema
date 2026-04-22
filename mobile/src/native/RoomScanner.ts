@@ -1,3 +1,4 @@
+// native/RoomScanner.ts — RoomScanner Swift 브릿지 래퍼
 import { NativeModules, Platform } from 'react-native';
 
 export type SurfaceCategory = 'wall' | 'door' | 'window' | 'opening' | 'floor' | 'unknown';
@@ -33,6 +34,7 @@ export interface CapturedRoom {
   openings: CapturedSurface[];
   objects: CapturedObject[];
   scannedAt: string;
+  meshBinUri?: string;  // ← 추가: LiDAR mesh.bin 파일 경로 (없으면 fallback)
 }
 
 interface RoomScannerNative {
@@ -67,28 +69,10 @@ export const startRoomScan = (): Promise<CapturedRoom> => {
   return RoomScanner.startScan();
 };
 
-// 한글 라벨 매핑
 export const categoryLabelKR: Record<string, string> = {
-  wall: '벽',
-  door: '문',
-  window: '창문',
-  opening: '개구부',
-  floor: '바닥',
-  sofa: '소파',
-  chair: '의자',
-  table: '탁자',
-  bed: '침대',
-  storage: '수납장',
-  refrigerator: '냉장고',
-  stove: '가스레인지',
-  oven: '오븐',
-  dishwasher: '식기세척기',
-  sink: '싱크대',
-  washerDryer: '세탁기',
-  toilet: '변기',
-  bathtub: '욕조',
-  fireplace: '벽난로',
-  television: 'TV',
-  stairs: '계단',
-  unknown: '미분류',
+  wall: '벽', door: '문', window: '창문', opening: '개구부', floor: '바닥',
+  sofa: '소파', chair: '의자', table: '탁자', bed: '침대', storage: '수납장',
+  refrigerator: '냉장고', stove: '가스레인지', oven: '오븐', dishwasher: '식기세척기',
+  sink: '싱크대', washerDryer: '세탁기', toilet: '변기', bathtub: '욕조',
+  fireplace: '벽난로', television: 'TV', stairs: '계단', unknown: '미분류',
 };

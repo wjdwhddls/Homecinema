@@ -11,6 +11,7 @@ import PlaybackScreen from '../screens/PlaybackScreen';
 import SpeakerSizeScreen from '../screens/SpeakerSizeScreen';
 import SpeakerPlacementScreen from '../screens/SpeakerPlacementScreen';
 import OptimizationResultScreen from '../screens/OptimizationResultScreen';
+import EQMeasurementScreen from '../screens/EQMeasurementScreen';  // ← 추가
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -45,7 +46,7 @@ export default function AppNavigator() {
         component={ResultScreen}
         options={{
           title: '분석 진행 상황',
-          headerBackVisible: false, // 뒤로가기 방지 (replace로 왔으므로)
+          headerBackVisible: false,
         }}
       />
       <Stack.Screen
@@ -67,6 +68,11 @@ export default function AppNavigator() {
         name="OptimizationResult"
         component={OptimizationResultScreen}
         options={{title: '최적 배치 결과'}}
+      />
+      <Stack.Screen                                      {/* ← 추가 */}
+        name="EQMeasurement"
+        component={EQMeasurementScreen}
+        options={{title: 'EQ 자동 보정'}}
       />
     </Stack.Navigator>
   );

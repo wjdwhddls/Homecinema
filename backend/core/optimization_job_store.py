@@ -78,27 +78,36 @@ class OptimizationJobStore:
         current["updated_at"] = datetime.now(timezone.utc).isoformat()
         self._atomic_write_json(self._status_path(job_id), current)
 
-    def save_result(self, job_id: str, response: OptimizeResponse) -> None:
-        self._atomic_write_json(
-            self._result_path(job_id), response.model_dump(mode="json")
-        )
+    # def save_result(self, job_id: str, response: OptimizeResponse) -> None:
+    #     self._atomic_write_json(
+    #         self._result_path(job_id), response.model_dump(mode="json")
+    #     )
+
+    def save_result(self, job_id: str, response) -> None:
+        if isinstance(response, dict):
+            data = response
+        else:
+            data = response.model_dump(mode="json")
+        self._atomic_write_json(self._result_path(job_id), data)
 
     def get_status(self, job_id: str) -> Optional[JobStatusResponse]:
         status_data = self._read_json(self._status_path(job_id))
         if status_data is None:
             return None
         result_data = self._read_json(self._result_path(job_id))
-        result_model = (
-            OptimizeResponse.model_validate(result_data)
-            if result_data is not None
-            else None
-        )
-        return JobStatusResponse(
-            job_id=status_data.get("job_id", job_id),
-            status=status_data.get("status", "pending"),
-            progress_percent=status_data.get("progress_percent"),
-            result=result_model,
-        )
+        # result_model = (
+        #     OptimizeResponse.model_validate(result_data)
+        #     if result_data is not None
+        #     else None
+        # )
+        result_model = result_data if result_data is not None else None
+
+        return {
+            "job_id": status_data.get("job_id", job_id),
+            "status": status_data.get("status", "pending"),
+            "progress_percent": status_data.get("progress_percent"),
+            "result": result_model,
+        }
 
     def get_result(self, job_id: str) -> Optional[OptimizeResponse]:
         data = self._read_json(self._result_path(job_id))

@@ -7,6 +7,7 @@ __pycache__/
 # 워커 산출물 (자동 생성, 재현 가능)
 outputs/*
 # 예외: 씬 라벨 자동 산출물은 baseline 비교용으로 보관 (각 ~20~80KB)
+
 !outputs/scene_labels/
 outputs/scene_labels/*
 !outputs/scene_labels/scene_labels_*_auto.json
@@ -85,8 +86,13 @@ node_modules/
 # 외부 repo clone (가중치 포함. git clone + gdown으로 재현 가능)
 third_party/
 
+
 # 학습/추론 산출물 (재현 가능, GitHub 100MB 파일 제한 회피)
 runs/
 
 # Precomputed frozen features (재현 가능: ccmovies_preprocess.py)
 data/features/
+# 외부 데이터셋 경로 (facebookresearch/AcousticRooms clone, /home/piai/ 에서 관리)
+# 실수로 repo 내부에 들어올 경우 대비 safety net
+/AcousticRooms
+

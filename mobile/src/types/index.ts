@@ -17,6 +17,12 @@ export type RootStackParamList = {
   SpeakerSize: undefined;
   SpeakerPlacement: {speakerDimensions: SpeakerDimensions};
   OptimizationResult: {result: OptimizeResponse};
+  EQMeasurement: {                                  // ← 추가
+    optimalPosition: {
+      left:  {x: number; y: number; z: number};
+      right: {x: number; y: number; z: number};
+    };
+  };
 };
 
 // Job 상태 (V3: 분석 phase 확장)
