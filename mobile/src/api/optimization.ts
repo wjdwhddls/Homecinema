@@ -96,12 +96,13 @@ export async function getInitialSpeakerPosition(
 
 /**
  * STEP 2: xRIR 최적 스피커 위치 계산 시작
- * recorded.wav (마이크 녹음), sweep.wav (sweep 원본) 필요
+ * recorded.wav (마이크 녹음), sweep.wav (sweep 원본), 임시 스피커 위치 필요
  */
 export async function startXRirOptimization(
   roomplan: CapturedRoom,
-  recordedWavUri: string,   // 녹음 파일 URI (file://...)
-  sweepWavUri: string,      // sweep 원본 파일 URI (file://...)
+  recordedWavUri: string,                   // 녹음 파일 URI (file://...)
+  sweepWavUri: string,                      // sweep 원본 파일 URI (file://...)
+  initialSpeakerPosition: SpeakerPosition,  // 녹음 시 스피커를 놓았던 임시 위치
   options?: {
     listener_height_m?: number;
     speaker_height_m?: number;
@@ -124,6 +125,11 @@ export async function startXRirOptimization(
     type: 'audio/wav',
     name: 'sweep.wav',
   } as any);
+
+  // 백엔드 필수 파라미터: sweep 측정 시 스피커를 두었던 임시 위치
+  formData.append('initial_speaker_x', String(initialSpeakerPosition.x));
+  formData.append('initial_speaker_y', String(initialSpeakerPosition.y));
+  formData.append('initial_speaker_z', String(initialSpeakerPosition.z));
 
   if (options?.listener_height_m !== undefined) {
     formData.append('listener_height_m', String(options.listener_height_m));

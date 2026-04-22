@@ -7,35 +7,66 @@ roomplan JSON + ref_rir.wav (+ 선택: mesh.bin)
 → 최적 스피커 위치 반환 (스테레오 left/right 포함)
 """
 
+import os
 import sys
 import numpy as np
 import soundfile as sf
 import tempfile
 from pathlib import Path
 
-sys.path.append("/home/piai/AcousticRooms/xRIR_code-main")
-
-import torch
-from model.xRIR import xRIR
-from inference import (
-    convert_equirect_to_camera_coord,
-    predict_rir,
-    score_position,
-)
 from core.roomplan_to_numpy import convert_roomplan_to_xrir_inputs
 from core.roomplan_to_depth import convert_roomplan_to_depth
 
 
-CHECKPOINT_PATH = "/home/piai/AcousticRooms/xRIR_code-main/checkpoints/xRIR_unseen.pth"
+# xRIR 코드 및 체크포인트 경로. env 로 override 가능 — 설정 없으면 dohyeon piai 기본값 사용.
+# Lazy import 구조라 경로가 없어도 /api/eq/analyze 나 /api/xrir/initial-position 은 정상 동작.
+XRIR_REPO_PATH  = os.environ.get("XRIR_REPO_PATH",  "/home/piai/AcousticRooms/xRIR_code-main")
+CHECKPOINT_PATH = os.environ.get("XRIR_CHECKPOINT_PATH", f"{XRIR_REPO_PATH}/checkpoints/xRIR_unseen.pth")
+
 
 _model = None
+_xrir_imports = None  # lazy 로드된 xRIR 외부 심볼 캐시
+
+
+def _load_xrir_imports():
+    """xRIR 관련 외부 모듈을 최초 호출 시점에 import.
+
+    xRIR repo/체크포인트가 없는 환경(본인 Mac 개발 등)에서 서버 기동을 막지 않도록,
+    /api/xrir/speakers 실제 처리 시점까지 import 를 지연시킴.
+    """
+    global _xrir_imports
+    if _xrir_imports is not None:
+        return _xrir_imports
+
+    if XRIR_REPO_PATH not in sys.path:
+        sys.path.append(XRIR_REPO_PATH)
+
+    import torch
+    from model.xRIR import xRIR as xRIRModel
+    from inference import (
+        convert_equirect_to_camera_coord,
+        predict_rir,
+        score_position,
+    )
+
+    _xrir_imports = {
+        "torch": torch,
+        "xRIR": xRIRModel,
+        "convert_equirect_to_camera_coord": convert_equirect_to_camera_coord,
+        "predict_rir": predict_rir,
+        "score_position": score_position,
+    }
+    return _xrir_imports
 
 
 def _get_model(device="cuda"):
     """모델 싱글톤 (한 번만 로드)"""
     global _model
     if _model is None:
-        m = xRIR(num_channels=1)
+        imps = _load_xrir_imports()
+        torch = imps["torch"]
+        xRIRModel = imps["xRIR"]
+        m = xRIRModel(num_channels=1)
         m.load_state_dict(torch.load(CHECKPOINT_PATH, map_location="cpu"))
         m.to(device)
         m.eval()
@@ -140,6 +171,12 @@ def run_xrir_pipeline(
             "rank": int,
         }
     """
+    imps = _load_xrir_imports()
+    torch = imps["torch"]
+    convert_equirect_to_camera_coord = imps["convert_equirect_to_camera_coord"]
+    predict_rir = imps["predict_rir"]
+    score_position = imps["score_position"]
+
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     with tempfile.TemporaryDirectory() as tmpdir:
