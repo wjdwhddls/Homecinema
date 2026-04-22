@@ -150,7 +150,7 @@ export default function SpeakerPlacementScreen() {
 
   // ── STEP 4: xRIR 최적화 요청 ────────────────────────────────
   const handleOptimize = async (recordedUri: string, sweepUri: string) => {
-    if (!room) return;
+    if (!room || !initialPos) return;
 
     const controller = new AbortController();
     abortRef.current = controller;
@@ -160,12 +160,14 @@ export default function SpeakerPlacementScreen() {
       safe(setProgress)(0);
 
       // multipart/form-data로 전송
-      //   recorded = 마이크 녹음 wav
-      //   sweep    = 번들 원본 sweep wav (서버가 deconvolution에 사용)
+      //   recorded               = 마이크 녹음 wav
+      //   sweep                  = 번들 원본 sweep wav (서버가 deconvolution에 사용)
+      //   initial_speaker_x/y/z  = sweep 녹음 시 스피커를 배치했던 임시 위치 (백엔드 필수값)
       const {job_id} = await startXRirOptimization(
         room,
         recordedUri,
         sweepUri,
+        initialPos.initial_speaker_position,
         {
           listener_height_m: 1.2,
           speaker_height_m: 1.2,

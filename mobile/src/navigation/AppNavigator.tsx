@@ -69,7 +69,7 @@ export default function AppNavigator() {
         component={OptimizationResultScreen}
         options={{title: '최적 배치 결과'}}
       />
-      <Stack.Screen                                      {/* ← 추가 */}
+      <Stack.Screen
         name="EQMeasurement"
         component={EQMeasurementScreen}
         options={{title: 'EQ 자동 보정'}}
