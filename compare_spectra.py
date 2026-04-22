@@ -102,15 +102,18 @@ def plot_comparison(
     out_png: Path,
     timeline: dict | None = None,
     show: bool = True,
+    embed_heatmap: bool = False,
 ) -> None:
-    # GridSpec: panel 1 (overlay + diff split) + panel 2 (bars) [+ panel 3 (heatmap)]
-    n_bottom = 2 if timeline else 1
-    fig = plt.figure(figsize=(13, 11 if timeline else 8.5))
-    gs = fig.add_gridspec(
-        3 + n_bottom - 1, 1,
-        height_ratios=[2.2, 1.0, 1.4] + ([1.4] if timeline else []),
-        hspace=0.45,
-    )
+    """A/B 스펙트럼 비교 플롯.
+
+    embed_heatmap=True 일 때만 하단에 scene heatmap 을 포함(기존 동작).
+    기본은 False — heatmap 은 plot_scene_heatmap 로 별도 PNG 에 저장해 subplot 과밀을 해소.
+    """
+    include_heat = bool(timeline) and embed_heatmap
+    n_rows = 4 if include_heat else 3
+    height_ratios = [2.2, 1.0, 1.4] + ([1.4] if include_heat else [])
+    fig = plt.figure(figsize=(13, 11 if include_heat else 9.0))
+    gs = fig.add_gridspec(n_rows, 1, height_ratios=height_ratios, hspace=0.45)
 
     # === (1a) Full-range FFT spectrum overlay ===
     f_o, db_o = fft_magnitude_db(orig, sr)
@@ -119,46 +122,49 @@ def plot_comparison(
     g_p, s_p = smooth_db(f_p, db_p)
 
     ax1 = fig.add_subplot(gs[0])
-    ax1.semilogx(g_o, s_o, label="Original", color="#1f77b4", linewidth=1.6, alpha=0.85)
-    ax1.semilogx(g_p, s_p, label="MoodEQ Applied", color="#d62728", linewidth=1.6, alpha=0.85)
+    ax1.semilogx(g_o, s_o, label="Original",
+                 color="#1f3a68", linestyle="-", linewidth=2.2, alpha=0.95)
+    ax1.semilogx(g_p, s_p, label="MoodEQ Applied",
+                 color="#d62728", linestyle="--", linewidth=2.0, alpha=0.95)
     ax1.set_xlim(20, 22050)
-    # y-auto zoom to audible band (20 Hz ~ 16 kHz)
     aud_mask = (g_o >= 20) & (g_o <= 16000)
     all_vals = np.concatenate([s_o[aud_mask], s_p[aud_mask]])
     y_lo = float(np.percentile(all_vals, 2)) - 3.0
     y_hi = float(np.percentile(all_vals, 98)) + 3.0
     ax1.set_ylim(y_lo, y_hi)
-    ax1.set_ylabel("Magnitude (dB)")
+    ax1.set_ylabel("Magnitude (dB)", fontsize=12)
     ax1.set_title(
         f"(1) Full-range Spectrum  —  Original vs MoodEQ Applied"
-        f"   (y-zoomed to audible range, {y_lo:.0f}~{y_hi:.0f} dB)"
+        f"   (y-zoomed to audible range, {y_lo:.0f}~{y_hi:.0f} dB)",
+        fontsize=13,
     )
     ax1.grid(True, which="both", alpha=0.25)
-    ax1.legend(loc="lower left")
+    ax1.legend(loc="lower left", fontsize=10)
     for fc in BAND_CENTERS_HZ:
         ax1.axvline(fc, color="gray", linestyle=":", linewidth=0.6, alpha=0.5)
-    ax1.tick_params(labelbottom=False)
+    ax1.tick_params(labelbottom=False, labelsize=10)
 
     # === (1b) Difference plot: MoodEQ − Original ===
     ax_diff = fig.add_subplot(gs[1], sharex=ax1)
     diff = s_p - s_o
-    ax_diff.semilogx(g_o, diff, color="#2ca02c", linewidth=1.5)
+    ax_diff.semilogx(g_o, diff, color="#2ca02c", linewidth=1.8)
     ax_diff.fill_between(g_o, 0, diff, where=(diff >= 0), color="#2ca02c", alpha=0.3, label="boost")
     ax_diff.fill_between(g_o, 0, diff, where=(diff < 0),  color="#d62728", alpha=0.3, label="cut")
     ax_diff.axhline(0, color="black", linewidth=0.7, alpha=0.6)
     d_range = float(max(abs(diff.min()), abs(diff.max())))
     ax_diff.set_ylim(-d_range * 1.2 - 0.5, d_range * 1.2 + 0.5)
-    ax_diff.set_xlabel("Frequency (Hz)")
-    ax_diff.set_ylabel("Δ dB")
+    ax_diff.set_xlabel("Frequency (Hz)", fontsize=12)
+    ax_diff.set_ylabel("Δ dB", fontsize=12)
     ax_diff.set_title(
         f"(1b) Difference  (MoodEQ − Original)   max boost = {diff.max():+.2f} dB,"
-        f" max cut = {diff.min():+.2f} dB"
+        f" max cut = {diff.min():+.2f} dB",
+        fontsize=13,
     )
     ax_diff.grid(True, which="both", alpha=0.25)
-    ax_diff.legend(loc="upper left", fontsize=8)
+    ax_diff.legend(loc="upper left", fontsize=10)
+    ax_diff.tick_params(labelsize=10)
     for fc in BAND_CENTERS_HZ:
         ax_diff.axvline(fc, color="gray", linestyle=":", linewidth=0.6, alpha=0.5)
-    axes = [ax1, ax_diff]
 
     # === (2) 10-band power bar chart with delta ===
     p_o_bands = band_power_db(orig, sr)
@@ -168,71 +174,213 @@ def plot_comparison(
     ax2 = fig.add_subplot(gs[2])
     x = np.arange(len(BAND_CENTERS_HZ))
     w = 0.4
-    ax2.bar(x - w / 2, p_o_bands, w, label="Original", color="#1f77b4", alpha=0.85)
-    ax2.bar(x + w / 2, p_p_bands, w, label="MoodEQ Applied", color="#d62728", alpha=0.85)
-    # delta annotations
+    ax2.bar(x - w / 2, p_o_bands, w, label="Original",
+            color="#1f3a68", edgecolor="white", linewidth=0.5, alpha=0.95)
+    ax2.bar(x + w / 2, p_p_bands, w, label="MoodEQ Applied",
+            color="#d62728", edgecolor="white", linewidth=0.5, alpha=0.95,
+            hatch="//")
     ymin = min(min(p_o_bands), min(p_p_bands)) - 3
     for xi, d in zip(x, deltas):
         sign = "+" if d >= 0 else ""
         color = "green" if d > 0.05 else ("crimson" if d < -0.05 else "gray")
         ax2.annotate(f"{sign}{d:.2f} dB", (xi, max(p_o_bands[xi], p_p_bands[xi]) + 0.3),
-                     ha="center", fontsize=8, color=color, fontweight="bold")
+                     ha="center", fontsize=9, color=color, fontweight="bold")
     ax2.set_xticks(x)
     ax2.set_xticklabels([f"{int(f) if f >= 1 else f}Hz" if f < 1000 else f"{int(f/1000)}kHz"
-                          for f in BAND_CENTERS_HZ])
-    ax2.set_ylabel("Band Power (dB)")
+                          for f in BAND_CENTERS_HZ], fontsize=10)
+    ax2.set_ylabel("Band Power (dB)", fontsize=12)
     ax2.set_title(
         f"(2) 10-band Power  —  mean Δ = "
-        f"{np.mean(deltas):+.2f} dB, max Δ = {max(deltas, key=abs):+.2f} dB"
+        f"{np.mean(deltas):+.2f} dB, max Δ = {max(deltas, key=abs):+.2f} dB",
+        fontsize=13,
     )
     ax2.grid(True, axis="y", alpha=0.25)
-    ax2.legend(loc="upper left")
+    ax2.legend(loc="upper left", fontsize=10)
     ax2.set_ylim(ymin, max(max(p_o_bands), max(p_p_bands)) + 5)
 
-    # === (3) Scene-wise EQ heatmap (if timeline) ===
-    if timeline:
+    # === (3) Scene-wise EQ heatmap (legacy embed only) ===
+    if include_heat:
         ax3 = fig.add_subplot(gs[3])
-        scenes = timeline.get("scenes", [])
-        n_scenes = len(scenes)
-        eff_matrix = np.zeros((len(BAND_CENTERS_HZ), n_scenes))
-        mood_names: list[str] = []
-        for j, sc in enumerate(scenes):
-            bands = sc["eq_preset"]["effective_bands"]
-            for i, b in enumerate(bands):
-                eff_matrix[i, j] = b["gain_db"]
-            mood_names.append(sc["mood"]["name"])
-
-        vmax = float(np.abs(eff_matrix).max()) or 1.0
-        im = ax3.imshow(
-            eff_matrix, aspect="auto", origin="lower",
-            cmap="RdBu_r", vmin=-vmax, vmax=vmax,
-            extent=(-0.5, n_scenes - 0.5, -0.5, len(BAND_CENTERS_HZ) - 0.5),
-        )
-        ax3.set_yticks(range(len(BAND_CENTERS_HZ)))
-        ax3.set_yticklabels(
-            [f"{int(f)}Hz" if f < 1000 else f"{int(f/1000)}kHz" for f in BAND_CENTERS_HZ]
-        )
-        ax3.set_xticks(range(n_scenes))
-        ax3.set_xticklabels(
-            [f"s{j}\n{t}\n{scenes[j]['start_sec']:.0f}s"
-             for j, t in enumerate(mood_names)],
-            rotation=0, fontsize=7,
-        )
-        ax3.set_xlabel("Scene (idx / mood / start)")
-        ax3.set_title(
-            f"(3) Effective EQ Gain per Scene  —  {n_scenes} scenes, "
-            f"mood = {{{', '.join(sorted(set(mood_names)))}}}"
-        )
-        cbar = fig.colorbar(im, ax=ax3, orientation="vertical", pad=0.02, shrink=0.8)
-        cbar.set_label("Gain (dB)")
+        _draw_scene_heatmap(ax3, fig, timeline)
 
     fig.suptitle(
         f"MoodEQ A/B Spectrum Comparison  —  sr={sr}Hz, duration={len(orig)/sr:.1f}s",
-        fontsize=13, fontweight="bold", y=0.995,
+        fontsize=15, fontweight="bold", y=0.995,
     )
     plt.tight_layout(rect=(0, 0, 1, 0.98))
     out_png.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(out_png, dpi=150, bbox_inches="tight")
+    print(f"[saved] {out_png}")
+    if show:
+        plt.show()
+    plt.close(fig)
+
+
+def _draw_scene_heatmap(ax, fig, timeline: dict) -> None:
+    """scene × band effective-gain heatmap 을 주어진 axis 에 그린다."""
+    scenes = timeline.get("scenes", [])
+    n_scenes = len(scenes)
+    eff_matrix = np.zeros((len(BAND_CENTERS_HZ), n_scenes))
+    mood_names: list[str] = []
+    for j, sc in enumerate(scenes):
+        bands = sc["eq_preset"]["effective_bands"]
+        for i, b in enumerate(bands):
+            eff_matrix[i, j] = b["gain_db"]
+        mood_names.append(sc["mood"]["name"])
+
+    vmax = float(np.abs(eff_matrix).max()) or 1.0
+    im = ax.imshow(
+        eff_matrix, aspect="auto", origin="lower",
+        cmap="RdBu_r", vmin=-vmax, vmax=vmax,
+        extent=(-0.5, n_scenes - 0.5, -0.5, len(BAND_CENTERS_HZ) - 0.5),
+    )
+    ax.set_yticks(range(len(BAND_CENTERS_HZ)))
+    ax.set_yticklabels(
+        [f"{int(f)}Hz" if f < 1000 else f"{int(f/1000)}kHz" for f in BAND_CENTERS_HZ],
+        fontsize=10,
+    )
+    ax.set_xticks(range(n_scenes))
+    ax.set_xticklabels(
+        [f"s{j}\n{t}\n{scenes[j]['start_sec']:.0f}s"
+         for j, t in enumerate(mood_names)],
+        rotation=0, fontsize=8,
+    )
+    ax.set_xlabel("Scene (idx / mood / start)", fontsize=12)
+    ax.set_title(
+        f"Effective EQ Gain per Scene  —  {n_scenes} scenes, "
+        f"mood = {{{', '.join(sorted(set(mood_names)))}}}",
+        fontsize=13,
+    )
+    cbar = fig.colorbar(im, ax=ax, orientation="vertical", pad=0.02, shrink=0.85)
+    cbar.set_label("Gain (dB)", fontsize=11)
+
+
+def plot_scene_heatmap(timeline: dict, out_png: Path, show: bool = True) -> None:
+    """scene × band EQ-gain heatmap 단독 PNG."""
+    n_scenes = len(timeline.get("scenes", []))
+    width = max(10, min(24, 0.9 * n_scenes + 4))
+    fig, ax = plt.subplots(figsize=(width, 4.5))
+    _draw_scene_heatmap(ax, fig, timeline)
+    fig.suptitle("MoodEQ Scene-wise Effective EQ", fontsize=14, fontweight="bold")
+    plt.tight_layout(rect=(0, 0, 1, 0.96))
+    out_png.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(out_png, dpi=150, bbox_inches="tight")
+    print(f"[saved] {out_png}")
+    if show:
+        plt.show()
+    plt.close(fig)
+
+
+def _extract_thumbnail(video: Path, at_sec: float, dst: Path) -> None:
+    """ffmpeg 으로 영상의 at_sec 지점에서 정지 프레임 1장을 JPEG 로 추출."""
+    cmd = [
+        "ffmpeg", "-y", "-loglevel", "error",
+        "-ss", f"{max(0.0, at_sec):.3f}", "-i", str(video),
+        "-vframes", "1", "-q:v", "2", str(dst),
+    ]
+    subprocess.run(cmd, check=True)
+
+
+def _flatten_va_windows(
+    timeline: dict,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, bool]:
+    """timeline.scenes[*].windows[*] 를 시간순으로 flatten 해 (t, v, a) 반환.
+
+    windows 가 비어있으면 scene-level va 로 fallback (is_window=False).
+    """
+    pts: list[tuple[float, float, float]] = []
+    for sc in timeline.get("scenes", []):
+        for w in sc.get("windows", []) or []:
+            mid = 0.5 * (w["start_sec"] + w["end_sec"])
+            pts.append((mid, float(w["valence"]), float(w["arousal"])))
+    is_window = bool(pts)
+    if not is_window:
+        for sc in timeline.get("scenes", []):
+            mid = 0.5 * (sc["start_sec"] + sc["end_sec"])
+            va = sc.get("va", {})
+            pts.append((mid, float(va.get("valence", 0.0)), float(va.get("arousal", 0.0))))
+    pts.sort(key=lambda p: p[0])
+    t = np.array([p[0] for p in pts], dtype=np.float32)
+    v = np.array([p[1] for p in pts], dtype=np.float32)
+    a = np.array([p[2] for p in pts], dtype=np.float32)
+    return t, v, a, is_window
+
+
+def plot_va_timeline(
+    video_path: Path,
+    timeline: dict,
+    out_png: Path,
+    show: bool = True,
+    dark: bool = True,
+) -> None:
+    """LIRIS-ACCEDE 스타일: 좌 영상 프레임 | 우 시간축 Valence/Arousal 곡선.
+
+    이미지 레퍼런스 재현: 검은 배경, 큰 초록색 라벨("Input Movie"/"Output"),
+    파란 Valence / 초록 Arousal 두 곡선, y∈[-1,1].
+    """
+    duration = float(timeline.get("metadata", {}).get("duration_sec") or 0.0)
+    if duration <= 0.0:
+        last = timeline["scenes"][-1] if timeline.get("scenes") else {"end_sec": 0.0}
+        duration = float(last.get("end_sec", 0.0))
+
+    t, v, a, is_window = _flatten_va_windows(timeline)
+
+    bg = "black" if dark else "white"
+    fg = "white" if dark else "black"
+    label_green = "#2ca02c"
+
+    fig, (ax_left, ax_right) = plt.subplots(
+        1, 2, figsize=(14, 6),
+        gridspec_kw={"width_ratios": [1, 1.15], "wspace": 0.12},
+    )
+    fig.patch.set_facecolor(bg)
+
+    # === 좌: 영상 썸네일 ===
+    ax_left.set_facecolor(bg)
+    with tempfile.TemporaryDirectory() as td:
+        thumb = Path(td) / "thumb.jpg"
+        try:
+            _extract_thumbnail(video_path, duration / 2.0, thumb)
+            from matplotlib.image import imread
+            img = imread(str(thumb))
+            ax_left.imshow(img)
+        except Exception as e:
+            ax_left.text(0.5, 0.5, f"(thumbnail unavailable)\n{e}",
+                         color=fg, ha="center", va="center", transform=ax_left.transAxes)
+    ax_left.set_xticks([])
+    ax_left.set_yticks([])
+    for spine in ax_left.spines.values():
+        spine.set_visible(False)
+    ax_left.set_title("Input Movie", color=label_green, fontsize=20,
+                      fontweight="bold", pad=12, loc="center", y=-0.12)
+
+    # === 우: V/A 시계열 ===
+    ax_right.set_facecolor(bg)
+    ax_right.plot(t, v, color="#3a6fe0", linewidth=2.2, label="Valence")
+    ax_right.plot(t, a, color="#2ca02c", linewidth=2.2, label="Arousal")
+    ax_right.axhline(0, color=fg, linewidth=0.6, alpha=0.35)
+    ax_right.set_xlim(0, max(duration, float(t[-1]) if len(t) else 1.0))
+    ax_right.set_ylim(-1.0, 1.0)
+    ax_right.set_xlabel("Time-stamps (sec)", color=fg, fontsize=14)
+    ax_right.set_ylabel("Values", color=fg, fontsize=14)
+    ax_right.tick_params(colors=fg, labelsize=11)
+    for spine in ax_right.spines.values():
+        spine.set_color(fg)
+    ax_right.grid(True, color=fg, linestyle=":", alpha=0.25)
+    leg = ax_right.legend(loc="upper right", fontsize=11, facecolor=bg,
+                          edgecolor=fg, labelcolor=fg)
+    leg.get_frame().set_alpha(0.7)
+    ax_right.set_title("Output", color=label_green, fontsize=20,
+                       fontweight="bold", pad=12, y=-0.22)
+
+    mode_tag = "window-level" if is_window else "scene-level"
+    fig.suptitle(
+        f"MoodEQ V/A Timeline  —  {video_path.name}  ({duration:.1f}s, {mode_tag}, n={len(t)})",
+        color=fg, fontsize=13, fontweight="bold", y=0.995,
+    )
+    plt.tight_layout(rect=(0, 0.03, 1, 0.96))
+    out_png.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(out_png, dpi=150, bbox_inches="tight", facecolor=bg)
     print(f"[saved] {out_png}")
     if show:
         plt.show()
@@ -496,20 +644,46 @@ def main() -> int:
         "--processed-demo", default="runs/demo_iron_sky/iron_sky_eq_demo3x.mp4",
         help="3-way 모드에서 3x exaggerated mp4 경로",
     )
+    p.add_argument(
+        "--va-timeline", action="store_true",
+        help="LIRIS-ACCEDE 스타일: 영상 프레임 + 시간축 V/A 곡선 (timeline.json 필요, processed 불필요)",
+    )
+    p.add_argument(
+        "--no-split", action="store_true",
+        help="기본 모드에서 heatmap 을 별도 PNG 가 아닌 한 그림에 포함 (기존 동작)",
+    )
+    p.add_argument(
+        "--light", action="store_true",
+        help="--va-timeline 에서 검은 배경 대신 흰 배경 사용",
+    )
     args = p.parse_args()
 
     orig_path = Path(args.original)
-    proc_path = Path(args.processed)
     if not orig_path.exists():
         print(f"[error] original not found: {orig_path}", file=sys.stderr)
-        return 1
-    if not proc_path.exists():
-        print(f"[error] processed not found: {proc_path}", file=sys.stderr)
         return 1
 
     timeline = None
     if args.timeline and Path(args.timeline).exists():
         timeline = json.loads(Path(args.timeline).read_text())
+
+    # === V/A timeline: processed audio 가 필요 없음. 빠르게 분기 ===
+    if args.va_timeline:
+        if not timeline:
+            print("[error] --va-timeline requires timeline.json", file=sys.stderr)
+            return 1
+        out = Path(args.output)
+        if out.name == "spectrum_compare.png":
+            out = out.with_name("va_timeline.png")
+        plot_va_timeline(orig_path, timeline, out,
+                         show=not args.no_show, dark=not args.light)
+        return 0
+
+    # === 이하는 오디오 A/B 비교 모드들 — processed 필수 ===
+    proc_path = Path(args.processed)
+    if not proc_path.exists():
+        print(f"[error] processed not found: {proc_path}", file=sys.stderr)
+        return 1
 
     print(f"[audio] extracting from {orig_path.name} and {proc_path.name}...")
     with tempfile.TemporaryDirectory() as td:
@@ -582,11 +756,23 @@ def main() -> int:
             out = out.with_name(f"spectrum_compare_scene{args.scene:02d}_{mood_tag}.png")
         print(f"[scene {args.scene}] {mood_tag}  [{sc['start_sec']:.1f}s, {sc['end_sec']:.1f}s]  "
               f"V={sc['va']['valence']:+.3f}  A={sc['va']['arousal']:+.3f}")
-        plot_comparison(o_slice, p_slice, sr, out, timeline=sub_timeline, show=not args.no_show)
+        plot_comparison(o_slice, p_slice, sr, out, timeline=sub_timeline,
+                        show=not args.no_show, embed_heatmap=True)
         return 0
 
     # Default: full-track comparison
-    plot_comparison(orig, proc, sr, Path(args.output), timeline=timeline, show=not args.no_show)
+    out_main = Path(args.output)
+    if args.no_split:
+        plot_comparison(orig, proc, sr, out_main, timeline=timeline,
+                        show=not args.no_show, embed_heatmap=True)
+    else:
+        plot_comparison(orig, proc, sr, out_main, timeline=timeline,
+                        show=not args.no_show, embed_heatmap=False)
+        if timeline:
+            heat_out = out_main.with_name(
+                out_main.stem + "_heatmap" + out_main.suffix
+            )
+            plot_scene_heatmap(timeline, heat_out, show=not args.no_show)
     return 0
 
 
