@@ -22,6 +22,9 @@ data/trailers/*.wav
 model/autoEQ/assets/*.pth
 model/autoEQ/assets/audioset_tagging_cnn/
 
+# LIRIS-ACCEDE 원본 데이터 (9.6GB data + annotations + features, 외부 다운로드)
+dataset/autoEQ/liris/
+
 # 트랙 5: Bandit v2 외부 clone + 체크포인트 (446MB)
 # git clone https://github.com/ZFTurbo/Music-Source-Separation-Training.git tools/mss-training
 # checkpoint: zenodo.org/records/12701995/files/checkpoint-eng.ckpt

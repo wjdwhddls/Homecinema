@@ -109,6 +109,9 @@ def analyze_video(
     work_dir: str | Path | None = None,
     model_version: str = "train_pseudo_v3.3",
     verbose: bool = True,
+    xclip=None,
+    panns=None,
+    ast_encoder=None,
 ) -> dict:
     """Run the full analysis pipeline → write timeline.json, return dict.
 
@@ -131,6 +134,16 @@ def analyze_video(
     video_path = Path(video_path)
     ckpt_path = Path(ckpt_path)
     output_json = Path(output_json)
+
+    # liris_base 는 TrainLirisConfig 에 encoder 필드가 없으므로 caller 가 encoder
+    # 를 주입하지 않았다면 TrainCogConfig 의 defaults 로 자동 구성한다.
+    if variant == "liris_base" and xclip is None:
+        from ..train.encoders import XCLIPEncoder, PANNsEncoder
+        from ..train_pseudo.config import TrainCogConfig
+        enc_cfg = TrainCogConfig()
+        xclip = XCLIPEncoder(enc_cfg)
+        if panns is None:
+            panns = PANNsEncoder(enc_cfg)
 
     scratch_ctx = None
     if work_dir is None:
@@ -173,6 +186,9 @@ def analyze_video(
                 batch_size=batch_size,
                 num_mood_classes=num_mood_classes,
                 variant=variant,
+                xclip=xclip,
+                panns=panns,
+                ast_encoder=ast_encoder,
             )
             if verbose:
                 print(f"[info] model done ({time.time() - t_model0:.1f}s)")

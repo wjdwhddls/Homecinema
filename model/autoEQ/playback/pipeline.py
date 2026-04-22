@@ -43,11 +43,25 @@ def _slice_scene_audio(
     return full_audio[s:e]
 
 
+def _select_bands(sc: dict, bypass_dialogue_protection: bool) -> list[dict]:
+    """dialog-protected effective_bands (default) 또는 원본 preset 선택."""
+    return sc["eq_preset"]["original_bands" if bypass_dialogue_protection else "effective_bands"]
+
+
+def _scale_bands(bands: list[dict], preset_scale: float) -> list[dict]:
+    """gain_db 를 N 배로 선형 스케일. scale=1 이면 원본 그대로."""
+    if preset_scale == 1.0:
+        return bands
+    return [{**b, "gain_db": float(b["gain_db"]) * preset_scale} for b in bands]
+
+
 def apply_timeline_to_audio(
     audio: np.ndarray,
     sample_rate: int,
     timeline: dict,
     crossfade_ms: int = DEFAULT_CROSSFADE_MS,
+    preset_scale: float = 1.0,
+    bypass_dialogue_protection: bool = False,
 ) -> np.ndarray:
     """Apply timeline's scene EQ chains to audio, preserving total length.
 
@@ -81,7 +95,7 @@ def apply_timeline_to_audio(
         e_sample = min(n_total, int(round(end * sample_rate)))
         if e_sample <= s_sample:
             continue
-        bands = sc["eq_preset"]["effective_bands"]
+        bands = _scale_bands(_select_bands(sc, bypass_dialogue_protection), preset_scale)
         slice_a = audio[s_sample:e_sample]
         processed = apply_scene_eq_to_audio(slice_a, sample_rate, bands)
         out[s_sample:e_sample] = processed
@@ -121,6 +135,8 @@ def apply_eq_to_video(
     audio_bitrate: str = "192k",
     work_dir: str | Path | None = None,
     verbose: bool = True,
+    preset_scale: float = 1.0,
+    bypass_dialogue_protection: bool = False,
 ) -> Path:
     """End-to-end playback pipeline.
 
@@ -164,8 +180,16 @@ def apply_eq_to_video(
                   f"duration={audio.shape[0]/sr:.1f}s")
 
         if verbose:
-            print(f"[info] applying {len(timeline['scenes'])} scene EQ chains")
-        processed = apply_timeline_to_audio(audio, sr, timeline, crossfade_ms=crossfade_ms)
+            mode = "original bands" if bypass_dialogue_protection else "effective bands (dialog-protected)"
+            scale_tag = f"×{preset_scale}" if preset_scale != 1.0 else ""
+            print(f"[info] applying {len(timeline['scenes'])} scene EQ chains "
+                  f"({mode}{', ' + scale_tag.strip('×') + 'x' if scale_tag else ''})")
+        processed = apply_timeline_to_audio(
+            audio, sr, timeline,
+            crossfade_ms=crossfade_ms,
+            preset_scale=preset_scale,
+            bypass_dialogue_protection=bypass_dialogue_protection,
+        )
         if verbose:
             print(f"[info] processed audio: {processed.shape[0]/sr:.1f}s")
 
