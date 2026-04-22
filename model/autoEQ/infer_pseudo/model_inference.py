@@ -1,9 +1,11 @@
-"""Batch-predict V/A for a list of windows using a trained train_pseudo model.
+"""Batch-predict V/A for a list of windows using a trained model.
 
-Supports three training variants via the ``variant`` dispatch key:
-    - ``base``    : X-CLIP + PANNs(2048) + Gated Weighted Concat (V3.2 baseline)
-    - ``gmu``     : X-CLIP + PANNs(2048) + GMU fusion (V3.3 개별 축 최적)
-    - ``ast_gmu`` : X-CLIP + AST(768)     + GMU fusion (V3.3 공식 최종)
+Supports these training variants via the ``variant`` dispatch key:
+    - ``base``       : train_pseudo + X-CLIP + PANNs(2048) + Gated Concat (V3.2)
+    - ``gmu``        : train_pseudo + X-CLIP + PANNs(2048) + GMU fusion (V3.3)
+    - ``ast_gmu``    : train_pseudo + X-CLIP + AST(768) + GMU fusion (V3.3)
+    - ``liris_base`` : train_liris  + X-CLIP + PANNs(2048) + Gate + K=7 + A-norm
+                      (Phase 2a-7 BASE Model FROZEN; requires num_mood_classes=7)
 
 Reuses the frozen encoders from model.autoEQ.train for the PANNs branch; for the
 AST branch it instantiates ``transformers.ASTModel`` inline (matching
@@ -64,6 +66,13 @@ VARIANTS: dict[str, dict[str, str]] = {
         "model_module": "model.autoEQ.train_pseudo.model_ast_gmu.model",
         "model_cls":  "AutoEQModelASTGMU",
         "audio_encoder": "ast",
+    },
+    "liris_base": {
+        "cfg_module": "model.autoEQ.train_liris.config",
+        "cfg_cls":    "TrainLirisConfig",
+        "model_module": "model.autoEQ.train_liris.model",
+        "model_cls":  "AutoEQModelLiris",
+        "audio_encoder": "panns",
     },
 }
 
@@ -211,7 +220,10 @@ def predict_windows(
 
     model = model_cls(cfg).to(device).eval()
     state = torch.load(str(ckpt_path), map_location=device, weights_only=False)
-    model.load_state_dict(state)
+    # train_liris ckpt wraps state_dict as {"epoch", "model", "cfg", "val_metrics"};
+    # train_pseudo ckpt is a bare state_dict. Accept either.
+    state_dict = state["model"] if isinstance(state, dict) and "model" in state else state
+    model.load_state_dict(state_dict)
 
     results: list[WindowVA] = []
     for batch in _batched(windows, batch_size):
