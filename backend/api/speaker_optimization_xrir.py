@@ -22,6 +22,10 @@ from core.xrir_pipeline import run_xrir_pipeline
 from core.initial_speaker_position import compute_initial_speaker_position
 from core.roomplan_to_numpy import compute_listener_position
 from core.sweep_deconvolution import deconvolve_sweep
+import time
+
+DATA_SAVE_DIR = Path("./data/roomplan_scans")
+DATA_SAVE_DIR.mkdir(parents=True, exist_ok=True)
 
 logger = logging.getLogger(__name__)
 
@@ -46,6 +50,11 @@ async def get_initial_speaker_position(
         roomplan_json = json.loads(roomplan_scan)
     except json.JSONDecodeError as e:
         raise HTTPException(status_code=400, detail=f"JSON 파싱 실패: {e}")
+    
+    # 데이터 수집 저장
+    save_path = DATA_SAVE_DIR / f"scan_{int(time.time())}.json"
+    save_path.write_text(json.dumps(roomplan_json, ensure_ascii=False, indent=2))
+    logger.info("roomplan 저장: %s", save_path)
 
     walls = roomplan_json.get("walls", [])
     if len(walls) < 3:
@@ -156,6 +165,18 @@ def _run_task(
                 logger.info("mesh.bin 없음 → roomplan JSON fallback 사용")
 
             _job_store.update_status(job_id, "processing", progress=20)
+
+            # roomplan JSON 저장
+            scan_path = DATA_SAVE_DIR / f"scan_{job_id}.json"
+            scan_path.write_text(json.dumps(roomplan_json, ensure_ascii=False, indent=2))
+
+            # recorded.wav, sweep.wav도 영구 저장
+            perm_dir = DATA_SAVE_DIR / job_id
+            perm_dir.mkdir(parents=True, exist_ok=True)
+            (perm_dir / "recorded.wav").write_bytes(recorded_bytes)
+            (perm_dir / "sweep.wav").write_bytes(sweep_bytes)
+            if mesh_bytes:
+                (perm_dir / "mesh.bin").write_bytes(mesh_bytes)
 
             # ── 2. Deconvolution → ref_rir.wav ──────────────────
             ref_rir_path = str(tmpdir / "ref_rir.wav")

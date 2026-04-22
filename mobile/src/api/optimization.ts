@@ -126,6 +126,14 @@ export async function startXRirOptimization(
     name: 'sweep.wav',
   } as any);
 
+  if (roomplan.meshBinUri) {
+    formData.append('mesh', {
+      uri: roomplan.meshBinUri,
+      type: 'application/octet-stream',
+      name: 'mesh.bin',
+    } as any);
+  }
+  
   // 백엔드 필수 파라미터: sweep 측정 시 스피커를 두었던 임시 위치
   formData.append('initial_speaker_x', String(initialSpeakerPosition.x));
   formData.append('initial_speaker_y', String(initialSpeakerPosition.y));
