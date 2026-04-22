@@ -20,6 +20,7 @@ import {
   StyleSheet,
   ScrollView,
   Platform,
+  Image,
 } from 'react-native';
 import {useNavigation, useRoute, RouteProp} from '@react-navigation/native';
 import {
@@ -137,7 +138,7 @@ export default function SpeakerPlacementScreen() {
       if (!mountedRef.current) return;
 
       Alert.alert(
-        '녹음 완료 ✅',
+        '녹음 완료',
         '이제 AI가 최적 위치를 계산합니다.',
         [{text: '계산 시작', onPress: () => handleOptimize(recordedUri, sweepUri)}],
       );
@@ -209,7 +210,7 @@ export default function SpeakerPlacementScreen() {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.center}>
-          <Text style={styles.warnIcon}>⚠️</Text>
+          <Text style={styles.warnIcon}></Text>
           <Text style={styles.warnTitle}>지원되지 않는 기기입니다</Text>
           <Text style={styles.warnDesc}>
             {Platform.OS === 'android'
@@ -242,7 +243,7 @@ export default function SpeakerPlacementScreen() {
         {(step === 'ready' || step === 'scanning') && (
           <View style={styles.section}>
             <View style={styles.notice}>
-              <Text style={styles.noticeIcon}>📍</Text>
+              <Text style={styles.noticeIcon}></Text>
               <View style={styles.noticeText}>
                 <Text style={styles.noticeTitle}>스캔 시작 위치 = 청취 위치</Text>
                 <Text style={styles.noticeDesc}>
@@ -256,7 +257,7 @@ export default function SpeakerPlacementScreen() {
               disabled={step === 'scanning'}>
               {step === 'scanning' && <ActivityIndicator color="#fff" />}
               <Text style={styles.btnText}>
-                {step === 'scanning' ? '  스캔 진행 중...' : '🎯 방 스캔 시작'}
+                {step === 'scanning' ? '  스캔 진행 중...' : '방 스캔 시작'}
               </Text>
             </TouchableOpacity>
           </View>
@@ -265,7 +266,7 @@ export default function SpeakerPlacementScreen() {
         {/* 스캔 결과 요약 */}
         {room && step !== 'scanning' && (
           <View style={styles.card}>
-            <Text style={styles.cardTitle}>📊 스캔 결과</Text>
+            <Text style={styles.cardTitle}>스캔 결과</Text>
             <View style={styles.summaryRow}>
               <SummaryItem label="벽" count={room.walls.length} />
               <SummaryItem label="문" count={room.doors.length} />
@@ -292,8 +293,15 @@ export default function SpeakerPlacementScreen() {
         {/* STEP 2+3: 임시 위치 표시 + 녹음 버튼 */}
         {(step === 'waitPlacement' || step === 'recording') && initialPos && (
           <View style={styles.section}>
+            {initialPos.topview_image && (
+              <Image
+                source={{uri: `data:image/png;base64,${initialPos.topview_image}`}}
+                style={{width: '100%', aspectRatio: 1, borderRadius: 12, marginBottom: 16}}
+                resizeMode="contain"
+              />
+            )}
             <View style={styles.posCard}>
-              <Text style={styles.cardTitle}>📌 임시 스피커 위치</Text>
+              <Text style={styles.cardTitle}>임시 스피커 위치</Text>
               <Text style={styles.posDesc}>
                 아래 좌표에 스피커를 배치한 후 sweep 녹음을 시작해주세요.
               </Text>
@@ -309,7 +317,7 @@ export default function SpeakerPlacementScreen() {
               disabled={step === 'recording'}>
               {step === 'recording' && <ActivityIndicator color="#fff" />}
               <Text style={styles.btnText}>
-                {step === 'recording' ? '  sweep 재생 + 녹음 중...' : '🎙️ sweep 재생 + 녹음 시작'}
+                {step === 'recording' ? '  sweep 재생 + 녹음 중...' : 'sweep 재생 + 녹음 시작'}
               </Text>
             </TouchableOpacity>
             {step === 'recording' && (

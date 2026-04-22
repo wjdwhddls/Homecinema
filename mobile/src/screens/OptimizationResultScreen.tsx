@@ -15,6 +15,7 @@ import {
   ScrollView,
   StyleSheet,
   TouchableOpacity,
+  Image,
 } from 'react-native';
 import {useRoute, useNavigation, RouteProp} from '@react-navigation/native';
 import {RootStackParamList} from '../types';
@@ -51,7 +52,14 @@ export default function OptimizationResultScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.title}>🎯 최적 스피커 위치</Text>
+        <Text style={styles.title}>최적 스피커 위치</Text>
+        {result.topview_image && (
+          <Image
+            source={{uri: `data:image/png;base64,${result.topview_image}`}}
+            style={{width: '100%', aspectRatio: 1, borderRadius: 12, marginBottom: 16}}
+            resizeMode="contain"
+          />
+        )}
 
         {/* 종합 점수 */}
         <View style={styles.scoreCard}>
@@ -62,7 +70,7 @@ export default function OptimizationResultScreen() {
 
         {/* 권장 배치 좌표 */}
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>🥇 권장 배치</Text>
+          <Text style={styles.cardTitle}>권장 배치</Text>
           <CoordRow label="왼쪽 스피커 (L)" pos={best.placement.left} />
           <CoordRow label="오른쪽 스피커 (R)" pos={best.placement.right} />
           <CoordRow label="청취 위치" pos={best.placement.listener} />
@@ -73,20 +81,20 @@ export default function OptimizationResultScreen() {
 
         {/* 음향 지표 */}
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>📊 예상 음향 특성</Text>
+          <Text style={styles.cardTitle}>예상 음향 특성</Text>
           <MetricRow
             label="잔향 시간 (RT60)"
             value={`${best.metrics.rt60_seconds.toFixed(2)} 초`}
             badge={
-              best.metrics.rt60_seconds < 0.5 ? '✅ 양호'
-              : best.metrics.rt60_seconds < 0.8 ? '🟡 보통'
-              : '⚠️ 길음'
+              best.metrics.rt60_seconds < 0.5 ? '양호'
+              : best.metrics.rt60_seconds < 0.8 ? '보통'
+              : '길음'
             }
           />
           <MetricRow
             label="음악 명료도 (C80)"
             value={`${best.metrics.c80_db.toFixed(1)} dB`}
-            badge={best.metrics.c80_db > 0 ? '✅ 양호' : '⚠️ 낮음'}
+            badge={best.metrics.c80_db > 0 ? '양호' : '낮음'}
           />
           <MetricRow
             label="직접음/잔향 비율 (DRR)"
@@ -132,7 +140,7 @@ export default function OptimizationResultScreen() {
         {/* 경고 */}
         {warnings.length > 0 && (
           <View style={[styles.card, styles.warnCard]}>
-            <Text style={styles.cardTitle}>⚠️ 참고</Text>
+            <Text style={styles.cardTitle}>참고</Text>
             {warnings.map((w, i) => (
               <Text key={i} style={styles.warnLine}>• {w}</Text>
             ))}
@@ -151,7 +159,7 @@ export default function OptimizationResultScreen() {
               optimalPosition: best.placement,
             })
           }>
-          <Text style={styles.homeBtnText}>🎛️ EQ 자동 보정 측정하기</Text>
+          <Text style={styles.homeBtnText}>EQ 자동 보정 측정하기</Text>
         </TouchableOpacity>
 
         {/* 홈으로 버튼 */}

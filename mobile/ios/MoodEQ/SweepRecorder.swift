@@ -68,7 +68,7 @@ class SweepRecorder: NSObject {
     let session = AVAudioSession.sharedInstance()
     try session.setCategory(.playAndRecord,
                             mode: .measurement,
-                            options: [.defaultToSpeaker, .allowBluetooth])
+                            options: [.allowBluetooth, .allowBluetoothA2DP])
     try session.setActive(true)
 
     // ── 3. 출력 파일 준비 ─────────────────────────────────────────

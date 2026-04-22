@@ -13,6 +13,7 @@ export interface InitialPositionRequest {
 export interface InitialPositionResponse {
   listener_position: {x: number; y: number; z: number};
   initial_speaker_position: {x: number; y: number; z: number};
+  topview_image?: string;  // base64 PNG
 }
 
 // ── 응답 타입 ────────────────────────────────────────────────────
@@ -54,6 +55,7 @@ export interface OptimizeResponse {
   computation_time_seconds: number;
   warnings: string[];
   error_message?: string | null;
+  topview_image?: string;
 }
 
 export interface StartOptimizationResponse {

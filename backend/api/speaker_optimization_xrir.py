@@ -22,6 +22,7 @@ from core.xrir_pipeline import run_xrir_pipeline
 from core.initial_speaker_position import compute_initial_speaker_position
 from core.roomplan_to_numpy import compute_listener_position
 from core.sweep_deconvolution import deconvolve_sweep
+from core.topview_generator import generate_topview
 import time
 
 DATA_SAVE_DIR = Path("./data/roomplan_scans")
@@ -67,17 +68,27 @@ async def get_initial_speaker_position(
         speaker_height=speaker_height_m,
     )
 
+    listener_dict = {
+        "x": float(listener_pos[0]),
+        "y": float(listener_pos[1]),
+        "z": float(listener_pos[2]),
+    }
+    initial_dict = {
+        "x": float(initial_pos[0]),
+        "y": float(initial_pos[1]),
+        "z": float(initial_pos[2]),
+    }
+
+    topview = generate_topview(
+        roomplan_json=roomplan_json,
+        listener_pos=listener_dict,
+        speaker_positions={"initial": initial_dict},
+    )
+
     return {
-        "listener_position": {
-            "x": float(listener_pos[0]),
-            "y": float(listener_pos[1]),
-            "z": float(listener_pos[2]),
-        },
-        "initial_speaker_position": {
-            "x": float(initial_pos[0]),
-            "y": float(initial_pos[1]),
-            "z": float(initial_pos[2]),
-        },
+        "listener_position": listener_dict,
+        "initial_speaker_position": initial_dict,
+        "topview_image": topview,
     }
 
 
@@ -203,15 +214,34 @@ def _run_task(
             )
 
         _job_store.update_status(job_id, "processing", progress=95)
+        best = results[0] if results else None
+
+        topview = None
+        if best:
+            listener_dict = {
+                "x": float(best["placement"]["listener"]["x"]),
+                "y": float(best["placement"]["listener"]["y"]),
+                "z": float(best["placement"]["listener"]["z"]),
+            }
+            topview = generate_topview(
+                roomplan_json=roomplan_json,
+                listener_pos=listener_dict,
+                speaker_positions={
+                    "left":  best["placement"]["left"],
+                    "right": best["placement"]["right"],
+                },
+            )
+
         _job_store.save_result(job_id, {
             "status": "success",
             "job_id": job_id,
-            "best": results[0] if results else None,
+            "best": best,
             "top_alternatives": results[1:],
             "room_summary": None,
             "computation_time_seconds": 0.0,
             "warnings": [],
             "error_message": None,
+            "topview_image": topview,
         })
         _job_store.update_status(job_id, "completed", progress=100)
         logger.info("최적화 완료: job=%s", job_id)
