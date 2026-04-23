@@ -19,12 +19,17 @@ from .pipeline import analyze_video
 def _build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(description="MoodEQ video analysis → timeline.json")
     p.add_argument("--video", type=Path, required=True)
-    p.add_argument("--ckpt", type=Path, required=True)
+    p.add_argument("--ckpt", type=Path, default=None,
+                   help="단일 ckpt (후방호환). --ckpt_paths 가 주어지면 무시됨.")
+    p.add_argument("--ckpt_paths", type=Path, nargs="+", default=None,
+                   help="N-seed ensemble ckpt 리스트. 실서빙 권장 = BASE 3-seed "
+                        "(runs/phase2a/2a2_A_K7_s{42,123,2024}/best.pt).")
     p.add_argument("--output", type=Path, required=True)
     p.add_argument("--num_mood_classes", type=int, default=4, choices=[4, 7])
     p.add_argument("--variant", type=str, default="base",
-                   choices=["base", "gmu", "ast_gmu"],
-                   help="training variant (must match ckpt). ast_gmu is V3.3 official final.")
+                   choices=["base", "gmu", "ast_gmu", "liris_base"],
+                   help="training variant (must match ckpt). "
+                        "liris_base = BASE FROZEN (AutoEQModelLiris).")
     p.add_argument("--alpha_d", type=float, default=0.5,
                    help="dialogue protection strength (0.3~0.7 tunable)")
     p.add_argument("--ema_alpha", type=float, default=0.3)
@@ -40,9 +45,12 @@ def _build_parser() -> argparse.ArgumentParser:
 
 def main(argv: list[str] | None = None) -> int:
     args = _build_parser().parse_args(argv)
+    if args.ckpt is None and not args.ckpt_paths:
+        raise SystemExit("--ckpt 또는 --ckpt_paths 중 하나는 필수")
     analyze_video(
         video_path=args.video,
         ckpt_path=args.ckpt,
+        ckpt_paths=args.ckpt_paths,
         output_json=args.output,
         num_mood_classes=args.num_mood_classes,
         variant=args.variant,

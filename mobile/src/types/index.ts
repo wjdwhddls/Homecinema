@@ -63,32 +63,73 @@ export interface JobStatusResponse {
   error_message: string | null;
 }
 
-export interface TimelineData {
-  schema_version: string;
-  metadata: {
-    video_filename: string;
-    video_duration_sec: number;
-    analyzed_at: string;
-    model_version: string;
-  };
-  scenes: TimelineScene[];
-  global?: {
-    mean_valence?: number;
-    mean_arousal?: number;
-    total_scenes?: number;
-    mean_dialogue_density?: number;
-  };
+// Timeline 타입 — backend timeline_writer.py::build_timeline_dict 과 1:1 대응
+// (schema_version "1.0", BASE_MODEL.md §4d / 음향기능.md §3.4 참조)
+
+export type MoodName =
+  | 'Tension'
+  | 'Sadness'
+  | 'Peacefulness'
+  | 'JoyfulActivation'
+  | 'Tenderness'
+  | 'Power'
+  | 'Wonder';
+
+export interface EQBand {
+  freq_hz: number;
+  gain_db: number;
+  q: number;
 }
 
 export interface TimelineScene {
-  scene_id: number;
+  scene_idx: number;
   start_sec: number;
   end_sec: number;
   duration_sec: number;
-  aggregated: {
-    valence: number;
-    arousal: number;
-    category: string;
+  va: {
+    valence: number; // [-1, +1]
+    arousal: number; // [-1, +1]
+  };
+  gate: {
+    mean_w_v: number;
+    mean_w_a: number;
+  };
+  mood: {
+    name: MoodName;
+    idx: number;
+  };
+  dialogue: {
+    density: number; // [0, 1] scene 내 대사 시간 비율
+    segments_rel: [number, number][]; // scene 내 상대시간 [start, end]
+  };
+  eq_preset: {
+    original_bands: EQBand[]; // 10-band, dialogue protection 전
+    effective_bands: EQBand[]; // dialogue protection 적용 후
+  };
+}
+
+export interface TimelineData {
+  schema_version: string;
+  metadata: {
+    video: string;
+    duration_sec: number;
+    model_version: string;
+    analyzed_at: string;
+    n_scenes: number;
+  };
+  config: {
+    window_sec: number;
+    stride_sec: number;
+    ema_alpha: number;
+    alpha_d: number;
+    num_mood_classes: number;
+    batch_size: number;
+  };
+  scenes: TimelineScene[];
+  global: {
+    mean_va: {valence: number; arousal: number};
+    mood_distribution: Partial<Record<MoodName, number>>;
+    avg_dialogue_density: number;
   };
 }
 

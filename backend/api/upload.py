@@ -1,21 +1,44 @@
 # api/upload.py — 영상 파일 업로드 엔드포인트
+import subprocess
 import uuid
 from pathlib import Path
 
 import aiofiles
-from fastapi import APIRouter, File, HTTPException, Request, UploadFile
+from fastapi import APIRouter, BackgroundTasks, File, HTTPException, Request, UploadFile
 
 from config import settings
 from core import storage
+from core.pipeline_runner import run_moodeq_pipeline
 
 router = APIRouter()
 
 CHUNK_SIZE = 1024 * 1024  # 1MB
 
 
+def _has_audio_stream(video_path: Path) -> bool:
+    """ffprobe 로 오디오 스트림 존재 여부 확인.
+
+    MoodEQ 파이프라인은 오디오에 EQ/FX 를 적용하므로 무음 영상은 처리 불가.
+    ffprobe 실패/타임아웃 시에는 False 로 간주 (파일 파싱 불가 = 처리 불가).
+    """
+    try:
+        result = subprocess.run(
+            ["ffprobe", "-v", "error",
+             "-select_streams", "a",
+             "-show_entries", "stream=index",
+             "-of", "csv=p=0",
+             str(video_path)],
+            capture_output=True, text=True, timeout=15,
+        )
+        return bool(result.stdout.strip())
+    except Exception:
+        return False
+
+
 @router.post("/upload")
 async def upload_video(
     request: Request,
+    background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
 ):
     # 1. 파일명 확인
@@ -62,13 +85,25 @@ async def upload_video(
                 await f.write(chunk)
 
         # 6. Job 디렉토리로 이동 + meta.json 생성
-        await storage.finalize_upload(
+        saved_path = await storage.finalize_upload(
             job_id=job_id,
             tmp_path=tmp_path,
             original_filename=file.filename,
             ext=ext,
             size_bytes=total_size,
         )
+
+        # 7. 오디오 스트림 존재 검증 (MoodEQ 전제조건)
+        if not _has_audio_stream(saved_path):
+            storage.delete_job(job_id)
+            raise HTTPException(
+                status_code=400,
+                detail="영상에 오디오 트랙이 없습니다. 소리가 포함된 영상을 업로드해주세요.",
+            )
+
+        # 8. MoodEQ 파이프라인 백그라운드 실행
+        #    (응답 반환 직후 분석 시작. 앱은 /api/jobs/{id}/status 폴링)
+        background_tasks.add_task(run_moodeq_pipeline, job_id)
     except HTTPException:
         # HTTPException은 그대로 전파, 임시 파일만 정리
         tmp_path.unlink(missing_ok=True)

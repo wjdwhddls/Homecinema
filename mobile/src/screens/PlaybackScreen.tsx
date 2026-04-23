@@ -19,7 +19,7 @@
  * - 로컬 파일 재생 (file:// URI)
  * - A/B 토글 시 currentTime 저장 후 소스 교체 + seek
  */
-import React, {useState, useRef, useCallback} from 'react';
+import React, {useState, useRef, useCallback, useEffect} from 'react';
 import {
   SafeAreaView,
   View,
@@ -28,14 +28,16 @@ import {
   ActivityIndicator,
   Alert,
   StyleSheet,
+  ScrollView,
 } from 'react-native';
 import Video, {type VideoRef, type OnProgressData, type OnLoadData} from 'react-native-video';
 import {NativeStackScreenProps} from '@react-navigation/native-stack';
-import {RootStackParamList} from '../types';
+import {RootStackParamList, TimelineData} from '../types';
 import {useDownloadJob} from '../hooks/useDownloadJob';
-import {deleteJob} from '../api/jobs';
+import {deleteJob, getJobTimeline} from '../api/jobs';
 import {deleteLocalJob} from '../utils/localStorage';
 import {COLORS} from '../constants/colors';
+import MoodTimeline from '../components/MoodTimeline';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Playback'>;
 
@@ -61,6 +63,30 @@ export default function PlaybackScreen({route, navigation}: Props) {
   const [currentTime, setCurrentTime] = useState(0);
   const [paused, setPaused] = useState(false);
   const videoRef = useRef<VideoRef>(null);
+
+  // Timeline (mood 타임라인 UI 용). completed 된 job 만 endpoint 가 200 반환.
+  const [timeline, setTimeline] = useState<TimelineData | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    if (phase !== 'ready') return;
+    getJobTimeline(jobId)
+      .then(t => {
+        if (!cancelled) setTimeline(t);
+      })
+      .catch(() => {
+        // timeline 없어도 재생은 가능 — silent fail
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [jobId, phase]);
+
+  // MoodTimeline 탭 seek
+  const handleSeek = useCallback((sec: number) => {
+    setCurrentTime(sec);
+    videoRef.current?.seek(sec);
+  }, []);
 
   // A/B 토글
   const handleToggle = useCallback(
@@ -200,6 +226,16 @@ export default function PlaybackScreen({route, navigation}: Props) {
           controls={true}
         />
       </View>
+
+      {/* Mood 타임라인 — timeline fetch 됐을 때만 */}
+      {timeline && (
+        <MoodTimeline
+          scenes={timeline.scenes}
+          durationSec={timeline.metadata.duration_sec}
+          currentTimeSec={currentTime}
+          onSeek={handleSeek}
+        />
+      )}
 
       {/* A/B 토글 섹션 */}
       <View style={styles.toggleSection}>

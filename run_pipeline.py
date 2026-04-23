@@ -22,11 +22,10 @@ Usage:
     venv/bin/python run_pipeline.py --video my_movie.mp4 --force      # 기존 결과 덮어쓰기
 
 주의:
-    - infer_pseudo 의 `AutoEQModelCog` 아키텍처 요구 때문에
-      기본 ckpt 는 `runs/phase3_v2_gemini_target/best_model.pt` (K=4).
-      BASE `runs/phase2a/2a2_A_K7_s2024/best.pt` 는 `AutoEQModelLiris`
-      Enhanced arch 라 infer_pseudo 와 호환 안 됨 → 호환성 문제 해결 전엔
-      v3 체크포인트 사용.
+    - 실서빙 기본값은 **BASE FROZEN 3-seed ensemble** (BASE_MODEL.md §4b):
+        runs/phase2a/2a2_A_K7_s{42,123,2024}/best.pt
+      AutoEQModelLiris + K=7 (GEMS), variant="liris_base".
+      Ensemble test CCC 0.3603 (V 0.3895 / A 0.3312).
     - 결과 mp4 는 원본 비디오 스트림 그대로 + 처리된 오디오 재다중화
       (video copy, audio re-encode AAC 192k).
 """
@@ -41,9 +40,15 @@ import time
 from pathlib import Path
 
 
-DEFAULT_CKPT = Path("runs/phase3_v2_gemini_target/best_model.pt")
-DEFAULT_NUM_MOOD = 4      # 위 ckpt 가 K=4 로 학습됨
-DEFAULT_MODEL_VERSION = "phase3_v2_gemini_target"
+# BASE FROZEN 3-seed ensemble (BASE_MODEL.md §4b 실서빙 권장)
+DEFAULT_CKPTS: list[Path] = [
+    Path("runs/phase2a/2a2_A_K7_s42/best.pt"),
+    Path("runs/phase2a/2a2_A_K7_s123/best.pt"),
+    Path("runs/phase2a/2a2_A_K7_s2024/best.pt"),
+]
+DEFAULT_NUM_MOOD = 7
+DEFAULT_VARIANT = "liris_base"
+DEFAULT_MODEL_VERSION = "liris_base_k7_3seed_ensemble"
 
 
 def sanitize_name(video_path: Path) -> str:
@@ -64,24 +69,25 @@ def sanitize_name(video_path: Path) -> str:
 
 
 def step_infer_pseudo(
-    video: Path, timeline_out: Path, ckpt: Path,
-    num_mood_classes: int, model_version: str, verbose: bool,
-    alpha_d: float,
+    video: Path, timeline_out: Path, ckpts: list[Path],
+    num_mood_classes: int, variant: str,
+    model_version: str, verbose: bool, alpha_d: float,
 ) -> None:
-    """Step 1: infer_pseudo CLI 호출."""
+    """Step 1: infer_pseudo CLI 호출 (3-seed ensemble)."""
     cmd = [
         "venv/bin/python", "-m", "model.autoEQ.infer_pseudo.cli",
         "--video", str(video),
-        "--ckpt", str(ckpt),
+        "--ckpt_paths", *[str(p) for p in ckpts],
         "--output", str(timeline_out),
         "--num_mood_classes", str(num_mood_classes),
-        "--variant", "base",
+        "--variant", variant,
         "--model_version", model_version,
         "--alpha_d", str(alpha_d),
     ]
     if not verbose:
         cmd.append("--quiet")
-    print(f"[step 1] infer_pseudo → {timeline_out.name} (alpha_d={alpha_d})")
+    ens_tag = f"{len(ckpts)}-seed ensemble" if len(ckpts) > 1 else "single-seed"
+    print(f"[step 1] infer_pseudo → {timeline_out.name} ({ens_tag}, alpha_d={alpha_d})")
     t0 = time.time()
     subprocess.run(cmd, check=True)
     print(f"[step 1] done in {time.time() - t0:.1f}s")
@@ -133,10 +139,15 @@ def main() -> int:
                    help="산출 디렉토리 suffix (기본: 파일명에서 추출)")
     p.add_argument("--output-root", type=Path, default=Path("runs"),
                    help="산출물 루트 (기본 runs/)")
-    p.add_argument("--ckpt", type=Path, default=DEFAULT_CKPT,
-                   help="infer_pseudo checkpoint (AutoEQModelCog 호환 필요)")
+    p.add_argument("--ckpt", type=Path, nargs="+", default=DEFAULT_CKPTS,
+                   help="ckpt 경로 리스트. 기본값 = BASE FROZEN 3-seed ensemble "
+                        "(runs/phase2a/2a2_A_K7_s{42,123,2024}/best.pt). "
+                        "단일 ckpt 도 허용 (1-seed).")
     p.add_argument("--num-mood-classes", type=int, default=DEFAULT_NUM_MOOD,
                    choices=[4, 7])
+    p.add_argument("--variant", type=str, default=DEFAULT_VARIANT,
+                   choices=["base", "gmu", "ast_gmu", "liris_base"],
+                   help="training variant (must match ckpt). liris_base = BASE FROZEN.")
     p.add_argument("--model-version", type=str, default=DEFAULT_MODEL_VERSION)
     p.add_argument("--alpha-d", type=float, default=0.3,
                    help="대사 보호 강도: α_d 작을수록 강한 보호 "
@@ -157,9 +168,11 @@ def main() -> int:
     if not video_path.is_file():
         print(f"[error] 영상 없음: {video_path}", file=sys.stderr)
         return 1
-    if not args.ckpt.is_file():
-        print(f"[error] checkpoint 없음: {args.ckpt}", file=sys.stderr)
-        return 1
+    ckpt_paths: list[Path] = args.ckpt if isinstance(args.ckpt, list) else [args.ckpt]
+    for ckpt in ckpt_paths:
+        if not ckpt.is_file():
+            print(f"[error] checkpoint 없음: {ckpt}", file=sys.stderr)
+            return 1
 
     name = args.name or sanitize_name(video_path)
     out_dir = args.output_root / f"demo_{name}"
@@ -174,7 +187,10 @@ def main() -> int:
     print(f"  input    : {video_path}")
     print(f"  name     : {name}")
     print(f"  out_dir  : {out_dir}")
-    print(f"  ckpt     : {args.ckpt}")
+    print(f"  variant  : {args.variant}")
+    print(f"  ckpts    : {len(ckpt_paths)}-seed {'ensemble' if len(ckpt_paths) > 1 else '(single)'}")
+    for cp in ckpt_paths:
+        print(f"             · {cp}")
     print(f"  K        : {args.num_mood_classes}")
     print()
 
@@ -187,8 +203,9 @@ def main() -> int:
         print(f"[step 1] skipped (exists — --force for rebuild)")
     else:
         step_infer_pseudo(
-            video_path, timeline_path, args.ckpt,
-            args.num_mood_classes, args.model_version,
+            video_path, timeline_path, ckpt_paths,
+            args.num_mood_classes, args.variant,
+            args.model_version,
             verbose=not args.quiet,
             alpha_d=args.alpha_d,
         )
@@ -225,12 +242,15 @@ def main() -> int:
     print(f"      --timeline  {timeline_path}")
 
     # 간단한 run log
+    ckpt_lines = "\n".join(f"  - {p}" for p in ckpt_paths)
     log_path.write_text(
         f"=== MoodEQ pipeline run ===\n"
         f"video: {video_path}\n"
         f"name: {name}\n"
-        f"ckpt: {args.ckpt}\n"
+        f"variant: {args.variant}\n"
+        f"ckpts ({len(ckpt_paths)}-seed):\n{ckpt_lines}\n"
         f"num_mood: {args.num_mood_classes}\n"
+        f"model_version: {args.model_version}\n"
         f"elapsed_sec: {total:.1f}\n"
         f"timeline: {timeline_path}\n"
         f"eq_applied: {eq_path}\n"
