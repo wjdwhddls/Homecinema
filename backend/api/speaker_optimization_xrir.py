@@ -156,6 +156,7 @@ def _run_task(
     ref_src_pos: np.ndarray
 ) -> None:
     try:
+        start_time = time.time()
         _job_store.update_status(job_id, "processing", progress=10)
 
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -238,7 +239,7 @@ def _run_task(
             "best": best,
             "top_alternatives": results[1:],
             "room_summary": None,
-            "computation_time_seconds": 0.0,
+            "computation_time_seconds": time.time() - start_time,
             "warnings": [],
             "error_message": None,
             "topview_image": topview,
