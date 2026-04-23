@@ -9,18 +9,14 @@ const PORT = 8000;
 //
 // 개발 중엔 'local' 사용. xRIR 최적화 결과가 필요할 때만 'remote' 로 변경 후 Metro 재기동.
 type BackendMode = 'local' | 'remote';
-// const BACKEND_MODE = 'local' as BackendMode;
+const BACKEND_MODE = 'local' as BackendMode;
 
-// // 'remote' 모드에서 사용할 URL.
-// const REMOTE_BACKEND_URL = 'https://a44b-141-223-140-63.ngrok-free.app';
-
-// ngrok 고정 도메인 (네트워크 종류 관계 없이 접근 가능)
-const BACKEND_MODE = 'remote' as BackendMode;
+// 'remote' 모드에서 사용할 URL (MoodEQ dual-layer 파이프라인이 없는 서버).
 const REMOTE_BACKEND_URL = 'https://mark-investigative-equinely.ngrok-free.dev';
 
 // 'local' 모드 iOS 폴백 IP (Metro 호스트 감지 실패 시 사용).
 // Wi-Fi 바뀌었는데 자동 감지가 안 되면 `ipconfig getifaddr en0` 로 확인 후 갱신.
-const FALLBACK_LOCAL_IP = '192.168.0.22';
+const FALLBACK_LOCAL_IP = '192.168.0.21';
 
 // ── Metro 호스트 자동 감지 ──────────────────────────────────────────
 // RN Dev 빌드: Metro 번들러가 내려준 scriptURL 에서 Mac 호스트 IP 뽑아 백엔드 포트로 재활용

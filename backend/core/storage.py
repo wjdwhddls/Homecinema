@@ -112,3 +112,29 @@ def delete_job(job_id: str) -> bool:
         return False
     shutil.rmtree(str(job_dir))
     return True
+
+
+def update_job_status(
+    job_id: str,
+    status: str | None = None,
+    progress: float | None = None,
+    error_message: str | None = None,
+    processed_size_bytes: int | None = None,
+) -> None:
+    """meta.json 부분 업데이트. None 은 해당 필드 변경 없음.
+
+    status 는 "uploaded"|"queued"|"analyzing"|"eq_processing"|"completed"|"failed".
+    progress 는 0.0~1.0. error_message 는 failed 일 때만 의미 있음.
+    """
+    meta = load_job_meta(job_id)
+    if meta is None:
+        return
+    if status is not None:
+        meta["status"] = status
+    if progress is not None:
+        meta["analysis_progress"] = progress
+    if error_message is not None:
+        meta["error_message"] = error_message
+    if processed_size_bytes is not None:
+        meta["processed_size_bytes"] = processed_size_bytes
+    save_job_meta(job_id, meta)

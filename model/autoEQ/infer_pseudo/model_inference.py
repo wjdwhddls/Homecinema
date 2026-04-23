@@ -169,7 +169,9 @@ def predict_windows(
     windows: list[Window],
     video_path: str | Path,
     audio_16k_path: str | Path,
-    ckpt_path: str | Path,
+    ckpt_path: str | Path | None = None,
+    *,
+    ckpt_paths: list[str | Path] | None = None,
     device: torch.device | None = None,
     batch_size: int = 16,
     num_mood_classes: int = 4,
@@ -184,15 +186,32 @@ def predict_windows(
         windows: scene-sliced windows.
         video_path: original video (frames extracted on-the-fly).
         audio_16k_path: extracted 16 kHz mono WAV (see vad.extract_audio_16k_mono).
-        ckpt_path: trained model state_dict (.pt).
+        ckpt_path: single trained model state_dict (.pt). Used only if
+                   ``ckpt_paths`` is not provided. Kept for backward compat.
+        ckpt_paths: list of N ckpts for N-seed ensemble. va_pred/gate are
+                    averaged across models per window. BASE_MODEL.md §4b 실서빙
+                    권장 = 3-seed ensemble (s42/s123/s2024).
         device: torch device (defaults to cuda/mps/cpu auto).
         batch_size: windows per forward pass.
-        num_mood_classes: must match training config (K=4 default).
-        variant: one of ``base`` / ``gmu`` / ``ast_gmu`` — must match ckpt origin.
-        xclip / panns / ast_encoder: optional pre-instantiated encoders (reuse across calls).
+        num_mood_classes: must match training config (K=7 for BASE liris).
+        variant: one of ``base`` / ``gmu`` / ``ast_gmu`` / ``liris_base`` —
+                 must match ckpt origin.
+        xclip / panns / ast_encoder: optional pre-instantiated encoders
+                                     (reuse across calls to save mem/time).
     """
     if not windows:
         return []
+
+    # --- resolve ckpt list (ensemble-first, single-ckpt fallback) ---
+    if ckpt_paths:
+        resolved_paths = [Path(p) for p in ckpt_paths]
+    elif ckpt_path is not None:
+        resolved_paths = [Path(ckpt_path)]
+    else:
+        raise ValueError("predict_windows: ckpt_path 또는 ckpt_paths 중 하나는 필수")
+    for p in resolved_paths:
+        if not p.is_file():
+            raise FileNotFoundError(f"ckpt 없음: {p}")
 
     device = device or _auto_device()
     video_path = Path(video_path)
@@ -205,7 +224,7 @@ def predict_windows(
     if xclip is None:
         xclip = XCLIPEncoder(cfg)
 
-    # Audio encoder dispatch — PANNs (2048-d) for base/gmu, AST (768-d) for ast_gmu.
+    # Audio encoder dispatch — PANNs (2048-d) for base/gmu/liris_base, AST (768-d) for ast_gmu.
     if audio_encoder_kind == "panns":
         if panns is None:
             panns = PANNsEncoder(cfg)
@@ -218,12 +237,16 @@ def predict_windows(
     else:
         raise ValueError(f"unknown audio_encoder_kind '{audio_encoder_kind}'")
 
-    model = model_cls(cfg).to(device).eval()
-    state = torch.load(str(ckpt_path), map_location=device, weights_only=False)
-    # train_liris ckpt wraps state_dict as {"epoch", "model", "cfg", "val_metrics"};
-    # train_pseudo ckpt is a bare state_dict. Accept either.
-    state_dict = state["model"] if isinstance(state, dict) and "model" in state else state
-    model.load_state_dict(state_dict)
+    # --- load N models (N = 1 single, 3 BASE ensemble) ---
+    models: list = []
+    for p in resolved_paths:
+        m = model_cls(cfg).to(device).eval()
+        state = torch.load(str(p), map_location=device, weights_only=False)
+        # train_liris ckpt: {"epoch", "model", "cfg", "val_metrics"};
+        # train_pseudo ckpt: bare state_dict. 둘 다 수용.
+        sd = state["model"] if isinstance(state, dict) and "model" in state else state
+        m.load_state_dict(sd)
+        models.append(m)
 
     results: list[WindowVA] = []
     for batch in _batched(windows, batch_size):
@@ -238,15 +261,28 @@ def predict_windows(
         frames_t = torch.stack(frames_list, dim=0)  # (B, T, C, H, W)
         wave_t = torch.stack(wave_list, dim=0)      # (B, T_audio) at 16 kHz
 
+        # backbone features — 모델 간 공유 (X-CLIP/PANNs 는 frozen)
         visual_feat = xclip(frames_t)               # (B, 512)
         audio_feat = audio_callable(wave_t)         # (B, 2048) or (B, 768)
 
         visual_feat = visual_feat.to(device)
         audio_feat = audio_feat.to(device)
+
+        # --- ensemble forward: N 모델의 va_pred/gate 평균 ---
+        va_accum: Tensor | None = None
+        gate_accum: Tensor | None = None
         with torch.no_grad():
-            out = model(visual_feat, audio_feat)
-        va_pred = out["va_pred"].cpu()
-        gate = out["gate_weights"].cpu()
+            for m in models:
+                out = m(visual_feat, audio_feat)
+                va_cpu = out["va_pred"].cpu()
+                gate_cpu = out["gate_weights"].cpu()
+                va_accum = va_cpu if va_accum is None else va_accum + va_cpu
+                gate_accum = gate_cpu if gate_accum is None else gate_accum + gate_cpu
+        assert va_accum is not None and gate_accum is not None
+        n_models = len(models)
+        va_pred = va_accum / n_models
+        gate = gate_accum / n_models
+
         for i, w in enumerate(batch):
             results.append(WindowVA(
                 scene_idx=w.scene_idx,

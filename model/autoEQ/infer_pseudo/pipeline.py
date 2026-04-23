@@ -97,9 +97,10 @@ def build_scene_eq_list(
 
 def analyze_video(
     video_path: str | Path,
-    ckpt_path: str | Path,
-    output_json: str | Path,
+    ckpt_path: str | Path | None = None,
+    output_json: str | Path = "timeline.json",
     *,
+    ckpt_paths: list[str | Path] | None = None,
     num_mood_classes: int = 4,
     alpha_d: float = 0.5,
     ema_alpha: float = 0.3,
@@ -132,8 +133,12 @@ def analyze_video(
     """
     t0 = time.time()
     video_path = Path(video_path)
-    ckpt_path = Path(ckpt_path)
+    # ckpt_path 는 단일 경로 후방호환용. ckpt_paths (ensemble) 를 쓸 때는 None 가능.
+    if ckpt_path is not None:
+        ckpt_path = Path(ckpt_path)
     output_json = Path(output_json)
+    if ckpt_path is None and not ckpt_paths:
+        raise ValueError("analyze_video: ckpt_path 또는 ckpt_paths 중 하나는 필수")
 
     # liris_base 는 TrainLirisConfig 에 encoder 필드가 없으므로 caller 가 encoder
     # 를 주입하지 않았다면 TrainCogConfig 의 defaults 로 자동 구성한다.
@@ -176,13 +181,16 @@ def analyze_video(
 
             if verbose:
                 audio_enc = "AST" if variant == "ast_gmu" else "PANNs"
-                print(f"[info] running model inference (X-CLIP + {audio_enc} + {variant} head)...")
+                n_models = len(ckpt_paths) if ckpt_paths else 1
+                tag = f"{n_models}-seed ensemble" if n_models > 1 else "single-seed"
+                print(f"[info] running model inference (X-CLIP + {audio_enc} + {variant} head, {tag})...")
             t_model0 = time.time()
             window_va = predict_windows(
                 windows=windows,
                 video_path=video_path,
                 audio_16k_path=audio_16k_wav,
                 ckpt_path=ckpt_path,
+                ckpt_paths=ckpt_paths,
                 batch_size=batch_size,
                 num_mood_classes=num_mood_classes,
                 variant=variant,
