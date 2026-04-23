@@ -12,12 +12,12 @@
 		13B07FBC1A68108700A75B9A /* AppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB01A68108700A75B9A /* AppDelegate.mm */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
+		652EC3E02F99BDDD008AE44E /* RoomScanViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 652EC3DF2F99BDDD008AE44E /* RoomScanViewController.swift */; };
 		656A3A122F986257002577EE /* RoomScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 656A3A112F986257002577EE /* RoomScanner.swift */; };
 		656A3A152F986271002577EE /* SweepRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 656A3A142F986271002577EE /* SweepRecorder.swift */; };
 		656A3A162F986271002577EE /* SweepRecorder.m in Sources */ = {isa = PBXBuildFile; fileRef = 656A3A132F986271002577EE /* SweepRecorder.m */; };
 		656A3A182F9867A5002577EE /* sweep.wav in Resources */ = {isa = PBXBuildFile; fileRef = 656A3A172F9867A5002577EE /* sweep.wav */; };
 		65EC20A82F8FD4C700E02C41 /* RoomScanner.m in Sources */ = {isa = PBXBuildFile; fileRef = 65EC20A42F8FD4C700E02C41 /* RoomScanner.m */; };
-		65EC20A92F8FD4C700E02C41 /* RoomScanViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65EC20A62F8FD4C700E02C41 /* RoomScanViewController.swift */; };
 		65EC20AB2F8FD67D00E02C41 /* RoomPlan.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 65EC20AA2F8FD67D00E02C41 /* RoomPlan.framework */; };
 		7699B88040F8A987B510C191 /* libPods-MoodEQ-MoodEQTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 19F6CBCC0A4E27FBF8BF4A61 /* libPods-MoodEQ-MoodEQTests.a */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
@@ -51,13 +51,13 @@
 		5709B34CF0A7D63546082F79 /* Pods-MoodEQ.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MoodEQ.release.xcconfig"; path = "Target Support Files/Pods-MoodEQ/Pods-MoodEQ.release.xcconfig"; sourceTree = "<group>"; };
 		5B7EB9410499542E8C5724F5 /* Pods-MoodEQ-MoodEQTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MoodEQ-MoodEQTests.debug.xcconfig"; path = "Target Support Files/Pods-MoodEQ-MoodEQTests/Pods-MoodEQ-MoodEQTests.debug.xcconfig"; sourceTree = "<group>"; };
 		5DCACB8F33CDC322A6C60F78 /* libPods-MoodEQ.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-MoodEQ.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		652EC3DF2F99BDDD008AE44E /* RoomScanViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoomScanViewController.swift; sourceTree = "<group>"; };
 		656A3A112F986257002577EE /* RoomScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoomScanner.swift; sourceTree = "<group>"; };
 		656A3A132F986271002577EE /* SweepRecorder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SweepRecorder.m; sourceTree = "<group>"; };
 		656A3A142F986271002577EE /* SweepRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SweepRecorder.swift; sourceTree = "<group>"; };
 		656A3A172F9867A5002577EE /* sweep.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = sweep.wav; sourceTree = "<group>"; };
 		65EC20A32F8FD4C700E02C41 /* MoodEQ-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "MoodEQ-Bridging-Header.h"; sourceTree = "<group>"; };
 		65EC20A42F8FD4C700E02C41 /* RoomScanner.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RoomScanner.m; sourceTree = "<group>"; };
-		65EC20A62F8FD4C700E02C41 /* RoomScanViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoomScanViewController.swift; sourceTree = "<group>"; };
 		65EC20AA2F8FD67D00E02C41 /* RoomPlan.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = RoomPlan.framework; path = System/Library/Frameworks/RoomPlan.framework; sourceTree = SDKROOT; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = MoodEQ/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		89C6BE57DB24E9ADA2F236DE /* Pods-MoodEQ-MoodEQTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MoodEQ-MoodEQTests.release.xcconfig"; path = "Target Support Files/Pods-MoodEQ-MoodEQTests/Pods-MoodEQ-MoodEQTests.release.xcconfig"; sourceTree = "<group>"; };
@@ -105,13 +105,13 @@
 		13B07FAE1A68108700A75B9A /* MoodEQ */ = {
 			isa = PBXGroup;
 			children = (
+				652EC3DF2F99BDDD008AE44E /* RoomScanViewController.swift */,
 				656A3A172F9867A5002577EE /* sweep.wav */,
 				656A3A132F986271002577EE /* SweepRecorder.m */,
 				656A3A142F986271002577EE /* SweepRecorder.swift */,
 				656A3A112F986257002577EE /* RoomScanner.swift */,
 				65EC20A32F8FD4C700E02C41 /* MoodEQ-Bridging-Header.h */,
 				65EC20A42F8FD4C700E02C41 /* RoomScanner.m */,
-				65EC20A62F8FD4C700E02C41 /* RoomScanViewController.swift */,
 				13B07FAF1A68108700A75B9A /* AppDelegate.h */,
 				13B07FB01A68108700A75B9A /* AppDelegate.mm */,
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
@@ -440,12 +440,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				656A3A152F986271002577EE /* SweepRecorder.swift in Sources */,
+				652EC3E02F99BDDD008AE44E /* RoomScanViewController.swift in Sources */,
 				656A3A162F986271002577EE /* SweepRecorder.m in Sources */,
 				13B07FBC1A68108700A75B9A /* AppDelegate.mm in Sources */,
 				13B07FC11A68108700A75B9A /* main.m in Sources */,
 				656A3A122F986257002577EE /* RoomScanner.swift in Sources */,
 				65EC20A82F8FD4C700E02C41 /* RoomScanner.m in Sources */,
-				65EC20A92F8FD4C700E02C41 /* RoomScanViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
