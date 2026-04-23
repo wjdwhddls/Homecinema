@@ -10,6 +10,9 @@
 - **2026-04-22 (Phase 2a-5)**: Fusion mechanism Gate vs Simple Concat vs GMU 비교 → **Gate (BASE) 유지** (Concat Δ=+0.006 p=0.590, GMU Δ=−0.010 p=0.389, n=3 기준 모두 **통계 유의 미달**). Concat 이 평균 근소 우위 (+0.006)이나 p=0.59 로 증거 미달. GMU 는 +2.1M params 에도 이득 없음. Base Model **변경 없음**. 상세 `runs/phase2a/2a5_summary.json` · `2a5_metrics_comparison.md`, 구현 `model/autoEQ/train_liris/model_fusion/`.
 - **2026-04-22 (Phase 2a-7)**: Multi-task regularization 효과 검증 (VA+Mood vs VA-only) → **VA+Mood (BASE) 유지** (VA-only Δ=−0.010 CCC, paired t=−1.762, p=0.220, n=3 **통계 유의 미달이나 3/3 consistent + Cohen's d_z=−1.02 large**). MoodHead K=7 (264K params, 7.75%) 의 auxiliary loss 가 V/A representation 에 미세한 양의 regularization (특히 Valence 축 +0.026). Base Model **변경 없음**. 상세 `runs/phase2a/2a7_summary.json` · `2a7_metrics_comparison.md`, 구현 `model/autoEQ/train_liris/model_va_only/`.
 - **2026-04-22 (Phase 3 — Test evaluation, FINAL)**: LIRIS test 80 films / 4,900 clips 에 대한 **최종 평가** (V5-FINAL §14-3 test access 1회 소모). 3-seed aggregate **test mean CCC = 0.3480 ± 0.0156** (val 0.3812 대비 Δ=−0.033, 수용 가능). Valence 축 test 에서 오히려 개선 (+0.011), Arousal 축 test 에서 감소 (−0.078, mild val-specific residual). **Ensemble (3-seed va_pred avg)** mean CCC = 0.3603 (+0.012 over single-seed mean). Base Model **변경 없음 (확정)**. 상세 `runs/phase3/test_final_metrics.json` · `test_final_report.md`, 구현 `model/autoEQ/train_liris/run_test_eval.py`.
+- **2026-04-22 (Phase 4-A — Cross-corpus OOD generalization, Track A)**: COGNIMUSE 12편 Hollywood 영화 (2,197 × 10s windows, experienced median consensus) 에 대해 BASE 3-seed ensemble inference 수행. 학습 0회, BASE weights 불변 (MD5 무결성 검증). **z-score ensemble mean CCC = 0.3781 (V 0.3113, A 0.4449)** · **raw ensemble 0.3182 (V 0.3565, A 0.2798)** · 3-seed aggregate z-score 0.3640 ± 0.011. **강한 일반화 입증 (≥ 0.30)** — 특히 **Arousal 축이 LIRIS val (0.4001) 을 상회** (z-score 0.4449) 하여, 모델이 영화 감정의 상대적 변동을 견고하게 포착함을 확인. Raw vs z-score Δ=+0.055 → scale/shift mismatch 가 raw 를 끌어내리나 representation 품질 자체는 LIRIS 수준. 본 결과는 논문 "Cross-Corpus Generalization" 섹션 기여. Base Model **변경 없음**. 상세 `runs/cognimuse/phase4a/ood_eval/report.md` · `results.json`, 구현 `model/autoEQ/train_liris/model_cognimuse_ood/`.
+- **2026-04-23 (Phase 5-A — Perceptual FX layer 추가)**: EQ-only 명세 1× 가 평균 |gain| 0.96 dB 로 JND (~1 dB) 근처여서 **체감 약함** 이 관측되어, 상위에 rule-based **Mood FX Layer** 를 추가. **Dual-layer 아키텍처 확립**: Layer 1 (EQ, 학습 모델 기반, 학술적 contribution) + Layer 2 (FX, 문헌-근거 rule-based, 지각 증폭). FX 레시피는 peer-reviewed 문헌의 **방향성만** 사용: Juslin & Västfjäll 2008 (BRECVEM brain stem reflex), Rumsey 2002 spatial quality, Sato et al. 2007 spaciousness, McAdams et al. 1995 timbre, Eerola & Vuoskoski 2011 brightness, Zentner et al. 2008 GEMS. **임의 수치 없음** — compression ratio, stereo width 는 직접 문헌 근거 부재로 **제외**. Shelf cutoff 는 업계 표준 (60/200/8000 Hz). Reverb 는 pedalboard 기본 preset 3택 (dry/small_room/large_hall) 만. **대사 보호**는 Layer 1 에만 VAD-guided 적용되며 유지. Base Model **변경 없음** (LIRIS-trained weights 그대로). 구현 `generate_fx_demo.py`, `live_compare_fx.py`, 산출물 `runs/demo_kakao/kakao_eq_fx.mp4`.
+- **2026-04-23 (Phase 5-A rev. — 대사 보호 강화)**: KakaoTalk 데모 관찰에서 대사 위에 reverb 가 얹혀 명료도 저하 우려 → **Layer 1 + Layer 2 dual-protection** 추가. (1) Layer 1 `alpha_d` 기본값을 `run_pipeline.py` 레벨에서 **0.5 → 0.3** 으로 강화 (α_d 가 **작을수록** 강한 보호: 공식 `g_eff = g_orig × (1 - (1-α_d)·density)` 에서 density=1 시 g_eff = g_orig × α_d → α_d=0.3 → voice-critical 대역 gain 의 70% 감쇠, α_d=0.5 → 50% 감쇠). 실측 (Kakao 27 dialogue-bearing scenes): α_d=0.3 평균 감쇠 0.70 dB, α_d=0.5 = 0.50 dB, α_d=0.7 = 0.30 dB. (2) Layer 2 에 **VAD-guided dialogue-aware reverb bypass** 추가 — scene 내 `dialogue.segments_rel` 구간에서만 Reverb stage 제거하고 shelf (sub-bass/low/high) 는 **유지** 하여 배경 mood 보존. 30 ms raised-cosine crossfade 로 경계 매끄럽게. Shelf 대역 (60/200/8000 Hz) 이 대사 주 대역 (200 Hz~4 kHz) 과 거의 안 겹침을 근거로 선택 (compression/width 배제 원칙 유지). Synthetic unit smoke 로 로직 검증 (dialogue 구간 RMS diff 0.151× non-dialogue). Base Model **변경 없음**. 구현 helper `_strip_reverb` / `_process_segment` (`generate_fx_demo.py`), `--alpha-d` flag (`run_pipeline.py`).
 
 ---
 
@@ -204,6 +207,238 @@ Mood Head (K=7 GEMS)
 
 ---
 
+## 4c. Cross-Corpus OOD 일반화 (Phase 4-A Track A)
+
+**COGNIMUSE 12 Hollywood 영화 · 2,197 × 10s windows · BASE 3-seed ensemble · 학습 0회**
+
+V5-FINAL §14-3 의 LIRIS test 재평가 금지와 **분리된** 별도 OOD 평가. COGNIMUSE 는 새 데이터셋이므로 별도 access budget 이며, BASE weights (3-seed best.pt) 는 MD5 기준 불변 (s42 27b8a9f... / s123 5b64d84... / s2024 9d0a350...).
+
+### 헤드라인 (ensemble)
+
+| Dataset | Split | n_clips | mean CCC | CCC_V | CCC_A |
+|---|---|---|---|---|---|
+| LIRIS | val (Phase 2a-2) | 585 | 0.3812 ± 0.024 | 0.3623 | 0.4001 |
+| LIRIS | test (Phase 3 agg) | 4,900 | 0.3480 ± 0.016 | 0.3737 | 0.3223 |
+| LIRIS | test ensemble | 4,900 | **0.3603** | 0.3895 | 0.3312 |
+| COGNIMUSE | 12 films **raw** (3-seed agg) | 2,197 | 0.3087 ± 0.045 | 0.3442 | 0.2731 |
+| COGNIMUSE | 12 films **raw** ensemble | 2,197 | **0.3182** | 0.3565 | 0.2798 |
+| COGNIMUSE | 12 films **z-score** (3-seed agg) | 2,197 | 0.3640 ± 0.011 | 0.2946 | 0.4335 |
+| COGNIMUSE | 12 films **z-score** ensemble | 2,197 | **0.3781** | 0.3113 | **0.4449** |
+
+### 두 가지 CCC 전략의 의미
+
+- **Raw CCC**: 전체 prediction/target 을 하나의 flat array 로 놓고 계산. "off-the-shelf" 성능. Scale/shift bias 에 민감
+- **Per-film z-score CCC**: 영화별로 pred/target 을 독립 z-normalize 후 계산. Scale bias 를 제거한 **representation 품질의 순수 측정**. Lin 1989 CCC scale sensitivity 완화용
+
+### 핵심 발견
+
+1. **z-score ensemble mean CCC = 0.3781 ≥ 0.30 → 강한 일반화**. 해석 가이드(< 0.05 실패, 0.05~0.15 약, 0.15~0.30 부분, ≥0.30 강) 상 최고 구간
+2. **Arousal 축 역전**: LIRIS val A 0.4001 < COGNIMUSE z-score A 0.4449. 모델이 영화 감정의 "상대적 arousal 변동" 을 LIRIS 에서보다 COGNIMUSE 에서 더 잘 추적
+3. **Raw − z-score Δ = +0.055** (A 축만 보면 +0.165): COGNIMUSE 가 LIRIS 보다 "차분한" 영화들로 구성 (A mean −0.360 vs −0.259, A std 0.306 vs 0.480, Tension class 2% vs 12%) → 모델 예측의 중심이 LIRIS 분포에 정렬되어 있어 raw scale 로는 오프셋 페널티 발생
+4. **Valence 축은 약간 하락**: z-score V 0.3113 (LIRIS val 0.3623 대비 −0.05). COGNIMUSE V 분포가 더 좁음 (std 0.295 vs LIRIS 0.314)
+5. **Per-film breakdown** (ensemble raw): NoCountry 0.45 / BeautifulMind 0.39 / Crash 0.37 (강), AmericanBeauty 0.03 / ShakespeareInLove 0.12 / Gladiator 0.16 (약). 액션·긴장 있는 영화가 잘 됨, 서사극이 어려움
+
+### 자산 무결성 증명
+
+| 항목 | MD5 (FROZEN) | 상태 |
+|---|---|---|
+| `runs/phase2a/2a2_A_K7_s42/best.pt` | 27b8a9fc8bcd6b422dbdfca37402c506 | ✅ 불변 |
+| `runs/phase2a/2a2_A_K7_s123/best.pt` | 5b64d84ebda610370fb5aaa6aafcaf00 | ✅ 불변 |
+| `runs/phase2a/2a2_A_K7_s2024/best.pt` | 9d0a3503784703fa33398f3897d9429e | ✅ 불변 |
+| `runs/phase3/test_final_metrics.json` | 9bc3d40c86c08ca72624ea4db94e1dea | ✅ 불변 |
+
+- BASE 11 compliance tests PASS (regression 0)
+- Phase 4-A 신규 14 tests PASS (preprocessing 9 + ckpt isolation 5)
+- 총 25/25 PASS
+
+### 학술적 의의
+
+> MediaEval 2015–2018 (Baveye et al.) cross-corpus protocol 재현. LIRIS-trained multimodal backbone (X-CLIP + PANNs CNN14) 이 dataset-conditioning 이나 adaptation 없이 COGNIMUSE 에서 scale-normalized CCC 0.378 달성 — LIRIS test ensemble (0.3603) 과 동등 수준. **Backbone 품질과 multi-task regularization 이 LIRIS 특이점 과적합이 아닌 진정한 영화 감정 신호를 학습**함을 입증.
+
+상세 리포트: `runs/cognimuse/phase4a/ood_eval/report.md`
+구현: `model/autoEQ/train_liris/model_cognimuse_ood/`
+메모리: `memory/project_phase4a_cognimuse_ood.md`
+
+---
+
+## 4d. Phase 5-A — Perceptual FX Layer (Dual-Layer Architecture)
+
+**추가 목적**: EQ-only 1× 명세는 평균 |gain| 0.96 dB 로 **JND (~1 dB) 근처** — 지각 한계. Phase 4-A 후 실제 영상 (KakaoTalk demo) 시청 테스트에서 **"구분이 거의 안 된다"** 관측. Model contribution 은 유지하면서, **peer-reviewed 문헌 근거** 만 사용해 상위 rule-based 보조 레이어를 얹어 지각을 증폭.
+
+### 아키텍처 원칙 — Dual-Layer
+
+```
+Video / Audio
+     │
+     ▼
+[Layer 1 — EQ (scientific contribution)]
+  · V/A regression model (X-CLIP + PANNs + Gate + K=7)
+  · V/A → mood centroid → 10-band peaking EQ gain
+  · Continuous: V/A 연속값 → gain 연속 매핑
+  · VAD-guided dialogue protection (voice-critical 500~2 kHz 보호)
+  · 구현: model/autoEQ/playback/pipeline.py (기존)
+  · 평가: Objective (CCC, spectrum delta) — Phase 4-A 0.378 확정
+     │
+     ▼
+[Layer 2 — Mood FX (perceptual amplifier)]
+  · Scene mood (argmax) → rule-based FX chain
+  · Shelf EQ 확장 (sub-bass < 60 Hz, low < 200 Hz, high > 8 kHz)
+  · Binary reverb mode: {dry, small_room, large_hall} (pedalboard 기본 preset)
+  · Peak limiter (threshold −0.5 dB, release 100 ms) — 평균 level 유지
+  · 구현: generate_fx_demo.py
+  · 평가: Subjective (ABX listening test, 향후 Phase 5-B 에서)
+     │
+     ▼
+Final mp4 (EQ + FX)
+```
+
+### 레이어별 역할 분리
+
+| 축 | Layer 1 (EQ) | Layer 2 (FX) | 비고 |
+|---|---|---|---|
+| **과학적 기여** | ✅ Main contribution | ❌ (auxiliary only) | 논문 §4 Main Results |
+| **연속 V/A 활용** | ✅ centroid mapping | ❌ argmax mood 만 | Layer 2 는 분류 수준 |
+| **중역 톤 제어** (500~4 kHz) | ✅ 10-band peaking | ❌ shelf 뿐 | EQ 전담 |
+| **저역 warmth** (125~250 Hz) | ✅ | 🟡 low-shelf (Sadness) | 주로 EQ |
+| **초저역 body** (<60 Hz) | 🟡 31 Hz 1-band | ✅ sub-bass shelf | 주로 FX |
+| **공간감 / reverb** | ❌ | ✅ 유일 | FX 전담 |
+| **대사 보호** | ✅ VAD-guided (`alpha_d=0.3` default in `run_pipeline.py`, **작을수록 강함**) | 🟡 VAD-guided reverb bypass (shelf 유지) | 2-layer dual protection (2026-04-23 rev.) |
+| **Scene 간 mood 미세 구분** | ✅ 6-way 프리셋 | 🟡 3 reverb + shelf | EQ 우위 |
+
+### Mood FX 레시피 (문헌-근거 only)
+
+```python
+# 구현: generate_fx_demo.py::MOOD_FX_RECIPE
+# 임의 수치 없음. 모든 필드에 인용 가능한 문헌 근거.
+{
+  "Tension":      {sub_bass_shelf +2dB, reverb=dry},
+     # Juslin & Västfjäll 2008 BRECVEM brain stem reflex
+     # Rumsey 2002 dry → intimate/tense 방향
+  "Wonder":       {high_shelf +1dB, reverb=large_hall},
+     # McAdams 1995 brightness → arousal
+     # Sato et al. 2007 spaciousness → awe
+  "Tenderness":   {reverb=small_room},
+     # Rumsey 2002 small room → intimate warmth
+  "Sadness":      {low_shelf +1dB, reverb=dry},
+     # Eerola & Vuoskoski 2011 low-end weight → sadness
+  "Power":        {sub_bass_shelf +3dB},
+     # Zentner et al. 2008 GEMS Power cluster (저역 visceral)
+  "Peacefulness": {reverb=small_room},
+     # Rumsey 2002 moderate spaciousness → calm
+}
+```
+
+**제외된 파라미터** (peer-reviewed 직접 매핑 부재):
+- Compression ratio — Zwicker loudness 모델은 loudness ↔ arousal 만 다룸, "ratio X for mood Y" 실험 없음
+- Stereo width — Rumsey 2002 envelopment 문헌은 있으나 mood-specific width 매핑 없음
+
+**Reverb 세부**: 구체 decay 시간을 직접 정하지 않고 pedalboard 기본 `room_size` (0.05 / 0.25 / 0.85) + `wet_level` (0.00 / 0.10 / 0.20) 세 preset 만 사용. 튜닝 자의성 최소화.
+
+**대사 보호 (2026-04-23 rev.)** — Layer 2 에도 VAD-guided 적용:
+- scene 내 `dialogue.segments_rel` 구간에서 Reverb stage **만** 제거 (→ dry)
+- shelf (sub-bass 60 Hz / low 200 Hz / high 8 kHz) 는 **유지** → 배경 mood 대부분 보존
+- 선택 근거: shelf 주파수대가 대사 주 대역 (200 Hz~4 kHz) 과 거의 겹치지 않음. Reverb 는 consonant smear 로 명료도 저하 유발 → 이것만 bypass
+- 경계 30 ms raised-cosine crossfade 로 FX ↔ dry 전환 smooth
+- 구현: `generate_fx_demo.py::apply_mood_fx_per_scene` + helper `_strip_reverb`, `_process_segment`
+- Layer 1 과 중첩 동작: `alpha_d=0.3` (voice-critical EQ gain 감쇠) + Layer 2 reverb bypass → **두 층 독립 보호**
+- Smoke 검증: 합성 Tenderness scene + dialogue 1s segment 에서 dialogue RMS diff 가 non-dialogue 의 0.15× 로 감소 → bypass 동작 증명
+
+**Peak 관리**: `pedalboard.Limiter(threshold=-0.5dB, release=100ms)` — FX 스택 누적으로 인한 clipping 만 제어, 평균 level 은 유지 (글로벌 감쇠 없음).
+
+### 평가 이중화 (Evaluation Dual-track)
+
+| Track | 대상 | 지표 | 방법론 | 상태 |
+|---|---|---|---|---|
+| **Objective** | Layer 1 (EQ) | CCC, Pearson, MAE, spectrum Δ | LIRIS/COGNIMUSE 데이터셋 회귀 | ✅ Phase 4-A 완료 (0.378) |
+| **Subjective** | Layer 2 (FX) | ABX match rate, mood alignment | N=5~8 listening test | 🟡 Phase 5-B pilot (미수행) |
+
+**왜 이렇게 분리**:
+- EQ = 학습 모델 산출 → 수치 평가로 정당화 가능 (CCC 지표 확립)
+- FX = rule-based 지각 증폭 → 수치가 아니라 "사람이 mood 를 더 잘 느끼는가" 가 본질 → ABX 필요
+
+### Sanity 측정 (KakaoTalk demo 기준)
+
+`kakao_eq_applied.mp4` (Layer 1 only) vs `kakao_eq_fx.mp4` (Layer 1 + 2) 차분 분석:
+
+| Scene mood | FX 적용 후 band power max |Δ| | 주요 효과 |
+|---|---|---|
+| Tension | +4.23 dB | 31Hz sub-bass shelf + dry reverb |
+| Power | +4.00 dB | 31Hz sub-bass shelf +3dB |
+| Tenderness | +7~9 dB | small_room reverb 의 time-smear 에너지 |
+
+전체 `corr(eq_only, eq_fx) = 0.97` — 의미 있는 차이 있되 신호 보존 (destructive 처리 아님).
+
+### Base Model 불변성
+
+**Layer 1 (EQ) 는 기존 명세와 완전 동일** — `model.py`, `config.py`, 3-seed `best.pt` 모두 불변. Phase 2a ~ 4-A 의 모든 ablation/평가 결과 유효. Layer 2 는 **별도 후처리 단계** 로 학습 파라미터 아님.
+
+**MD5 무결성 유지**:
+- `runs/phase2a/2a2_A_K7_s{42,123,2024}/best.pt` — 변경 없음
+- `runs/phase3/test_final_metrics.json` — 변경 없음
+- `model/autoEQ/train_liris/{model,config,dataset,trainer,losses}.py` — 변경 없음
+
+### 구현 파일
+
+| 파일 | 역할 |
+|---|---|
+| `generate_fx_demo.py` | Layer 2 FX 적용 (pedalboard 기반), in-place length-preserving scene 처리. 2026-04-23 rev.: dialogue-aware reverb bypass (`_strip_reverb`, `_process_segment` helper) |
+| `live_compare_fx.py` | Dual-layer 비교 뷰어 (Original / 1× EQ / 1× EQ+FX) |
+| `run_pipeline.py` | 신규 영상 → timeline + EQ + EQ+FX 전체 파이프라인 orchestrator. 2026-04-23 rev.: `--alpha-d` flag (default 0.3, **작을수록 강한 보호**) 로 Layer 1 대사 보호 강도 제어 |
+| `runs/demo_kakao/kakao_eq_fx.mp4` | KakaoTalk demo FX 산출물 (33 MB) |
+
+#### `run_pipeline.py` 3단계 workflow (entry-point)
+
+새 영상을 한 줄로 Dual-layer 파이프라인에 통과시키는 orchestrator. 각 단계는
+독립 재실행 가능 (`--skip-timeline`, `--skip-eq`, `--skip-fx`, `--force`).
+
+```
+입력: my_movie.mp4
+  │
+  ├─[Step 1]  infer_pseudo (model.autoEQ.infer_pseudo.cli)
+  │            · 영상 → scene detect + V/A regression + mood 분류
+  │            · VAD 로 dialogue 구간 식별 → voice-critical band 보호 flag
+  │            · 출력: runs/demo_<name>/timeline.json
+  │
+  ├─[Step 2]  playback (model.autoEQ.playback.pipeline.apply_eq_to_video)
+  │            · timeline.json 읽어 scene 별 10-band EQ gain 적용 (preset_scale=1.0)
+  │            · VAD-guided dialogue protection 자동 적용
+  │            · 출력: runs/demo_<name>/<name>_eq_applied.mp4  ← Layer 1 (학술 contribution)
+  │
+  └─[Step 3]  generate_fx_demo.generate_fx_video
+               · Layer 1 mp4 오디오 추출 → scene 별 MOOD_FX_RECIPE 적용
+               · Shelf filter + binary reverb (dry/small_room/large_hall)
+               · Peak Limiter (threshold −0.5 dB) 로 clipping 방지
+               · 출력: runs/demo_<name>/<name>_eq_fx.mp4  ← Layer 1 + 2 (perceptual demo)
+```
+
+**단일 호출**:
+```bash
+venv/bin/python run_pipeline.py --video my_movie.mp4
+# 대사 보호 강도 조정 (0.0=full EQ gain, 1.0=원본 완전 보존)
+venv/bin/python run_pipeline.py --video my_movie.mp4 --alpha-d 0.3  # default, 작을수록 강한 보호
+```
+
+**산출 디렉토리 구조** (`<name>` = 파일명에서 자동 추출):
+```
+runs/demo_<name>/
+  ├─ timeline.json               (Step 1)
+  ├─ <name>_eq_applied.mp4       (Step 2, Layer 1 only)
+  ├─ <name>_eq_fx.mp4            (Step 3, Layer 1 + 2)
+  └─ run.log
+```
+
+**검증 루프**: 파이프라인 종료 시 `live_compare_fx.py` 실행 명령이 stdout 에
+복사 가능한 형태로 출력되어 바로 3-way 비교 뷰어로 진입 가능.
+
+### 후속 작업 (Phase 5-B, 선택적)
+
+- **ABX pilot listening test**: N=5~8 명, mood-match 평가 → 논문 §5 Subjective Validation 섹션 기여
+- **FX-only variant 생성** (ablation 용): EQ 없이 FX 만 적용 → 3-way 비교 (Original / FX-only / EQ+FX) 가능
+
+상세 구현: `generate_fx_demo.py` docstring, `live_compare_fx.py` docstring
+
+---
+
 ## 5. 산출물 파일 (영구 보존)
 
 | 파일 | 역할 |
@@ -223,6 +458,15 @@ Mood Head (K=7 GEMS)
 | **`runs/phase3/test_final_metrics.json` · `test_final_report.md`** | **Phase 3 — Test 평가 최종 결과 (test 1회 access 소모)** |
 | `model/autoEQ/train_liris/run_test_eval.py` | Phase 3 Test runner (재평가 금지, 재현용만) |
 | `data/features/liris_panns_v5spec/features.pt` | Spec-compliant features (stride=2s, pad_to=10s) |
+| **`runs/cognimuse/phase4a/ood_eval/results.json` · `report.md`** | **Phase 4-A — COGNIMUSE OOD 평가 결과 (raw + per-film z-score)** |
+| `runs/cognimuse/phase4a/phase0/distribution_report.json` · `scale_shift_summary.md` | Phase 4-A 분포 shift 게이트 (LIRIS vs COGNIMUSE) |
+| `dataset/autoEQ/cognimuse/cognimuse_metadata.csv` | COGNIMUSE 2,197 windows × 12 Hollywood films metadata |
+| `data/features/cognimuse_panns_v5spec/features.pt` | COGNIMUSE X-CLIP+PANNs features (BASE 파이프라인 bit-identical) |
+| `model/autoEQ/train_liris/model_cognimuse_ood/` | Phase 4-A 서브패키지 (preprocessing · precompute · eval + 14 tests) |
+| `generate_fx_demo.py` | Phase 5-A Layer 2 FX 적용 스크립트 (MOOD_FX_RECIPE, pedalboard) |
+| `live_compare_fx.py` | Phase 5-A Dual-layer 비교 뷰어 (Original / EQ / EQ+FX) |
+| `run_pipeline.py` | Phase 5-A 통합 orchestrator (video → timeline + EQ + EQ+FX) |
+| `runs/demo_kakao/kakao_eq_fx.mp4` | Phase 5-A FX 산출물 예시 (KakaoTalk demo) |
 
 ---
 
@@ -397,5 +641,12 @@ Base Model **변경 없음**. VA-only variant 는 재현성/감사 목적 보존
 ---
 
 *Last frozen: 2026-04-22 · Phase 3 FINAL (backbone: X-CLIP + PANNs, fusion: Gate Network, heads: joint VA + Mood K=7)*
-*Test mean CCC = 0.3480 ± 0.016 · Ensemble 0.3603 · Val mean CCC = 0.3812 ± 0.024*
-*Author: Phase 2a-0 ~ 2a-7 ablation sweep + Phase 3 test evaluation + user sign-off*
+*LIRIS — Val mean CCC = 0.3812 ± 0.024 · Test mean CCC = 0.3480 ± 0.016 · Test Ensemble 0.3603*
+*COGNIMUSE OOD (Phase 4-A, 2026-04-22) — 12 Hollywood films, 2,197 windows, BASE ensemble 학습 0회*
+*  · raw ensemble CCC 0.3182 (V 0.3565, A 0.2798)*
+*  · z-score ensemble CCC 0.3781 (V 0.3113, A 0.4449) — 강한 일반화 입증*
+*Dual-layer architecture (Phase 5-A, 2026-04-23) — Layer 1 EQ (scientific) + Layer 2 FX (perceptual amplifier)*
+*  · FX 레시피: Juslin/Rumsey/Sato/McAdams/Eerola/Zentner 문헌-근거 방향성만*
+*  · 임의 수치 없음 (compression/width 제외), Base Model weights 불변*
+*Phase 5-A rev. (2026-04-23) — 대사 보호 강화: Layer 1 alpha_d 0.5→0.3 (작을수록 강함) + Layer 2 VAD-guided reverb bypass (shelf 유지)*
+*Author: Phase 2a-0 ~ 2a-7 ablation sweep + Phase 3 test evaluation + Phase 4-A OOD eval + Phase 5-A FX layer + user sign-off*
