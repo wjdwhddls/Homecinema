@@ -34,7 +34,8 @@ export interface CapturedRoom {
   openings: CapturedSurface[];
   objects: CapturedObject[];
   scannedAt: string;
-  meshBinUri?: string;  // ← 추가: LiDAR mesh.bin 파일 경로 (없으면 fallback)
+  meshBinUri?: string;  // ← LiDAR mesh.bin 파일 경로 (없으면 fallback)
+  usdzUri?: string;     // ← RoomPlan USDZ 파일 경로 (3D 미리보기용)
 }
 
 interface RoomScannerNative {

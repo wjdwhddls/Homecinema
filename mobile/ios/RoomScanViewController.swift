@@ -5,7 +5,7 @@ import ARKit
 @available(iOS 16.0, *)
 class RoomScanViewController: UIViewController, RoomCaptureViewDelegate, RoomCaptureSessionDelegate, ARSessionDelegate {
 
-  var onComplete: ((CapturedRoom, Data?) -> Void)?  // mesh.bin Data 추가
+  var onComplete: ((CapturedRoom, Data?, URL?) -> Void)?  // (capturedRoom, mesh.bin Data, usdz URL)
   var onCancel: (() -> Void)?
   var onError: ((Error) -> Void)?
 
@@ -219,8 +219,23 @@ class RoomScanViewController: UIViewController, RoomCaptureViewDelegate, RoomCap
     // mesh.bin 생성
     let meshData = buildMeshBin()
 
+    // USDZ export (3D 미리보기용)
+    // SceneKit과 좌표계 동일 (Y-up). Apple RoomPlan 공식 렌더.
+    let usdzURL: URL? = {
+      let url = FileManager.default.temporaryDirectory
+        .appendingPathComponent("room_\(Int(Date().timeIntervalSince1970)).usdz")
+      do {
+        try processedResult.export(to: url)
+        print("USDZ 저장 완료: \(url.path)")
+        return url
+      } catch {
+        print("USDZ 저장 실패: \(error)")
+        return nil
+      }
+    }()
+
     dismiss(animated: true) { [weak self] in
-      self?.onComplete?(processedResult, meshData)
+      self?.onComplete?(processedResult, meshData, usdzURL)
     }
   }
 }

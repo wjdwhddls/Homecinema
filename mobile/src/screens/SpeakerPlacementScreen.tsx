@@ -30,6 +30,7 @@ import {
   categoryLabelKR,
 } from '../native/RoomScanner';
 import {recordSweep, getSweepUri} from '../native/SweepRecorder';
+import {showRoomPreview, PREVIEW_COLORS} from '../native/RoomPreview';
 import {
   getInitialSpeakerPosition,
   startXRirOptimization,
@@ -300,6 +301,30 @@ export default function SpeakerPlacementScreen() {
                 resizeMode="contain"
               />
             )}
+            {room?.usdzUri && (
+              <TouchableOpacity
+                style={styles.preview3dBtn}
+                onPress={async () => {
+                  try {
+                    await showRoomPreview({
+                      usdzUri: room.usdzUri!,
+                      listener: initialPos.listener_position,
+                      speakers: [
+                        {
+                          label: '임시 스피커',
+                          color: PREVIEW_COLORS.initial,
+                          ...initialPos.initial_speaker_position,
+                        },
+                      ],
+                    });
+                  } catch (err: any) {
+                    Alert.alert('3D 미리보기 실패', err?.message || '알 수 없는 오류');
+                  }
+                }}
+                activeOpacity={0.8}>
+                <Text style={styles.preview3dBtnText}>🏠 3D로 자세히 보기</Text>
+              </TouchableOpacity>
+            )}
             <View style={styles.posCard}>
               <Text style={styles.cardTitle}>임시 스피커 위치</Text>
               <Text style={styles.posDesc}>
@@ -428,4 +453,6 @@ const styles = StyleSheet.create({
   warnIcon:        {fontSize: 48, marginBottom: 16},
   warnTitle:       {fontSize: 18, fontWeight: 'bold', color: '#b45309', marginBottom: 12},
   warnDesc:        {fontSize: 15, color: '#374151', textAlign: 'center', lineHeight: 22},
+  preview3dBtn:    {backgroundColor: '#1f2937', paddingVertical: 12, borderRadius: 10, alignItems: 'center', marginBottom: 16},
+  preview3dBtnText:{color: '#fff', fontSize: 15, fontWeight: '600'},
 });

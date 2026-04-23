@@ -47,8 +47,8 @@ class RoomScanner: RCTEventEmitter {
       let scanVC = RoomScanViewController()
       scanVC.modalPresentationStyle = .fullScreen
 
-      // onComplete: CapturedRoom + mesh.bin Data 받음
-      scanVC.onComplete = { [weak self] capturedRoom, meshData in
+      // onComplete: CapturedRoom + mesh.bin Data + usdz URL 받음
+      scanVC.onComplete = { [weak self] capturedRoom, meshData, usdzURL in
         guard let self = self else { return }
 
         if capturedRoom.walls.count < 3 {
@@ -78,12 +78,18 @@ class RoomScanner: RCTEventEmitter {
           print("mesh.bin 없음 (ARMeshAnchor 수집 실패 또는 미지원 기기)")
         }
 
+        // USDZ URI (3D 미리보기용, SceneKit에서 로드)
+        if let usdzURL = usdzURL {
+          json["usdzUri"] = usdzURL.absoluteString
+        }
+
         print("========== ROOM SCAN RESULT ==========")
         print("Walls: \(capturedRoom.walls.count)")
         print("Doors: \(capturedRoom.doors.count)")
         print("Windows: \(capturedRoom.windows.count)")
         print("Objects: \(capturedRoom.objects.count)")
         print("meshBinUri: \(json["meshBinUri"] ?? "없음")")
+        print("usdzUri: \(json["usdzUri"] ?? "없음")")
         print("======================================")
 
         resolve(json)
