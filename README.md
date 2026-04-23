@@ -1,57 +1,52 @@
-포빅아 ai 프로젝트
+# 🍿 POFLIX: AI 기반 홈 시네마 음향 자동 최적화 시스템
+> **Scene-Aware Smart Audio Optimization** > 당신의 거실을 완벽한 영화관으로. 공간의 구조와 영상의 감정을 AI가 동시에 분석하여 최적의 홈 시네마 음향을 자동으로 세팅해 주는 시스템입니다.
+
+## 📌 Project Background & Necessity
+* **공간이 만드는 음향 한계:** 한국형 LDK(Living-Dining-Kitchen) 구조는 비대칭 음향 환경을 초래하며, 벽과 가구 반사로 인한 음질 왜곡(Booming)이 발생합니다.
+* **콘텐츠 시청 환경의 변화:** OTT의 확대로 집이 주요 시청 공간이 되었으나, 과도한 배경음과 효과음으로 인해 대사 전달력이 저하되어 **사용자의 85%가 자막에 의존**하고 있습니다.
+* **기존 솔루션의 한계:** Sonos, Apple HomePod 등 기존 기기들은 1회성 공간 측정(정적 EQ)에 그치며, 영상의 상황(액션, 대화 등)에 맞춘 실시간 동적 제어는 불가능합니다.
+
+## ✨ Key Features & Architecture
+본 프로젝트는 크게 **[기술 1] 공간 인식**과 **[기술 2] 콘텐츠 인식**의 투 트랙(Two-Track)으로 작동합니다.
+
+### 1. 기술 1: 공간 인식 기반 음향 최적화 (Spatial Audio Optimization)
+휴대폰 센서와 1회의 스윕(Sweep) 음원 재생만으로 방의 음향 지문을 파악하고 최적의 스피커 배치를 추천합니다.
+* **공간 및 음향 데이터 수집:** 스마트폰 LiDAR/RoomPlan으로 3D 지도를 생성하고, 테스트 음원(Sweep)을 녹음.
+* **멀티모달 음향 예측 (xRIR):** * 공간을 보는 눈 (ViT): 방의 형태와 구조 파악
+  * 소리를 듣는 귀 (ResNet-18): 울림의 패턴과 잔향 분석
+  * Cross-Attention 융합을 통해 1024차원의 공간 음향 지문(xRIR) 예측.
+* **최적 배치 가이드 & 자동 보정:** 물리적으로 음향이 가장 훌륭한 5곳의 좌표를 추천하고, 배치 후 최종 Inverse EQ를 계산하여 공간 보정을 마무리합니다.
+
+### 2. 기술 2: 콘텐츠 인식 기반 자동 EQ (Content-Aware Dynamic EQ)
+영상 장면의 분위기와 대사를 분석하여 실시간으로 사운드를 믹싱합니다.
+* **실시간 감정(Mood) 분석:** X-CLIP과 PANNs 모델을 활용하여 영상의 시각/청각적 특징을 추출하고, Valence-Arousal(V/A) 회귀 모델을 통해 감정 상태를 분석합니다.
+* **동적 EQ 및 대사 보호 (Ducking):** 폭발음 등 배경음이 커지는 긴박한 씬에서도 대사 명료도를 잃지 않도록, 객체 분리 기반의 동적 10-band EQ 제어를 수행합니다.
+
+## 🗂 Dataset Processing
+연구실 환경이 아닌 실제 상용 홈 시네마 환경에 맞추기 위해, 글로벌 논문의 데이터셋을 도메인에 맞게 전면 재가공했습니다.
+
+### 1. 공간 음향 데이터셋 (AcousticRooms Refinement)
+* 원본 논문(*Hearing Anywhere in Any Environment, CVPR 2025*)의 260개 공간, 30만 개 RIR 데이터를 필터링.
+* **타겟 도메인 최적화:** 화장실, 대강당 등을 제외하고 **아파트, 거실, 침실, 청음실, 회의실 등 5개 카테고리의 174개 공간, 19만+ 고음질 RIR** 데이터로 압축.
+* 실제 주거 공간의 가구 재질과 저음역대 부밍(Booming) 현상을 반영한 High-Fidelity 시뮬레이션 적용.
+
+### 2. 감정 분석 데이터셋 (LIRIS-ACCEDE)
+* 총 160편의 영화, 9,800개 클립을 기반으로 한 V/A(Valence-Arousal) 모델 학습.
+* 4초 길이의 윈도우 슬라이딩(Stride 2초) 기법을 적용하여 입력 형식을 표준화하고 샘플 수를 확장.
+* **OOD(Out-of-Distribution) 평가:** COGNIMUSE 데이터셋(200개 클립)을 활용하여, 학습에 쓰이지 않은 새로운 영화에 대한 일반화 성능 검증 완료.
+
+## 📐 Evaluation Metrics
+CineSpace 시스템의 신뢰성을 증명하기 위해 다음과 같은 평가 지표를 활용합니다.
+
+| 분류 | 적용 기술 | 평가지표 (Metrics) | 검증 목적 |
+| :--- | :--- | :--- | :--- |
+| **UX 지표** | 기술 1 | **Distance Error (m)** | 시뮬레이션상 최적 명당 좌표(GT)와 AI 추천 위치 간의 물리적 거리 오차 검증 |
+| **AI 코어** | 기술 1 | **RT60, C80, DRR MAE** | 공간의 잔향 시간, 명료도 등 물리적 음향 법칙에 대한 모델의 예측 오차율 측정 (Pyroomacoustics 시뮬레이션 GT 대비) |
+| **상용화** | 기술 1 | **Inference Speed (ms)** | 모바일 환경 적용을 위한 Backbone 모델 경량화 및 추론 속도 측정 |
+| **음향 표준**| 기술 2 | **STOI, SI-SDR, LSD** | 대사 명료도, 음원 왜곡률, 음색 변화 등 오디오 믹싱 후의 객관적 음질 향상 검증 |
+| **자체 검증**| 기술 2 | **MRI, DPR** | Ducking 속도 및 부드러움, 배경음 대비 대사 볼륨 유지력 등 맞춤형 기술 검증 |
+| **주관 평가**| 기술 2 | **MUSHRA Test** | 국제 표준 블라인드 테스트를 통한 실제 사람 귀(14명 대상)의 청취 선호도 및 통계적 유의성 입증 |
+
 
 ---
-
-## Windows 환경 주의사항
-
-Windows에서 개발/실행할 때 아래 4가지를 꼭 지켜주세요. 한글 경로 + OneDrive 조합에서는 일부 ML 라이브러리가 **침묵 속에 실패**할 수 있어 디버깅이 까다롭습니다.
-
-### 1. 프로젝트는 영문 경로 + OneDrive 바깥에 두기
-
-- **권장**: `C:\dev\mood-eq` 처럼 한글·공백이 없고 **OneDrive 동기화 폴더 바깥**에 있는 짧은 경로
-- **피할 것**: `C:\Users\<이름>\OneDrive\바탕 화면\...` 같은 한글 포함 경로, 특히 OneDrive 동기화 폴더
-- **이유**: Silero VAD(`torch.jit.load`) 등 일부 PyTorch C++ 런타임이 내부적으로 Windows ANSI(cp949) 기반 `fopen`을 호출합니다. UTF-8로 표현된 한글 경로를 디코딩하지 못해 다음과 같이 실패합니다.
-  ```
-  RuntimeError: open file failed because of errno 42 on fopen:
-  Illegal byte sequence, file path: C:\...\바탕 화면\...\silero_vad.jit
-  ```
-- **OneDrive 우회 불가**: `GetShortPathNameW`로 얻은 8.3 short path조차 OneDrive 하위 폴더에서는 한글이 유지되는 경우가 많아 우회가 어렵습니다. 아예 영문 경로로 이동하는 것이 깔끔합니다.
-
-### 2. Python 실행 전 UTF-8 환경변수 설정
-
-Python / pip / 워커 / 백엔드 명령 앞에 다음 두 줄을 매번 export 하세요 (Git Bash 기준).
-
-```bash
-export PYTHONIOENCODING=utf-8
-export PYTHONUTF8=1
-```
-
-- `PYTHONIOENCODING=utf-8` — stdout/stderr 한글 출력 시 `UnicodeEncodeError: 'cp949' codec can't encode ...` 방지
-- `PYTHONUTF8=1` — subprocess(`ffprobe` 등) 호출의 기본 디코딩을 UTF-8로 강제. 설정하지 않으면 자식 프로세스의 UTF-8 출력을 cp949로 디코딩하려다 실패해 `result.stdout`이 `None`이 되고 `json.loads(None) → TypeError`로 이어집니다.
-
-### 3. 백엔드는 `uvicorn` 직접 호출로 실행
-
-`backend/main.py`의 `if __name__ == "__main__":` 블록은 `uvicorn.run(..., reload=True)`를 사용하는데, Windows에서는 WatchFiles가 재시작을 반복하며 서버가 즉시 종료되는 현상이 확인되었습니다. 대신 `uvicorn`을 직접 호출하세요.
-
-```bash
-cd backend
-source .venv/Scripts/activate
-export PYTHONIOENCODING=utf-8
-export PYTHONUTF8=1
-uvicorn main:app --host 0.0.0.0 --port 8000
-```
-
-코드 변경 시에는 수동으로 `Ctrl+C` → 재실행합니다. `--reload`가 필요한 경우에는 별도 환경(WSL2/Linux)에서 돌리는 편이 안정적입니다.
-
-### 4. 권장 셸: Git Bash
-
-이 문서와 워커 가이드의 명령 예시는 **Git Bash** 기준입니다. PowerShell이나 cmd에서도 동작은 가능하지만 환경변수 설정·경로 구분자·활성화 스크립트 문법이 달라서 매번 변환이 필요합니다.
-
-| 작업 | Git Bash | PowerShell | cmd |
-|---|---|---|---|
-| venv 활성화 | `source venv/Scripts/activate` | `venv\Scripts\Activate.ps1` | `venv\Scripts\activate.bat` |
-| 환경변수 | `export VAR=value` | `$env:VAR = "value"` | `set VAR=value` |
-| 현재 디렉토리 참조 | `$(pwd)` | `$PWD` | `%cd%` |
-| 파일 다운로드 | `curl -L -o file URL` | `Invoke-WebRequest -OutFile file URL` | `curl.exe -L -o file URL` |
-
-Git Bash를 쓰면 README의 명령을 복붙해도 그대로 동작합니다. 특히 `export VAR=value && ...` 같은 체인과 `$(pwd)` 치환이 Unix 방식이라 편합니다.
+*Developed by POSCO AIㆍBigData Academy 32nd C4 @ 2026*
