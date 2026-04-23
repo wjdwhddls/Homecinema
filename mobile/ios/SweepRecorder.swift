@@ -65,11 +65,32 @@ class SweepRecorder: NSObject {
     let format    = sweepFile.processingFormat
 
     // ── 2. AVAudioSession 설정 (재생 + 녹음) ─────────────────────
+    // .measurement 모드는 내장 하드웨어를 강제해 블루투스 라우팅을 차단한다.
+    // .allowBluetooth(HFP)는 녹음 활성화 시 HFP로 폴백돼 대부분의 BT 스피커에서 무음이 된다.
+    // A2DP 단독으로 두어 홈시어터 경로(BT 스피커 출력 + 핸드폰 내장 마이크)를 측정한다.
     let session = AVAudioSession.sharedInstance()
     try session.setCategory(.playAndRecord,
-                            mode: .measurement,
-                            options: [.defaultToSpeaker, .allowBluetooth])
+                            mode: .default,
+                            options: [.allowBluetoothA2DP])
     try session.setActive(true)
+
+    // 실제 라우팅 확인 로그
+    for output in session.currentRoute.outputs {
+      print("SweepRecorder: active output = \(output.portType.rawValue) (\(output.portName))")
+    }
+
+    // 블루투스 A2DP 미연결 시 측정 중단 (내장 스피커 → 내장 마이크는 무의미한 측정)
+    let hasBluetoothOutput = session.currentRoute.outputs.contains {
+      $0.portType == .bluetoothA2DP
+    }
+    if !hasBluetoothOutput {
+      try? session.setActive(false)
+      throw NSError(
+        domain: "SweepRecorder", code: 3,
+        userInfo: [NSLocalizedDescriptionKey:
+          "블루투스 스피커가 연결되어 있지 않습니다. 홈시어터 측정을 위해 블루투스 스피커를 먼저 연결하세요."]
+      )
+    }
 
     // ── 3. 출력 파일 준비 ─────────────────────────────────────────
     let tmpDir    = FileManager.default.temporaryDirectory
