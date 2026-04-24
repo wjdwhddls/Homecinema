@@ -9,9 +9,6 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
-import matplotlib.font_manager as fm
-
-plt.rcParams['font.family'] = 'NanumGothic'
 
 def generate_topview(
     roomplan_json: dict,
@@ -63,7 +60,7 @@ def generate_topview(
     lx = float(listener_pos["x"])
     lz = float(listener_pos["z"])
     ax.plot(lx, lz, 'o', color='#00d4ff', markersize=12, zorder=5)
-    ax.annotate('청취자', (lx, lz), textcoords="offset points",
+    ax.annotate('Listener', (lx, lz), textcoords="offset points",
                 xytext=(8, 8), color='#00d4ff', fontsize=8)
 
     # ── 임시 스피커
@@ -71,7 +68,7 @@ def generate_topview(
         sp = speaker_positions["initial"]
         sx, sz = float(sp["x"]), float(sp["z"])
         ax.plot(sx, sz, 's', color='#ffd700', markersize=12, zorder=5)
-        ax.annotate('임시 스피커', (sx, sz), textcoords="offset points",
+        ax.annotate('Placeholder', (sx, sz), textcoords="offset points",
                     xytext=(8, 8), color='#ffd700', fontsize=8)
         ax.plot([lx, sx], [lz, sz], '--', color='#ffd700', alpha=0.5, linewidth=1)
         dist = np.sqrt((sx - lx)**2 + (sz - lz)**2)
@@ -84,7 +81,7 @@ def generate_topview(
             sp = speaker_positions[key]
             sx, sz = float(sp["x"]), float(sp["z"])
             ax.plot(sx, sz, 's', color=color, markersize=12, zorder=5)
-            ax.annotate(f'스피커 {label}', (sx, sz), textcoords="offset points",
+            ax.annotate(f'Speaker {label}', (sx, sz), textcoords="offset points",
                         xytext=(8, 8), color=color, fontsize=8)
             ax.plot([lx, sx], [lz, sz], '--', color=color, alpha=0.5, linewidth=1)
             dist = np.sqrt((sx - lx)**2 + (sz - lz)**2)
