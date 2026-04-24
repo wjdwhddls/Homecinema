@@ -9,15 +9,21 @@ from .config import TrainConfig
 
 # --- V/A -> 7 Mood category mapping (Zentner GEMS + Eerola) ---
 
+# 2026-04-24 FINAL-A calibration (post-hoc centroid re-placement).
+# Fit: TRAIN-fit empirical prototypes from LIRIS train (4315 clips, 64 films,
+# 3-seed ensemble predictions). Sadness/Tenderness use 0.5·ORIG + 0.5·EMP to
+# retain recall; JoyfulActivation keeps ORIG (0 GT samples in LIRIS learning
+# set). See BASE_MODEL.md "Centroid Calibration (2026-04-24)" for full
+# derivation and the original values (needed to revert).
 MOOD_CENTERS = torch.tensor(
     [
-        [-0.6, +0.7],  # 0: Tension
-        [-0.6, -0.4],  # 1: Sadness
-        [+0.5, -0.5],  # 2: Peacefulness
-        [+0.7, +0.6],  # 3: Joyful Activation
-        [+0.4, -0.2],  # 4: Tenderness
-        [+0.2, +0.8],  # 5: Power
-        [+0.5, +0.3],  # 6: Wonder
+        [-0.3730, +0.1004],  # 0: Tension          (empirical)
+        [-0.4223, -0.3225],  # 1: Sadness          (0.5·ORIG + 0.5·EMP)
+        [+0.0376, -0.4225],  # 2: Peacefulness     (empirical)
+        [+0.7000, +0.6000],  # 3: JoyfulActivation (ORIG — no GT data)
+        [+0.1813, -0.2091],  # 4: Tenderness       (0.5·ORIG + 0.5·EMP)
+        [-0.1073, +0.0906],  # 5: Power            (empirical)
+        [-0.0135, -0.0855],  # 6: Wonder           (empirical)
     ],
     dtype=torch.float32,
 )
