@@ -12,14 +12,18 @@ def _va(idx: int, v: float, a: float) -> SceneVA:
 
 
 def test_build_scene_eq_assigns_mood_from_va():
+    # 2026-04-24 FINAL-A centroid calibration: (0.5, -0.5) now maps to
+    # Tenderness (new Tenderness centroid (+0.18, -0.21)) instead of
+    # Peacefulness (new Peacefulness centroid (+0.04, -0.42)).
+    # To revert MOOD_CENTERS to ORIG: expected[2] → "Peacefulness".
     scene_va = [
-        _va(0, 0.7, 0.6),   # → JoyfulActivation
-        _va(1, -0.6, 0.7),  # → Tension
-        _va(2, 0.5, -0.5),  # → Peacefulness
+        _va(0, 0.7, 0.6),   # → JoyfulActivation (JA centroid kept at ORIG)
+        _va(1, -0.6, 0.7),  # → Tension (still nearest Tension even post-calibration)
+        _va(2, 0.5, -0.5),  # → Tenderness (was Peacefulness pre-calibration)
     ]
     densities = {0: 0.0, 1: 0.5, 2: 0.2}
     out = build_scene_eq_list(scene_va, densities, alpha_d=0.5)
-    assert [s.mood for s in out] == ["JoyfulActivation", "Tension", "Peacefulness"]
+    assert [s.mood for s in out] == ["JoyfulActivation", "Tension", "Tenderness"]
 
 
 def test_build_scene_eq_respects_density():
