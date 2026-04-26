@@ -142,12 +142,13 @@ def generate_stereo_candidates(
 
     for d in distances:
         base_point = wall_point - forward * d
+        listener_to_base = np.linalg.norm(base_point - listener_xy)
 
         for angle_deg in angles_deg:
             half_rad = np.radians(angle_deg / 2)
 
             perp = np.array([-forward[1], forward[0]])
-            spread = d * np.tan(half_rad)
+            spread = listener_to_base * np.tan(half_rad)
             pos_L = base_point + perp * spread
             pos_R = base_point - perp * spread
 
@@ -261,10 +262,12 @@ def _generate_stereo_candidates_custom(
     
     for d in distances:
         base_point = wall_point - forward * d
+        listener_to_base = np.linalg.norm(base_point - listener_xy)
+        
         for angle_deg in angles_deg:
             half_rad = np.radians(angle_deg / 2)
             perp = np.array([-forward[1], forward[0]])
-            spread = d * np.tan(half_rad)
+            spread = listener_to_base * np.tan(half_rad)
             pos_L = base_point + perp * spread
             pos_R = base_point - perp * spread
             

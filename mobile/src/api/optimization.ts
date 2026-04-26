@@ -30,13 +30,14 @@ export interface StereoPlacements {
   listener: SpeakerPosition;
 }
 
+
 export interface AcousticMetrics {
-  rt60_seconds: number;
-  c80_db: number;
-  drr_db: number;
-  rt60_score: number;
-  c80_score: number;
-  drr_score: number;
+    edt_seconds: number;
+    c50_db: number;
+    t60_seconds: number;
+    edt_score: number;
+    c50_score: number;
+    t60_score: number;
 }
 
 export interface OptimalResult {
