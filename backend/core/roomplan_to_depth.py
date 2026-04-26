@@ -144,42 +144,64 @@ def ray_triangle_intersect(ray_origin, ray_dir, v0, v1, v2, eps=1e-7):
 
 # ── Ray casting → depth map ──────────────────────────────────────
 
-def render_depth_map(triangles, listener_pos, img_h=256, img_w=512, max_dist=20.0):
-    depth_map = np.full((img_h, img_w), max_dist, dtype=np.float32)
-
-    phi_vals   = (np.arange(img_h) + 0.5) * np.pi / img_h - np.pi / 2
+def render_depth_map_fast(triangles, listener_pos, img_h=256, img_w=512, max_dist=20.0):
+    """벡터화된 ray casting"""
+    # 모든 ray 방향을 한 번에 생성
+    phi_vals = (np.arange(img_h) + 0.5) * np.pi / img_h - np.pi / 2
     theta_vals = (np.arange(img_w) + 0.5) * 2.0 * np.pi / img_w - np.pi
-
+    phi_grid, theta_grid = np.meshgrid(phi_vals, theta_vals, indexing='ij')
+    
+    cos_phi = np.cos(phi_grid)
+    ray_dirs = np.stack([
+        cos_phi * np.cos(theta_grid),
+        cos_phi * np.sin(theta_grid),
+        -np.sin(phi_grid)
+    ], axis=-1).reshape(-1, 3)  # (H*W, 3)
+    
     origin = np.array(listener_pos, dtype=np.float64)
-
-    print(f"Ray casting 시작... ({img_h}x{img_w} = {img_h*img_w:,}개 픽셀)")
-
-    for pi, phi in enumerate(phi_vals):
-        if (pi + 1) % 32 == 0:
-            print(f"  {pi+1}/{img_h} 행 완료...")
-
-        cos_phi = np.cos(phi)
-        sin_phi = np.sin(phi)
-
-        for ti, theta in enumerate(theta_vals):
-            ray_dir = np.array([
-                cos_phi * np.cos(theta),
-                cos_phi * np.sin(theta),
-                -sin_phi
-            ], dtype=np.float64)
-
-            min_dist = max_dist
-            for (v0, v1, v2) in triangles:
-                t = ray_triangle_intersect(origin, ray_dir,
-                                           v0.astype(np.float64),
-                                           v1.astype(np.float64),
-                                           v2.astype(np.float64))
-                if t is not None and t < min_dist:
-                    min_dist = t
-
-            depth_map[pi, ti] = min_dist
-
-    return depth_map
+    
+    # 모든 삼각형을 numpy 배열로
+    v0s = np.array([t[0] for t in triangles], dtype=np.float64)  # (N, 3)
+    v1s = np.array([t[1] for t in triangles], dtype=np.float64)
+    v2s = np.array([t[2] for t in triangles], dtype=np.float64)
+    
+    edge1 = v1s - v0s  # (N, 3)
+    edge2 = v2s - v0s
+    
+    depth_map = np.full(img_h * img_w, max_dist, dtype=np.float32)
+    
+    print(f"벡터화 ray casting 시작... ({len(ray_dirs):,}개 ray × {len(triangles)}개 삼각형)")
+    
+    # 각 삼각형에 대해 모든 ray와 한 번에 계산
+    for i in range(len(triangles)):
+        e1 = edge1[i]  # (3,)
+        e2 = edge2[i]
+        v0 = v0s[i]
+        
+        h = np.cross(ray_dirs, e2)  # (H*W, 3)
+        a = np.einsum('ij,j->i', h, e1)  # (H*W,)
+        
+        valid = np.abs(a) > 1e-7
+        f = np.where(valid, 1.0 / np.where(valid, a, 1.0), 0.0)
+        
+        s = origin - v0  # (3,)
+        u = f * np.einsum('ij,j->i', h, s)
+        
+        valid &= (u >= 0.0) & (u <= 1.0)
+        
+        q = np.cross(s, e1)  # (3,)
+        v = f * np.einsum('ij,j->i', ray_dirs, q)
+        
+        valid &= (v >= 0.0) & ((u + v) <= 1.0)
+        
+        t = f * np.dot(e2, q)
+        valid &= (t > 1e-7)
+        
+        # 더 가까운 거리로 업데이트
+        mask = valid & (t < depth_map)
+        depth_map[mask] = t[mask]
+    
+    return depth_map.reshape(img_h, img_w)
 
 
 # ── 메인 변환 함수 ───────────────────────────────────────────────
@@ -222,7 +244,7 @@ def convert_roomplan_to_depth(
         print(f"전체 삼각형 (바닥/천장 포함): {len(triangles)}개")
 
     # ── Ray casting ───────────────────────────────────────────────
-    depth_map = render_depth_map(triangles, listener_pos, img_h, img_w, max_dist)
+    depth_map = render_depth_map_fast(triangles, listener_pos, img_h, img_w, max_dist)
 
     # ── 저장 ──────────────────────────────────────────────────────
     np.save(output_dir / "depth.npy", depth_map)

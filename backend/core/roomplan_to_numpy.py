@@ -76,33 +76,86 @@ def compute_listener_position(walls, listener_height=1.2):
     
     return np.array([listener_xy[0], listener_xy[1], listener_height], dtype=np.float32)
 
-
-# ── xyzs.npy 생성 ────────────────────────────────────────────────
-
-def generate_candidate_positions(walls, speaker_height=1.2,
-                                  grid_step=0.3, wall_margin=0.5):
+# ── 가구 폴리곤 추출 ────────────────────────────────────────────────
+def extract_object_polygons(objects, margin=0.0):
     """
-    방 바닥 폴리곤 안에 격자 형태로 후보 스피커 위치 생성
-    wall_margin: 벽에서 최소 거리 (m)
-    grid_step  : 격자 간격 (m)
-    반환: (N, 3) numpy array
+    가구 transform + dimensions에서 바닥 폴리곤 추출
+    각 가구를 사각형 폴리곤으로 표현
+    
+    Args:
+        objects: roomplan JSON의 "objects" 리스트
+        margin: 가구 주변 추가 마진 (m). 스피커가 가구에서 떨어지길 원하면 양수
+    
+    Returns:
+        list of shapely Polygon (xRIR 좌표계 x-y 평면)
     """
-    from shapely.geometry import Point, Polygon
+    from shapely.geometry import Polygon as ShapelyPolygon
+    
+    polygons = []
+    for obj in objects:
+        if "transform" not in obj or "dimensions" not in obj:
+            continue
+        
+        m = np.array(obj["transform"], dtype=float).reshape(4, 4, order="F")
+        dims = obj["dimensions"]
+        half_w = float(dims[0]) * 0.5
+        half_d = float(dims[2]) * 0.5  # depth = z축
+        
+        # 가구 바닥 4개 모서리 (로컬 좌표)
+        local_corners = np.array([
+            [-half_w, 0.0, -half_d, 1.0],
+            [+half_w, 0.0, -half_d, 1.0],
+            [+half_w, 0.0, +half_d, 1.0],
+            [-half_w, 0.0, +half_d, 1.0],
+        ])
+        
+        # 월드 좌표로 변환
+        world_corners = (m @ local_corners.T).T[:, :3]
+        
+        # xRIR 좌표계로 변환 + x-y 평면만
+        xy_corners = []
+        for wc in world_corners:
+            xrir = roomplan_to_xrir_coords(*wc)
+            xy_corners.append([xrir[0], xrir[1]])
+        
+        try:
+            poly = ShapelyPolygon(xy_corners)
+            if margin > 0:
+                poly = poly.buffer(margin)
+            if poly.is_valid and poly.area > 1e-6:
+                polygons.append(poly)
+        except:
+            continue
+    
+    return polygons
 
-    floor_corners = extract_floor_polygon(walls)
-    poly = Polygon(floor_corners.tolist()).buffer(-wall_margin)  # 마진 적용
 
-    x_min, y_min, x_max, y_max = poly.bounds
-    xs = np.arange(x_min, x_max, grid_step)
-    ys = np.arange(y_min, y_max, grid_step)
+# # ── xyzs.npy 생성 ────────────────────────────────────────────────
 
-    candidates = []
-    for x in xs:
-        for y in ys:
-            if poly.contains(Point(x, y)):
-                candidates.append([x, y, speaker_height])
+# def generate_candidate_positions(walls, speaker_height=1.2,
+#                                   grid_step=0.3, wall_margin=0.5):
+#     """
+#     방 바닥 폴리곤 안에 격자 형태로 후보 스피커 위치 생성
+#     wall_margin: 벽에서 최소 거리 (m)
+#     grid_step  : 격자 간격 (m)
+#     반환: (N, 3) numpy array
+#     """
+#     from shapely.geometry import Point, Polygon
 
-    return np.array(candidates, dtype=np.float32)
+#     floor_corners = extract_floor_polygon(walls)
+#     poly = Polygon(floor_corners.tolist()).buffer(-wall_margin)  # 마진 적용
+
+#     x_min, y_min, x_max, y_max = poly.bounds
+#     xs = np.arange(x_min, x_max, grid_step)
+#     ys = np.arange(y_min, y_max, grid_step)
+
+#     candidates = []
+#     for x in xs:
+#         for y in ys:
+#             if poly.contains(Point(x, y)):
+#                 candidates.append([x, y, speaker_height])
+
+#     return np.array(candidates, dtype=np.float32)
 
 
 # ── 메인 변환 함수 ───────────────────────────────────────────────

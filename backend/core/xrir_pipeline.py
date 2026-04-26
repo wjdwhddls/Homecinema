@@ -2,9 +2,10 @@
 xRIR 파이프라인 통합 모듈
 
 roomplan JSON + ref_rir.wav (+ 선택: mesh.bin)
-→ listener.npy, xyzs.npy, depth.npy 생성
+→ listener.npy, depth.npy 생성
+→ 스테레오 후보 위치 생성 (정면 벽 기준 d × 협각)
 → xRIR 추론
-→ 최적 스피커 위치 반환 (스테레오 left/right 포함)
+→ 최적 스테레오 스피커 위치 반환
 """
 
 import os
@@ -13,27 +14,23 @@ import numpy as np
 import soundfile as sf
 import tempfile
 from pathlib import Path
+from shapely.geometry import Point, Polygon, LineString
 
-from core.roomplan_to_numpy import convert_roomplan_to_xrir_inputs
-from core.roomplan_to_depth import convert_roomplan_to_depth
+from core.roomplan_to_numpy import (
+    convert_roomplan_to_xrir_inputs,
+    extract_floor_polygon,
+    extract_object_polygons,
+)
+from core.roomplan_to_depth import convert_roomplan_to_depth, ray_triangle_intersect, extract_wall_triangles
 
-
-# xRIR 코드 및 체크포인트 경로. env 로 override 가능 — 설정 없으면 dohyeon piai 기본값 사용.
-# Lazy import 구조라 경로가 없어도 /api/eq/analyze 나 /api/xrir/initial-position 은 정상 동작.
 XRIR_REPO_PATH  = os.environ.get("XRIR_REPO_PATH",  "/home/piai/AcousticRooms/xRIR_code-main")
 CHECKPOINT_PATH = os.environ.get("XRIR_CHECKPOINT_PATH", f"{XRIR_REPO_PATH}/checkpoints/xRIR_unseen.pth")
 
-
 _model = None
-_xrir_imports = None  # lazy 로드된 xRIR 외부 심볼 캐시
+_xrir_imports = None
 
 
 def _load_xrir_imports():
-    """xRIR 관련 외부 모듈을 최초 호출 시점에 import.
-
-    xRIR repo/체크포인트가 없는 환경(본인 Mac 개발 등)에서 서버 기동을 막지 않도록,
-    /api/xrir/speakers 실제 처리 시점까지 import 를 지연시킴.
-    """
     global _xrir_imports
     if _xrir_imports is not None:
         return _xrir_imports
@@ -60,7 +57,6 @@ def _load_xrir_imports():
 
 
 def _get_model(device="cuda"):
-    """모델 싱글톤 (한 번만 로드)"""
     global _model
     if _model is None:
         imps = _load_xrir_imports()
@@ -75,102 +71,237 @@ def _get_model(device="cuda"):
     return _model
 
 
-# ── 스테레오 배치 계산 ────────────────────────────────────────────
+# ── 정면 벽 교점 계산 ────────────────────────────────────────────
 
-def compute_stereo_placement(
-    center_pos: np.ndarray,
-    listener_pos: np.ndarray,
-    stereo_offset_m: float = 1.0,
-) -> dict:
-    """
-    최적 단일 위치(center_pos)를 기준으로 left/right 스테레오 배치 계산.
+def find_front_wall_point(listener_xy, forward, floor_polygon):
+    """청취자에서 정면 방향으로 ray를 쏴서 방 폴리곤 경계와의 교점 계산"""
+    poly = Polygon(floor_polygon.tolist())
+    ray_end = listener_xy + forward * 100.0
+    ray = LineString([listener_xy, ray_end])
+    intersection = ray.intersection(poly.boundary)
 
-    청취자-스피커 방향 벡터에 수직인 방향으로 ±offset만큼 이동.
+    if intersection.is_empty:
+        return None
 
-    Args:
-        center_pos     : xRIR이 찾은 최적 단일 스피커 위치 [x, y, z]
-        listener_pos   : 청취자 위치 [x, y, z]
-        stereo_offset_m: 센터에서 left/right까지 거리 (기본 1.0m)
+    if intersection.geom_type == 'MultiPoint':
+        points = list(intersection.geoms)
+    elif intersection.geom_type == 'Point':
+        points = [intersection]
+    else:
+        points = [intersection.centroid]
 
-    Returns:
-        { "left": {x,y,z}, "center": {x,y,z}, "right": {x,y,z} }
-    """
-    # 수평면(x-y)에서만 계산
-    spk_xy = center_pos[:2]
-    lis_xy = listener_pos[:2]
+    closest = min(points, key=lambda p: np.linalg.norm(
+        np.array([p.x, p.y]) - listener_xy
+    ))
+    return np.array([closest.x, closest.y])
 
-    # 청취자 → 스피커 방향 벡터
-    forward = spk_xy - lis_xy
+
+# ── 스테레오 후보 위치 생성 ──────────────────────────────────────
+
+def generate_stereo_candidates(
+    listener_pos,
+    initial_speaker_pos,
+    floor_polygon,
+    speaker_height=1.2,
+    wall_margin=0.1,
+):
+    """정면 벽 기준 스테레오 L/R 후보 쌍 생성"""
+    listener_xy = listener_pos[:2]
+
+    forward = initial_speaker_pos[:2] - listener_xy
     dist = np.linalg.norm(forward)
-
     if dist < 1e-6:
-        # 청취자와 스피커가 같은 위치이면 임의 방향 사용
         forward = np.array([1.0, 0.0])
     else:
         forward = forward / dist
 
-    # 수직 벡터 (왼쪽: 반시계방향 90도)
-    perp = np.array([-forward[1], forward[0]])
+    wall_point = find_front_wall_point(listener_xy, forward, floor_polygon)
+    if wall_point is None:
+        print("정면 벽 교점을 찾지 못했습니다. initial_speaker_pos 방향으로 fallback.")
+        wall_point = initial_speaker_pos[:2]
 
-    z = float(center_pos[2])
-    left_xy  = spk_xy + perp * stereo_offset_m
-    right_xy = spk_xy - perp * stereo_offset_m
+    distances  = [0.1, 0.2, 0.3, 0.5]
+    angles_deg = [40, 50, 60, 70, 80]
 
-    return {
-        "left": {
-            "x": round(float(left_xy[0]), 3),
-            "y": round(float(left_xy[1]), 3),
-            "z": z,
-        },
-        "center": {
-            "x": round(float(spk_xy[0]), 3),
-            "y": round(float(spk_xy[1]), 3),
-            "z": z,
-        },
-        "right": {
-            "x": round(float(right_xy[0]), 3),
-            "y": round(float(right_xy[1]), 3),
-            "z": z,
-        },
-    }
+    poly = Polygon(floor_polygon.tolist()).buffer(-wall_margin)
+    candidates = []
 
+    for d in distances:
+        base_point = wall_point - forward * d
+
+        for angle_deg in angles_deg:
+            half_rad = np.radians(angle_deg / 2)
+
+            perp = np.array([-forward[1], forward[0]])
+            spread = d * np.tan(half_rad)
+            pos_L = base_point + perp * spread
+            pos_R = base_point - perp * spread
+
+            left  = np.array([pos_L[0], pos_L[1], speaker_height], dtype=np.float32)
+            right = np.array([pos_R[0], pos_R[1], speaker_height], dtype=np.float32)
+
+            if (poly.contains(Point(pos_L)) and poly.contains(Point(pos_R))):
+                candidates.append((left, right, d, angle_deg))
+
+    return candidates
+
+
+def generate_candidates_with_fallback(
+    listener_pos,
+    initial_speaker_pos,
+    floor_polygon,
+    object_polygons,
+    depth_np,
+    speaker_height=1.2,
+    min_candidates=5,
+):
+    """
+    Fallback 전략으로 후보 생성
+    1단계: 기본 (wall_margin=0.1)
+    2단계: 마진 완화 (wall_margin=0.05)
+    3단계: 격자 촘촘 + 마진 완화
+    """
+    fallback_configs = [
+        # (단계 이름, wall_margin, distances, angles)
+        ("1단계: 기본", 0.1, [0.1, 0.2, 0.3, 0.5], [40, 50, 60, 70, 80]),
+        ("2단계: 마진 완화", 0.05, [0.1, 0.2, 0.3, 0.5], [40, 50, 60, 70, 80]),
+        ("3단계: 격자 촘촘", 0.05, [0.1, 0.15, 0.2, 0.25, 0.3, 0.4, 0.5], 
+         [40, 45, 50, 55, 60, 65, 70, 75, 80]),
+    ]
+    
+    for stage_name, margin, distances, angles in fallback_configs:
+        print(f"\n{stage_name} (margin={margin}, d={len(distances)}개, angle={len(angles)}개)")
+        
+        candidates = _generate_stereo_candidates_custom(
+            listener_pos, initial_speaker_pos, floor_polygon,
+            speaker_height=speaker_height,
+            wall_margin=margin,
+            distances=distances,
+            angles_deg=angles,
+        )
+        
+        # 가구 + depth 필터링
+        valid = []
+        filtered_furniture = 0
+        filtered_obstacle = 0
+        
+        for left, right, d, angle in candidates:
+            # 가구 체크
+            left_pt = Point(left[0], left[1])
+            right_pt = Point(right[0], right[1])
+            in_furniture = False
+            for furn_poly in object_polygons:
+                if furn_poly.contains(left_pt) or furn_poly.contains(right_pt):
+                    in_furniture = True
+                    break
+            if in_furniture:
+                filtered_furniture += 1
+                continue
+            
+            # depth 장애물 체크
+            if not (check_obstacle_depth(listener_pos, left, depth_np) and
+                    check_obstacle_depth(listener_pos, right, depth_np)):
+                filtered_obstacle += 1
+                continue
+            
+            valid.append((left, right, d, angle))
+        
+        print(f"  전체: {len(candidates)}쌍 / 가구 제외: {filtered_furniture} / 장애물 제외: {filtered_obstacle} / 유효: {len(valid)}쌍")
+        
+        if len(valid) >= min_candidates:
+            print(f"  → {stage_name}에서 충분한 후보 확보. 진행.")
+            return valid, stage_name
+    
+    # 3단계도 부족하면 그대로 반환 (0일 수도 있음)
+    print(f"\n경고: 3단계 fallback 후에도 후보 {len(valid)}쌍만 있음")
+    return valid, "3단계 (부족)"
+
+# ── depth.npy 기반 장애물 체크 ───────────────────────────────────
+
+def _generate_stereo_candidates_custom(
+    listener_pos, initial_speaker_pos, floor_polygon,
+    speaker_height=1.2, wall_margin=0.1,
+    distances=None, angles_deg=None,
+):
+    """generate_stereo_candidates의 distances/angles 커스텀 버전"""
+    if distances is None:
+        distances = [0.1, 0.2, 0.3, 0.5]
+    if angles_deg is None:
+        angles_deg = [40, 50, 60, 70, 80]
+    
+    listener_xy = listener_pos[:2]
+    
+    forward = initial_speaker_pos[:2] - listener_xy
+    dist = np.linalg.norm(forward)
+    if dist < 1e-6:
+        forward = np.array([1.0, 0.0])
+    else:
+        forward = forward / dist
+    
+    wall_point = find_front_wall_point(listener_xy, forward, floor_polygon)
+    if wall_point is None:
+        wall_point = initial_speaker_pos[:2]
+    
+    poly = Polygon(floor_polygon.tolist()).buffer(-wall_margin)
+    candidates = []
+    
+    for d in distances:
+        base_point = wall_point - forward * d
+        for angle_deg in angles_deg:
+            half_rad = np.radians(angle_deg / 2)
+            perp = np.array([-forward[1], forward[0]])
+            spread = d * np.tan(half_rad)
+            pos_L = base_point + perp * spread
+            pos_R = base_point - perp * spread
+            
+            left  = np.array([pos_L[0], pos_L[1], speaker_height], dtype=np.float32)
+            right = np.array([pos_R[0], pos_R[1], speaker_height], dtype=np.float32)
+            
+            if (poly.contains(Point(pos_L)) and poly.contains(Point(pos_R))):
+                candidates.append((left, right, d, angle_deg))
+    
+    return candidates
+
+# ── depth.npy 기반 장애물 체크 ───────────────────────────────────
+
+def check_obstacle_depth(
+    listener_pos, candidate_pos, depth_np, img_h=256, img_w=512, threshold=0.5
+):
+    """depth map에서 청취자 → 후보 위치 직선 경로 장애물 체크"""
+    direction = candidate_pos[:2] - listener_pos[:2]
+    dist = np.linalg.norm(direction)
+    if dist < 1e-6:
+        return True
+
+    direction_3d = np.array([direction[0], direction[1], 0.0]) / dist
+
+    theta = np.arctan2(direction_3d[1], direction_3d[0])
+    phi   = np.arctan2(direction_3d[2], np.sqrt(direction_3d[0]**2 + direction_3d[1]**2))
+
+    ti = int((theta + np.pi) / (2 * np.pi) * img_w) % img_w
+    pi = int((phi + np.pi/2) / np.pi * img_h) % img_h
+
+    depth_val = depth_np[pi, ti]
+
+    if depth_val < dist - threshold:
+        return False
+    return True
+
+
+# ── 메인 파이프라인 ──────────────────────────────────────────────
 
 def run_xrir_pipeline(
     roomplan_json: dict,
     ref_rir_bytes: bytes,
     ref_src_pos: np.ndarray,
-    top_k: int = 5,
+    initial_speaker_pos: np.ndarray,
+    top_k: int = 2,
     listener_height: float = 1.2,
     speaker_height: float = 1.2,
-    grid_step: float = 0.3,
-    wall_margin: float = 0.5,
-    stereo_offset_m: float = 1.0,
+    wall_margin: float = 0.1,
+    furniture_margin: float = 0.1,
     mesh_bin_path: str = None,
 ) -> list:
-    """
-    메인 파이프라인 함수
-
-    Returns:
-        상위 K개 결과 리스트. 각 항목:
-        {
-            "placement": {
-                "left":     {x, y, z},
-                "center":   {x, y, z},   ← xRIR 최적 위치
-                "right":    {x, y, z},
-                "listener": {x, y, z},
-            },
-            "score": float,               ← xRIR total score
-            "metrics": {
-                "rt60_seconds": float,
-                "c80_db": float,
-                "drr_db": float,
-                "rt60_score": float,
-                "c80_score": float,
-                "drr_score": float,
-            },
-            "rank": int,
-        }
-    """
     imps = _load_xrir_imports()
     torch = imps["torch"]
     convert_equirect_to_camera_coord = imps["convert_equirect_to_camera_coord"]
@@ -188,17 +319,22 @@ def run_xrir_pipeline(
         ref_rir_np, sr = sf.read(str(ref_rir_path))
         ref_rir_np = ref_rir_np.astype(np.float32)
 
-        # ── 2. roomplan JSON → listener.npy, xyzs.npy ───────────
-        listener, xyzs = convert_roomplan_to_xrir_inputs(
+        # ── 2. roomplan JSON → listener.npy ──────────────────────
+        walls = roomplan_json.get("walls", [])
+        objects = roomplan_json.get("objects", [])
+        listener, _ = convert_roomplan_to_xrir_inputs(
             roomplan_json=roomplan_json,
             output_dir=str(tmpdir),
             listener_height=listener_height,
             speaker_height=speaker_height,
-            grid_step=grid_step,
-            wall_margin=wall_margin,
         )
+        listener_pos = listener.astype(np.float32)
 
         # ── 3. depth.npy 생성 ────────────────────────────────────
+        object_polygons = extract_object_polygons(objects, margin=furniture_margin)
+        print(f"가구 {len(object_polygons)}개 감지됨")
+
+        # ── 4. depth.npy 생성 ────────────────────────────────────
         depth_np = convert_roomplan_to_depth(
             roomplan_json=roomplan_json,
             listener_pos=listener,
@@ -206,68 +342,143 @@ def run_xrir_pipeline(
             mesh_bin_path=mesh_bin_path,
         )
 
-        # ── 4. xRIR 추론 ─────────────────────────────────────────
+        # ── 5. 스테레오 후보 위치 생성 ───────────────────────────
+        floor_polygon = extract_floor_polygon(walls)
+        valid_candidates, stage_used = generate_candidates_with_fallback(
+            listener_pos=listener_pos,
+            initial_speaker_pos=initial_speaker_pos,
+            floor_polygon=floor_polygon,
+            object_polygons=object_polygons,
+            depth_np=depth_np,
+            speaker_height=speaker_height,
+            min_candidates=5,
+        )
+
+        if not valid_candidates:
+            print("유효한 후보 없음")
+            return []
+
+        print(f"\n최종 사용: {stage_used}, 후보 {len(valid_candidates)}쌍")
+
+        # 필터링
+        valid_candidates = []
+        filtered_furniture = 0
+        filtered_obstacle = 0
+        
+        for left, right, d, angle in candidates:
+            # 가구 폴리곤 체크
+            left_pt = Point(left[0], left[1])
+            right_pt = Point(right[0], right[1])
+            
+            in_furniture = False
+            for furn_poly in object_polygons:
+                if furn_poly.contains(left_pt) or furn_poly.contains(right_pt):
+                    in_furniture = True
+                    break
+            if in_furniture:
+                filtered_furniture += 1
+                continue
+            
+            # depth.npy 장애물 체크
+            if not (check_obstacle_depth(listener_pos, left, depth_np) and
+                    check_obstacle_depth(listener_pos, right, depth_np)):
+                filtered_obstacle += 1
+                continue
+            
+            valid_candidates.append((left, right, d, angle))
+
+        print(f"전체 후보: {len(candidates)}쌍")
+        print(f"  가구 충돌 제외: {filtered_furniture}쌍")
+        print(f"  장애물 제외: {filtered_obstacle}쌍")
+        print(f"  유효 후보: {len(valid_candidates)}쌍")
+
+        if not valid_candidates:
+            print("유효한 후보 없음")
+            return []
+
+        # ── 5. xRIR 추론 ─────────────────────────────────────────
         depth_tensor = torch.from_numpy(depth_np.astype(np.float32))
         depth_coord  = convert_equirect_to_camera_coord(depth_tensor)
-
-        listener_pos = listener.astype(np.float32)
-
         model = _get_model(str(device))
 
         raw_results = []
-        print(f"후보 위치: {len(xyzs)}개 음향 점수 예측 중...")
+        print(f"{len(valid_candidates)}쌍 음향 점수 예측 중...")
 
-        for i, candidate_pos in enumerate(xyzs):
-            pred_rir = predict_rir(
+        for i, (left, right, d, angle) in enumerate(valid_candidates):
+            rir_L = predict_rir(
                 model, depth_coord, ref_rir_np,
-                ref_src_pos, candidate_pos, listener_pos,
-                device=str(device),
+                ref_src_pos, left, listener_pos, device=str(device)
             )
-            scores = score_position(pred_rir, sr=sr)
-            scores["_candidate_pos"] = candidate_pos
-            raw_results.append(scores)
+            rir_R = predict_rir(
+                model, depth_coord, ref_rir_np,
+                ref_src_pos, right, listener_pos, device=str(device)
+            )
 
-            if (i + 1) % 50 == 0:
-                print(f"  {i+1}/{len(xyzs)} 완료...")
+            score_L = score_position(rir_L, sr=sr)
+            score_R = score_position(rir_R, sr=sr)
 
-        # ── 5. 정렬 후 상위 K개를 앱 형식으로 변환 ───────────────
-        raw_results.sort(key=lambda x: x["total"], reverse=True)
+            pair_score = (score_L["total"] + score_R["total"]) / 2
+
+            raw_results.append({
+                "left":       left,
+                "right":      right,
+                "d":          d,
+                "angle":      angle,
+                "score_L":    score_L,
+                "score_R":    score_R,
+                "pair_score": pair_score,
+            })
+
+            if (i + 1) % 10 == 0:
+                print(f"  {i+1}/{len(valid_candidates)} 완료...")
+
+        # ── 6. 정렬 후 상위 K개 반환 ─────────────────────────────
+        raw_results.sort(key=lambda x: x["pair_score"], reverse=True)
         top_raw = raw_results[:top_k]
 
         results = []
         for rank, r in enumerate(top_raw):
-            candidate_pos = r["_candidate_pos"]
-            stereo = compute_stereo_placement(
-                center_pos=candidate_pos,
-                listener_pos=listener_pos,
-                stereo_offset_m=stereo_offset_m,
-            )
+            left  = r["left"]
+            right = r["right"]
+            sL    = r["score_L"]
+            sR    = r["score_R"]
 
             result = {
                 "placement": {
-                    "left":     stereo["left"],
-                    "right":    stereo["right"],
+                    "left": {
+                        "x": round(float(left[0]), 3),
+                        "y": round(float(left[1]), 3),
+                        "z": round(float(left[2]), 3),
+                    },
+                    "right": {
+                        "x": round(float(right[0]), 3),
+                        "y": round(float(right[1]), 3),
+                        "z": round(float(right[2]), 3),
+                    },
                     "listener": {
                         "x": round(float(listener_pos[0]), 3),
                         "y": round(float(listener_pos[1]), 3),
                         "z": round(float(listener_pos[2]), 3),
                     },
                 },
-                "score": round(float(r["total"]), 4),
+                "score": round(float(r["pair_score"]), 4),
                 "metrics": {
-                    "rt60_seconds":          round(float(r.get("rt60", 0.0)), 3),
-                    "c80_db":                round(float(r.get("c80", 0.0)), 2),
-                    "drr_db":                round(float(r.get("drr", 0.0)), 2),
-                    "rt60_score":            round(float(r.get("rt60_score", 0.0)), 3),
-                    "c80_score":             round(float(r.get("c80_score", 0.0)), 3),
-                    "drr_score":             round(float(r.get("drr_score", 0.0)), 3),
+                    "edt_seconds": round((sL["edt"] + sR["edt"]) / 2, 3),
+                    "c50_db":      round((sL["c50"] + sR["c50"]) / 2, 2),
+                    "t60_seconds": round((sL["t60"] + sR["t60"]) / 2, 3),
+                    "edt_score":   round((sL["edt_score"] + sR["edt_score"]) / 2, 3),
+                    "c50_score":   round((sL["c50_score"] + sR["c50_score"]) / 2, 3),
+                    "t60_score":   round((sL["t60_score"] + sR["t60_score"]) / 2, 3),
                 },
+                "angle_deg":  r["angle"],
+                "distance_m": r["d"],
                 "rank": rank,
             }
             results.append(result)
 
-            pos = stereo["center"]
-            print(f"{rank+1}위: center({pos['x']}, {pos['y']}, {pos['z']}) "
-                  f"| score={r['total']:.3f}")
+            print(f"{rank+1}위: L({left[0]:.2f}, {left[1]:.2f}) "
+                  f"R({right[0]:.2f}, {right[1]:.2f}) "
+                  f"협각={r['angle']}° d={r['d']}m "
+                  f"| score={r['pair_score']:.3f}")
 
         return results
