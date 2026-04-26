@@ -19,6 +19,12 @@ export interface XRIRPosition {
 export interface PreviewSpeaker extends XRIRPosition {
   label: string;     // 화면에 표시될 텍스트
   color: string;     // "#RRGGBB" 형식 hex
+  /// 스피커 박스 크기 (m 단위). 생략 시 native 측 기본값 사용.
+  dimensions?: {
+    width_m:  number;  // 좌우 폭
+    height_m: number;  // 높이
+    depth_m:  number;  // 앞뒤 깊이
+  };
 }
 
 export interface PreviewOptions {

@@ -3,7 +3,7 @@
  *
  * xRIR 최적 스피커 배치 결과 표시
  * - left/right 스테레오 좌표
- * - 음향 점수 (rt60, c80, drr)
+ * - 음향 점수 (RT60, C80, DRR)
  * - 대안 위치 목록
  * - EQ 보정 측정으로 이동 버튼
  */
@@ -16,9 +16,11 @@ import {
   StyleSheet,
   TouchableOpacity,
   Image,
+  Alert,
 } from 'react-native';
 import {useRoute, useNavigation, RouteProp} from '@react-navigation/native';
 import {RootStackParamList} from '../types';
+import {showRoomPreview, PREVIEW_COLORS} from '../native/RoomPreview';
 
 type OptimizationResultRouteProp = RouteProp<
   RootStackParamList,
@@ -46,8 +48,36 @@ export default function OptimizationResultScreen() {
   }
 
   const {best, top_alternatives = [], warnings = [], computation_time_seconds} = result;
+  const usdzUri = route.params?.usdzUri;
+  const speakerDimensions = route.params?.speakerDimensions;
 
   const scorePercent = Math.round((best.score ?? 0) * 100);
+
+  const handleShow3D = async () => {
+    if (!usdzUri) {
+      Alert.alert('3D 미리보기 불가', '방 스캔 데이터(USDZ)가 없어 3D 보기를 사용할 수 없습니다.');
+      return;
+    }
+    const dimensions = speakerDimensions
+      ? {
+          width_m:  speakerDimensions.width_cm  / 100,
+          height_m: speakerDimensions.height_cm / 100,
+          depth_m:  speakerDimensions.depth_cm  / 100,
+        }
+      : undefined;
+    try {
+      await showRoomPreview({
+        usdzUri,
+        listener: best.placement.listener,
+        speakers: [
+          {label: '왼쪽 스피커',  color: PREVIEW_COLORS.left,  ...best.placement.left,  dimensions},
+          {label: '오른쪽 스피커', color: PREVIEW_COLORS.right, ...best.placement.right, dimensions},
+        ],
+      });
+    } catch (err: any) {
+      Alert.alert('3D 미리보기 실패', err?.message || '알 수 없는 오류');
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -56,9 +86,18 @@ export default function OptimizationResultScreen() {
         {result.topview_image && (
           <Image
             source={{uri: `data:image/png;base64,${result.topview_image}`}}
-            style={{width: '100%', aspectRatio: 1, borderRadius: 12, marginBottom: 16}}
+            style={{width: '100%', aspectRatio: 1, borderRadius: 12, marginBottom: 12}}
             resizeMode="contain"
           />
+        )}
+
+        {usdzUri && (
+          <TouchableOpacity
+            style={styles.preview3dBtn}
+            onPress={handleShow3D}
+            activeOpacity={0.8}>
+            <Text style={styles.preview3dBtnText}>🏠 3D로 자세히 보기</Text>
+          </TouchableOpacity>
         )}
 
         {/* 종합 점수 */}
@@ -279,4 +318,6 @@ const styles = StyleSheet.create({
   eqBtn:       {backgroundColor: '#10b981', padding: 14, borderRadius: 10, alignItems: 'center', marginBottom: 12},
   homeBtn:     {backgroundColor: '#2563eb', padding: 14, borderRadius: 10, alignItems: 'center'},
   homeBtnText: {color: '#fff', fontSize: 16, fontWeight: '600'},
+  preview3dBtn:    {backgroundColor: '#1f2937', paddingVertical: 12, borderRadius: 10, alignItems: 'center', marginBottom: 16},
+  preview3dBtnText:{color: '#fff', fontSize: 15, fontWeight: '600'},
 });

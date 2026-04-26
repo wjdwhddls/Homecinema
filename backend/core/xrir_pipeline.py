@@ -23,8 +23,20 @@ from core.roomplan_to_numpy import (
 )
 from core.roomplan_to_depth import convert_roomplan_to_depth, ray_triangle_intersect, extract_wall_triangles
 
-XRIR_REPO_PATH  = os.environ.get("XRIR_REPO_PATH",  "/home/piai/AcousticRooms/xRIR_code-main")
-CHECKPOINT_PATH = os.environ.get("XRIR_CHECKPOINT_PATH", f"{XRIR_REPO_PATH}/ckpt/xRIR_1_shot/ConvNeXT_best.pth")
+XRIR_REPO_PATH  = os.environ.get("XRIR_REPO_PATH",  "/Users/jongin/workspace/xRIR_code-main")
+CHECKPOINT_PATH = os.environ.get(
+    "XRIR_CHECKPOINT_PATH",
+    "/Users/jongin/workspace/checkpoints/xRIR_ConvNeXT/best.pth",
+)
+
+
+def _select_device() -> str:
+    import torch
+    if torch.cuda.is_available():
+        return "cuda"
+    if getattr(torch.backends, "mps", None) and torch.backends.mps.is_available():
+        return "mps"
+    return "cpu"
 
 _model = None
 _xrir_imports = None
@@ -56,18 +68,20 @@ def _load_xrir_imports():
     return _xrir_imports
 
 
-def _get_model(device="cuda"):
+def _get_model(device: str | None = None):
     global _model
     if _model is None:
         imps = _load_xrir_imports()
         torch = imps["torch"]
         xRIRModel = imps["xRIR"]
+        if device is None:
+            device = _select_device()
         m = xRIRModel(num_channels=1)
         m.load_state_dict(torch.load(CHECKPOINT_PATH, map_location="cpu"))
         m.to(device)
         m.eval()
         _model = m
-        print("xRIR 모델 로드 완료")
+        print(f"xRIR 모델 로드 완료 (device={device})")
     return _model
 
 
@@ -399,7 +413,7 @@ def run_xrir_pipeline(
     predict_rir = imps["predict_rir"]
     score_position = imps["score_position"]
 
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device = torch.device(_select_device())
 
     # 스피커 크기 (cm → m)
     spk_w = speaker_dimensions["width_cm"] / 100
@@ -553,12 +567,12 @@ def run_xrir_pipeline(
                 },
                 "score": round(float(r["pair_score"]), 4),
                 "metrics": {
-                    "edt_seconds": round((sL["edt"] + sR["edt"]) / 2, 3),
-                    "c50_db":      round((sL["c50"] + sR["c50"]) / 2, 2),
-                    "t60_seconds": round((sL["t60"] + sR["t60"]) / 2, 3),
-                    "edt_score":   round((sL["edt_score"] + sR["edt_score"]) / 2, 3),
-                    "c50_score":   round((sL["c50_score"] + sR["c50_score"]) / 2, 3),
-                    "t60_score":   round((sL["t60_score"] + sR["t60_score"]) / 2, 3),
+                    "rt60_seconds": round((sL["rt60"] + sR["rt60"]) / 2, 3),
+                    "c80_db":       round((sL["c80"] + sR["c80"]) / 2, 2),
+                    "drr_db":       round((sL["drr"] + sR["drr"]) / 2, 2),
+                    "rt60_score":   round((sL["rt60_score"] + sR["rt60_score"]) / 2, 3),
+                    "c80_score":    round((sL["c80_score"] + sR["c80_score"]) / 2, 3),
+                    "drr_score":    round((sL["drr_score"] + sR["drr_score"]) / 2, 3),
                 },
                 "angle_deg":          r.get("angle"),
                 "distance_m":         r.get("d"),

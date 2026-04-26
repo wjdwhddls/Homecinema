@@ -16,7 +16,11 @@ export type RootStackParamList = {
   Playback: {jobId: string};
   SpeakerSize: undefined;
   SpeakerPlacement: {speakerDimensions: SpeakerDimensions};
-  OptimizationResult: {result: OptimizeResponse};
+  OptimizationResult: {
+    result: OptimizeResponse;
+    usdzUri?: string;
+    speakerDimensions?: SpeakerDimensions;
+  };
   EQMeasurement: {                                  // ← 추가
     optimalPosition: {
       left:  {x: number; y: number; z: number};

@@ -43,7 +43,8 @@ class RoomPreview: NSObject {
           label: "청취자",
           color: UIColor(red: 0.00, green: 0.83, blue: 1.00, alpha: 1.0),
           position: RoomPreviewViewController.xrirToScene(x: pos.x, y: pos.y, z: pos.z),
-          isSphere: true
+          isSphere: true,
+          dimensions: nil
         ))
       }
 
@@ -56,7 +57,8 @@ class RoomPreview: NSObject {
             label: label,
             color: UIColor(hex: colorHex) ?? UIColor.yellow,
             position: RoomPreviewViewController.xrirToScene(x: pos.x, y: pos.y, z: pos.z),
-            isSphere: false
+            isSphere: false,
+            dimensions: Self.parseDimensions(sp["dimensions"])
           ))
         }
       }
@@ -92,6 +94,18 @@ class RoomPreview: NSObject {
       return nil
     }
     return (x, y, z)
+  }
+
+  /// JS 측 { width_m, height_m, depth_m } → Marker.dimensions
+  private static func parseDimensions(_ raw: Any?) -> (width: CGFloat, height: CGFloat, depth: CGFloat)? {
+    guard let dict = raw as? NSDictionary,
+          let w = (dict["width_m"]  as? NSNumber)?.doubleValue,
+          let h = (dict["height_m"] as? NSNumber)?.doubleValue,
+          let d = (dict["depth_m"]  as? NSNumber)?.doubleValue,
+          w > 0, h > 0, d > 0 else {
+      return nil
+    }
+    return (CGFloat(w), CGFloat(h), CGFloat(d))
   }
 }
 

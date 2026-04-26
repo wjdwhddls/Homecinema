@@ -18,6 +18,8 @@ class RoomPreviewViewController: UIViewController {
     let color: UIColor
     let position: SCNVector3  // SceneKit 좌표 (Y-up)
     let isSphere: Bool        // true=구(청취자), false=박스(스피커)
+    /// 박스 크기 (m, SceneKit 단위). nil=기본 크기 사용. isSphere=true면 무시.
+    let dimensions: (width: CGFloat, height: CGFloat, depth: CGFloat)?
   }
 
   // MARK: - 입력
@@ -106,15 +108,26 @@ class RoomPreviewViewController: UIViewController {
       sphere.firstMaterial?.emission.contents = m.color.withAlphaComponent(0.35)
       node.geometry = sphere
     } else {
-      let box = SCNBox(width: 0.22, height: 0.32, length: 0.22, chamferRadius: 0.02)
+      // 사용자가 입력한 스피커 치수가 있으면 그 크기로, 없으면 기본 0.22×0.32×0.22
+      // SCNBox: width(좌우=x) × height(높이=y) × length(앞뒤=z)
+      let w: CGFloat = m.dimensions?.width  ?? 0.22
+      let h: CGFloat = m.dimensions?.height ?? 0.32
+      let d: CGFloat = m.dimensions?.depth  ?? 0.22
+      // chamferRadius 는 박스의 가장 짧은 변보다 작아야 안전 (5% 정도로 축소)
+      let chamfer = min(w, h, d) * 0.05
+      let box = SCNBox(width: w, height: h, length: d, chamferRadius: chamfer)
       box.firstMaterial?.diffuse.contents = m.color
       box.firstMaterial?.emission.contents = m.color.withAlphaComponent(0.35)
       node.geometry = box
     }
 
     // 라벨 (카메라를 따라 회전 - billboard)
+    // 박스 정수리 위 약간 띄움. 큰 스피커도 라벨이 묻히지 않도록.
+    let labelY: Float = m.isSphere
+      ? 0.35
+      : Float((m.dimensions?.height ?? 0.32) * 0.5) + 0.15
     let label = makeLabelNode(m.label, color: m.color)
-    label.position = SCNVector3(0, 0.35, 0)
+    label.position = SCNVector3(0, labelY, 0)
     node.addChildNode(label)
 
     // 바닥 링 (위치 인식 보조)
