@@ -225,23 +225,43 @@ def _run_task(
             )
 
         _job_store.update_status(job_id, "processing", progress=95)
-        best = results[0] if results else None
 
-        topview = None
-        if best:
-            listener_dict = {
-                "x": float(best["placement"]["listener"]["x"]),
-                "y": float(best["placement"]["listener"]["y"]),
-                "z": float(best["placement"]["listener"]["z"]),
-            }
-            topview = generate_topview(
-                roomplan_json=roomplan_json,
-                listener_pos=listener_dict,
-                speaker_positions={
-                    "left":  best["placement"]["left"],
-                    "right": best["placement"]["right"],
-                },
-            )
+        if not results:
+            # 측정/추론은 정상 완료됐지만 방 형태/정면 방향 가정으로 후보가 0쌍.
+            # mobile에서 사유를 명확히 표시하기 위해 명시적 failed 처리.
+            _job_store.save_result(job_id, {
+                "status": "error",
+                "job_id": job_id,
+                "best": None,
+                "top_alternatives": [],
+                "room_summary": None,
+                "computation_time_seconds": time.time() - start_time,
+                "warnings": [],
+                "error_message": (
+                    "유효한 후보 위치를 찾지 못했습니다. "
+                    "스캔 시작 시 본 방향이 거실의 정면(스크린)이 맞는지, "
+                    "방의 좌우 폭이 충분한지 확인해주세요."
+                ),
+                "topview_image": None,
+            })
+            _job_store.update_status(job_id, "failed", progress=100)
+            logger.info("최적화 결과 없음 (후보 0쌍): job=%s", job_id)
+            return
+
+        best = results[0]
+        listener_dict = {
+            "x": float(best["placement"]["listener"]["x"]),
+            "y": float(best["placement"]["listener"]["y"]),
+            "z": float(best["placement"]["listener"]["z"]),
+        }
+        topview = generate_topview(
+            roomplan_json=roomplan_json,
+            listener_pos=listener_dict,
+            speaker_positions={
+                "left":  best["placement"]["left"],
+                "right": best["placement"]["right"],
+            },
+        )
 
         _job_store.save_result(job_id, {
             "status": "success",
@@ -259,5 +279,16 @@ def _run_task(
 
     except Exception as e:
         logger.exception("최적화 실패: job=%s", job_id)
-        _job_store.save_result(job_id, {"status": "error", "message": str(e)})
+        # mobile OptimizeResponse 스키마와 일치하는 dict로 통일 — error_message 키 사용.
+        _job_store.save_result(job_id, {
+            "status": "error",
+            "job_id": job_id,
+            "best": None,
+            "top_alternatives": [],
+            "room_summary": None,
+            "computation_time_seconds": time.time() - start_time if 'start_time' in locals() else 0.0,
+            "warnings": [],
+            "error_message": str(e),
+            "topview_image": None,
+        })
         _job_store.update_status(job_id, "failed", progress=100)

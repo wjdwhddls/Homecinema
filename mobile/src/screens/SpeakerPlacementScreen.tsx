@@ -40,14 +40,6 @@ import {
 } from '../api/optimization';
 import {RootStackParamList} from '../types';
 
-function xrirToRoomPlan(p: {x: number; y: number; z: number}) {
-  return {
-    x: p.x,
-    y: p.z,    // 높이 (xRIR z → RoomPlan y)
-    z: -p.y,   // 깊이 (xRIR y → RoomPlan -z)
-  };
-}
-
 type SpeakerPlacementRouteProp = RouteProp<RootStackParamList, 'SpeakerPlacement'>;
 
 type Step =
@@ -318,14 +310,16 @@ export default function SpeakerPlacementScreen() {
                 style={styles.preview3dBtn}
                 onPress={async () => {
                   try {
+                    // RoomPreview는 xRIR 좌표를 그대로 받아 Swift 측에서 SceneKit 좌표로 변환.
+                    // JS에서 추가 변환을 하면 이중 변환이 발생해 마커가 잘못된 위치에 표시됨.
                     await showRoomPreview({
                       usdzUri: room.usdzUri!,
-                      listener: xrirToRoomPlan(initialPos.listener_position),
+                      listener: initialPos.listener_position,
                       speakers: [
-{
+                        {
                           label: '임시 스피커',
                           color: PREVIEW_COLORS.initial,
-                          ...xrirToRoomPlan(initialPos.initial_speaker_position),
+                          ...initialPos.initial_speaker_position,
                           dimensions: {
                             width_m:  speakerDimensions.width_cm  / 100,
                             height_m: speakerDimensions.height_cm / 100,

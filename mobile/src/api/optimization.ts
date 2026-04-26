@@ -32,12 +32,12 @@ export interface StereoPlacements {
 
 
 export interface AcousticMetrics {
-    edt_seconds: number;
-    c50_db: number;
-    t60_seconds: number;
-    edt_score: number;
-    c50_score: number;
-    t60_score: number;
+    rt60_seconds: number;   // 잔향 시간 (Reverberation Time, 60dB 감쇠)
+    c80_db:       number;   // 명료도 (Clarity, 80ms 기준)
+    drr_db:       number;   // 직접음 대 잔향 비율 (Direct-to-Reverberant Ratio)
+    rt60_score:   number;   // 0~1 정규화 점수
+    c80_score:    number;
+    drr_score:    number;
 }
 
 export interface OptimalResult {
