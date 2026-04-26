@@ -42,6 +42,24 @@ _model = None
 _xrir_imports = None
 
 
+def _compute_subscore(rt60: float, c80: float, drr: float):
+    """
+    score_position이 반환한 raw rt60/c80/drr (round된 값)에서 우리 식 sub-score 재계산.
+
+    외부 inference.py의 score_position과의 차이:
+    - c80_score 분모 8.0 → 20.0  (현장 C80은 ±15 dB까지 변동, 기존은 ±8에서 saturation)
+    - drr_score 분모 30/base -10 → 분모 50/base -20  (현장 DRR이 음수쪽 변동 큼)
+    - 결과를 round하지 않음  (float64 정밀도 유지로 인접 후보 동률 방지)
+
+    Returns: (rt60_score, c80_score, drr_score, total)  — 모두 0~1
+    """
+    rt60_score = max(0.0, 1.0 - abs(rt60 - 0.4) / 0.4)
+    c80_score  = max(0.0, 1.0 - abs(c80  - 4.0) / 20.0)
+    drr_score  = max(0.0, min(1.0, (drr + 20.0) / 50.0))
+    total      = 0.4 * rt60_score + 0.3 * c80_score + 0.3 * drr_score
+    return rt60_score, c80_score, drr_score, total
+
+
 def _load_xrir_imports():
     global _xrir_imports
     if _xrir_imports is not None:
@@ -554,12 +572,19 @@ def run_xrir_pipeline(
 
             score_L = score_position(rir_L, sr=sr)
             score_R = score_position(rir_R, sr=sr)
-            pair_score = (score_L["total"] + score_R["total"]) / 2
+
+            # 외부 round(3)된 total/sub-score 대신 raw rt60/c80/drr로 우리 식 재계산.
+            # C80/DRR saturation 완화 + float64 정밀도 유지.
+            sub_L = _compute_subscore(score_L["rt60"], score_L["c80"], score_L["drr"])
+            sub_R = _compute_subscore(score_R["rt60"], score_R["c80"], score_R["drr"])
+            pair_score = (sub_L[3] + sub_R[3]) / 2
 
             raw_results.append({
                 **cand,
-                "score_L": score_L,
-                "score_R": score_R,
+                "score_L":   score_L,
+                "score_R":   score_R,
+                "sub_L":     sub_L,
+                "sub_R":     sub_R,
                 "pair_score": pair_score,
             })
 
@@ -576,6 +601,8 @@ def run_xrir_pipeline(
             right = r["right"]
             sL    = r["score_L"]
             sR    = r["score_R"]
+            sub_L = r["sub_L"]
+            sub_R = r["sub_R"]
 
             result = {
                 "placement_type": r["placement"],
@@ -601,9 +628,10 @@ def run_xrir_pipeline(
                     "rt60_seconds": round((sL["rt60"] + sR["rt60"]) / 2, 3),
                     "c80_db":       round((sL["c80"] + sR["c80"]) / 2, 2),
                     "drr_db":       round((sL["drr"] + sR["drr"]) / 2, 2),
-                    "rt60_score":   round((sL["rt60_score"] + sR["rt60_score"]) / 2, 3),
-                    "c80_score":    round((sL["c80_score"] + sR["c80_score"]) / 2, 3),
-                    "drr_score":    round((sL["drr_score"] + sR["drr_score"]) / 2, 3),
+                    # sub-score는 우리 식 _compute_subscore 결과 사용 (외부 라이브러리의 saturation 완화)
+                    "rt60_score":   round((sub_L[0] + sub_R[0]) / 2, 4),
+                    "c80_score":    round((sub_L[1] + sub_R[1]) / 2, 4),
+                    "drr_score":    round((sub_L[2] + sub_R[2]) / 2, 4),
                 },
                 "angle_deg":          r.get("angle"),
                 "distance_m":         r.get("d"),
