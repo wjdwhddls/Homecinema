@@ -22,7 +22,7 @@ import {
 } from 'react-native';
 import {useNavigation, useRoute, RouteProp} from '@react-navigation/native';
 import {recordSweep, getSweepUri} from '../native/SweepRecorder';
-import {analyzeEQ, EQAnalysisResponse, EQBand} from '../api/eq';
+import {analyzeEQ, EQAnalysisResponse} from '../api/eq';
 import {RootStackParamList} from '../types';
 
 type EQRouteProp = RouteProp<RootStackParamList, 'EQMeasurement'>;
@@ -154,14 +154,6 @@ export default function EQMeasurementScreen() {
               </View>
             )}
 
-            {/* 23밴드 상세 */}
-            <View style={styles.card}>
-              <Text style={styles.cardTitle}>23밴드 상세</Text>
-              {result.bands.map(band => (
-                <BandRow key={band.freq} band={band} />
-              ))}
-            </View>
-
             {/* 재측정 버튼 */}
             <TouchableOpacity
               style={[styles.btn, styles.btnOutline]}
@@ -180,36 +172,6 @@ export default function EQMeasurementScreen() {
     </SafeAreaView>
   );
 }
-
-// ── 서브 컴포넌트 ────────────────────────────────────────────────
-
-const BandRow = ({band}: {band: EQBand}) => {
-  const gain = band.actual_gain_db;
-  const barW = Math.min(Math.abs(gain) / 6 * 60, 60); // max 60px
-  const isPos = gain > 0;
-
-  return (
-    <View style={bStyles.row}>
-      <Text style={bStyles.freq}>{band.freq >= 1000 ? `${band.freq / 1000}k` : `${band.freq}`}</Text>
-      <View style={bStyles.barContainer}>
-        {isPos ? (
-          <>
-            <View style={bStyles.center} />
-            <View style={[bStyles.barPos, {width: barW}]} />
-          </>
-        ) : (
-          <>
-            <View style={[bStyles.barNeg, {width: barW}]} />
-            <View style={bStyles.center} />
-          </>
-        )}
-      </View>
-      <Text style={[bStyles.gain, isPos ? styles.gainPos : gain < 0 ? styles.gainNeg : styles.gainZero]}>
-        {gain > 0 ? '+' : ''}{gain.toFixed(1)}
-      </Text>
-    </View>
-  );
-};
 
 // ── 스타일 ───────────────────────────────────────────────────────
 const styles = StyleSheet.create({
@@ -243,14 +205,4 @@ const styles = StyleSheet.create({
   paramFreq:   {fontSize: 14, color: '#374151', width: 90},
   paramGain:   {fontSize: 14, fontWeight: '600', width: 70, textAlign: 'center'},
   paramQ:      {fontSize: 14, color: '#6b7280', width: 50, textAlign: 'right'},
-});
-
-const bStyles = StyleSheet.create({
-  row:          {flexDirection: 'row', alignItems: 'center', paddingVertical: 3},
-  freq:         {width: 36, fontSize: 11, color: '#6b7280', textAlign: 'right', marginRight: 8},
-  barContainer: {flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center'},
-  center:       {flex: 1},
-  barPos:       {height: 8, backgroundColor: '#2563eb', borderRadius: 2},
-  barNeg:       {height: 8, backgroundColor: '#dc2626', borderRadius: 2, alignSelf: 'flex-end'},
-  gain:         {width: 42, fontSize: 11, textAlign: 'right', fontWeight: '600'},
 });
