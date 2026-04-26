@@ -110,28 +110,14 @@ async def start_optimization(
     initial_speaker_y: float = Form(...),
     initial_speaker_z: float = Form(...),
 ) -> dict:
-
-    speaker_dimensions = {
-        "width_cm": speaker_width_cm,
-        "height_cm": speaker_height_cm,
-        "depth_cm": speaker_depth_cm,
-    }
-    
-    background_tasks.add_task(
-        _run_task, job_id, roomplan_json,
-        recorded_bytes, sweep_bytes, mesh_bytes,
-        listener_height_m, speaker_dimensions, top_k,
-        ref_src_pos,
-    )
-
     try:
         roomplan_json = json.loads(roomplan_scan)
     except json.JSONDecodeError as e:
         raise HTTPException(status_code=400, detail=f"JSON 파싱 실패: {e}")
 
     recorded_bytes = await recorded.read()
-    sweep_bytes    = await sweep.read()
-    mesh_bytes     = await mesh.read() if mesh else None
+    sweep_bytes = await sweep.read()
+    mesh_bytes = await mesh.read() if mesh else None
 
     job_id = _job_store.create_job()
     ref_src_pos = np.array([initial_speaker_x, initial_speaker_y, initial_speaker_z], dtype=np.float32)

@@ -332,7 +332,6 @@ export default function SpeakerPlacementScreen() {
               </Text>
               <CoordRow label="x  (좌우)" value={initialPos.initial_speaker_position.x} />
               <CoordRow label="y  (앞뒤)" value={initialPos.initial_speaker_position.y} />
-              <CoordRow label="z  (높이)" value={initialPos.initial_speaker_position.z} />
               <Text style={styles.posNote}>청취 위치(원점) 기준 · 단위: m</Text>
             </View>
 
