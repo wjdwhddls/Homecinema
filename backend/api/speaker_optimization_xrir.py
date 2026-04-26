@@ -208,6 +208,7 @@ def _run_task(
                 roomplan_json=roomplan_json,
                 ref_rir_bytes=ref_rir_bytes,
                 ref_src_pos=ref_src_pos,
+                initial_speaker_pos=ref_src_pos,
                 top_k=top_k,
                 listener_height=listener_height,
                 speaker_height=speaker_height,
