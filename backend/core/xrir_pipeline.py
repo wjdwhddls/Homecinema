@@ -29,6 +29,13 @@ CHECKPOINT_PATH = os.environ.get(
     "/Users/jongin/workspace/checkpoints/xRIR_ConvNeXT/best.pth",
 )
 
+def _floor_polygon_to_xrir(floor_polygon):
+    """RoomPlan floor_polygon [x, y=0, z] → xRIR 2D shapely Polygon"""
+    floor_2d_xrir = np.column_stack([
+        floor_polygon[:, 0],   # x 그대로
+        -floor_polygon[:, 2],  # z → -y (xRIR)
+    ])
+    return Polygon(floor_2d_xrir.tolist())
 
 def _select_device() -> str:
     import torch
@@ -86,10 +93,9 @@ def _get_model(device: str | None = None):
 
 
 # ── 정면 벽 교점 계산 ────────────────────────────────────────────
-
 def find_front_wall_point(listener_xy, forward, floor_polygon):
     """청취자에서 정면 방향으로 ray를 쏴서 방 폴리곤 경계와의 교점 계산"""
-    poly = Polygon(floor_polygon.tolist())
+    poly = _floor_polygon_to_xrir(floor_polygon)
     ray_end = listener_xy + forward * 100.0
     ray = LineString([listener_xy, ray_end])
     intersection = ray.intersection(poly.boundary)
@@ -137,7 +143,7 @@ def generate_stereo_candidates(
     distances  = [0.1, 0.2, 0.3, 0.5]
     angles_deg = [40, 50, 60, 70, 80]
 
-    poly = Polygon(floor_polygon.tolist()).buffer(-wall_margin)
+    poly = _floor_polygon_to_xrir(floor_polygon).buffer(-wall_margin)
     candidates = []
 
     for d in distances:
@@ -257,7 +263,7 @@ def _generate_stereo_candidates_custom(
     if wall_point is None:
         wall_point = initial_speaker_pos[:2]
     
-    poly = Polygon(floor_polygon.tolist()).buffer(-wall_margin)
+    poly = _floor_polygon_to_xrir(floor_polygon).buffer(-wall_margin)
     candidates = []
     
     for d in distances:
@@ -569,13 +575,14 @@ def run_xrir_pipeline(
                     },
                 },
                 "score": round(float(r["pair_score"]), 4),
+
                 "metrics": {
-                    "rt60_seconds": round((sL["rt60"] + sR["rt60"]) / 2, 3),
-                    "c80_db":       round((sL["c80"] + sR["c80"]) / 2, 2),
-                    "drr_db":       round((sL["drr"] + sR["drr"]) / 2, 2),
-                    "rt60_score":   round((sL["rt60_score"] + sR["rt60_score"]) / 2, 3),
-                    "c80_score":    round((sL["c80_score"] + sR["c80_score"]) / 2, 3),
-                    "drr_score":    round((sL["drr_score"] + sR["drr_score"]) / 2, 3),
+                    "edt_seconds": round((sL["rt60"] + sR["rt60"]) / 2, 3),
+                    "c50_db":      round((sL["c80"] + sR["c80"]) / 2, 2),
+                    "t60_seconds": round((sL["rt60"] + sR["rt60"]) / 2, 3),
+                    "edt_score":   round((sL["rt60_score"] + sR["rt60_score"]) / 2, 3),
+                    "c50_score":   round((sL["c80_score"] + sR["c80_score"]) / 2, 3),
+                    "t60_score":   round((sL["rt60_score"] + sR["rt60_score"]) / 2, 3),
                 },
                 "angle_deg":          r.get("angle"),
                 "distance_m":         r.get("d"),

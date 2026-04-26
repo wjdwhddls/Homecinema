@@ -164,7 +164,7 @@ ISO_BANDS = [
 
 
 def get_calibration_values(
-    freqs: np.ndarray,          # ← 버그 수정: 전역변수 대신 파라미터로 명시
+    freqs: np.ndarray, 
     H_db: np.ndarray,
 ) -> List[Dict[str, Any]]:
     """
