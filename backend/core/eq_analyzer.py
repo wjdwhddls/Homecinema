@@ -254,7 +254,7 @@ def generate_parametric_eq(
     result = []
     for p in picks[:max_filters]:
         freq  = p["freq"]
-        gain  = float(np.clip(p["theory_gain_db"], -15.0, 15.0))
+        gain  = float(np.clip(p["theory_gain_db"], -12.0, 12.0))
         Q     = 0.8 if freq < 300 else (1.4 if freq < 2000 else 2.0)
         result.append({"freq": freq, "gain_db": round(gain, 2), "Q": Q})
 
