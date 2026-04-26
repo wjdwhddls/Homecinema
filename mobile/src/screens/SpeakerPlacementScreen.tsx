@@ -186,7 +186,11 @@ export default function SpeakerPlacementScreen() {
       );
 
       if (!mountedRef.current) return;
-      navigation.navigate('OptimizationResult', {result: response});
+      navigation.navigate('OptimizationResult', {
+        result: response,
+        usdzUri: room.usdzUri,
+        speakerDimensions,
+      });
     } catch (e: any) {
       if (e instanceof OptimizationAbortedError || controller.signal.aborted) return;
       if (!mountedRef.current) return;
@@ -314,6 +318,11 @@ export default function SpeakerPlacementScreen() {
                           label: '임시 스피커',
                           color: PREVIEW_COLORS.initial,
                           ...initialPos.initial_speaker_position,
+                          dimensions: {
+                            width_m:  speakerDimensions.width_cm  / 100,
+                            height_m: speakerDimensions.height_cm / 100,
+                            depth_m:  speakerDimensions.depth_cm  / 100,
+                          },
                         },
                       ],
                     });

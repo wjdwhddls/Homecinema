@@ -6,8 +6,20 @@ pydantic==2.9.2
 pydantic-settings==2.6.0
 
 # Phase 2~3: 음향 시뮬레이션 + 최적 스피커 배치
-numpy>=1.24
-scipy>=1.11
+# numpy/scipy 는 xRIR repo (numpy==1.23.5, scipy==1.10.0) 와 호환되도록 완화
+numpy>=1.23.5
+scipy>=1.10.0
 pyroomacoustics>=0.10.0
 shapely>=2.0
 soundfile>=0.12
+
+# xRIR (ConvNeXT) 신경망 추론
+# inference.py / model/xRIR_ConvNeXT.py / utils/spec_utils.py 의 import 를 모두 만족
+torch>=2.2
+torchaudio>=2.2
+torchvision>=0.17
+librosa>=0.10
+einops>=0.7
+auraloss>=0.2.1
+timm>=0.9
+matplotlib>=3.7
