@@ -98,16 +98,32 @@ async def get_initial_speaker_position(
 async def start_optimization(
     background_tasks: BackgroundTasks,
     roomplan_scan: str = Form(...),
-    recorded: UploadFile = File(...),           # 마이크 녹음 wav
-    sweep: UploadFile = File(...),              # sweep 원본 wav
-    mesh: Optional[UploadFile] = File(None),    # LiDAR 메쉬 (없으면 fallback)
+    recorded: UploadFile = File(...),
+    sweep: UploadFile = File(...),
+    mesh: Optional[UploadFile] = File(None),
     listener_height_m: float = Form(1.2),
-    speaker_height_m: float = Form(1.2),
+    speaker_width_cm: float = Form(...),
+    speaker_height_cm: float = Form(...),
+    speaker_depth_cm: float = Form(...),
     top_k: int = Form(2),
     initial_speaker_x: float = Form(...),
     initial_speaker_y: float = Form(...),
     initial_speaker_z: float = Form(...),
 ) -> dict:
+
+    speaker_dimensions = {
+        "width_cm": speaker_width_cm,
+        "height_cm": speaker_height_cm,
+        "depth_cm": speaker_depth_cm,
+    }
+    
+    background_tasks.add_task(
+        _run_task, job_id, roomplan_json,
+        recorded_bytes, sweep_bytes, mesh_bytes,
+        listener_height_m, speaker_dimensions, top_k,
+        ref_src_pos,
+    )
+
     try:
         roomplan_json = json.loads(roomplan_scan)
     except json.JSONDecodeError as e:
@@ -119,10 +135,17 @@ async def start_optimization(
 
     job_id = _job_store.create_job()
     ref_src_pos = np.array([initial_speaker_x, initial_speaker_y, initial_speaker_z], dtype=np.float32)
+    
+    speaker_dimensions = {
+        "width_cm": speaker_width_cm,
+        "height_cm": speaker_height_cm,
+        "depth_cm": speaker_depth_cm,
+    }
+    
     background_tasks.add_task(
         _run_task, job_id, roomplan_json,
         recorded_bytes, sweep_bytes, mesh_bytes,
-        listener_height_m, speaker_height_m, top_k,
+        listener_height_m, speaker_dimensions, top_k,
         ref_src_pos,
     )
 
@@ -151,7 +174,7 @@ def _run_task(
     sweep_bytes: bytes,
     mesh_bytes: Optional[bytes],
     listener_height: float,
-    speaker_height: float,
+    speaker_dimensions: dict,
     top_k: int,
     ref_src_pos: np.ndarray
 ) -> None:
@@ -209,9 +232,9 @@ def _run_task(
                 ref_rir_bytes=ref_rir_bytes,
                 ref_src_pos=ref_src_pos,
                 initial_speaker_pos=ref_src_pos,
+                speaker_dimensions=speaker_dimensions,
                 top_k=top_k,
                 listener_height=listener_height,
-                speaker_height=speaker_height,
                 mesh_bin_path=mesh_bin_path,
             )
 

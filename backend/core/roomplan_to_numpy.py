@@ -76,6 +76,28 @@ def compute_listener_position(walls, listener_height=1.2):
     
     return np.array([listener_xy[0], listener_xy[1], listener_height], dtype=np.float32)
 
+# ── 후보 위치 생성 ────────────────────────────────────────────────
+def generate_candidate_positions(walls, speaker_height=1.2,
+                                  grid_step=0.3, wall_margin=0.5):
+    """
+    방 바닥 폴리곤 안에 격자 형태로 후보 스피커 위치 생성
+    (현재는 안 쓰지만 convert_roomplan_to_xrir_inputs가 호출하므로 유지)
+    """
+    floor_corners = extract_floor_polygon(walls)
+    poly = Polygon(floor_corners.tolist()).buffer(-wall_margin)
+
+    x_min, y_min, x_max, y_max = poly.bounds
+    xs = np.arange(x_min, x_max, grid_step)
+    ys = np.arange(y_min, y_max, grid_step)
+
+    candidates = []
+    for x in xs:
+        for y in ys:
+            if poly.contains(Point(x, y)):
+                candidates.append([x, y, speaker_height])
+
+    return np.array(candidates, dtype=np.float32)
+
 # ── 가구 폴리곤 추출 ────────────────────────────────────────────────
 def extract_object_polygons(objects, margin=0.0):
     """
@@ -129,34 +151,93 @@ def extract_object_polygons(objects, margin=0.0):
     
     return polygons
 
+# ── 스피커 적합 가구 추출 ────────────────────────────────────────
 
-# # ── xyzs.npy 생성 ────────────────────────────────────────────────
+# 스피커 올릴 수 있는 카테고리
+SPEAKER_FRIENDLY_CATEGORIES = {"storage", "table"}
 
-# def generate_candidate_positions(walls, speaker_height=1.2,
-#                                   grid_step=0.3, wall_margin=0.5):
-#     """
-#     방 바닥 폴리곤 안에 격자 형태로 후보 스피커 위치 생성
-#     wall_margin: 벽에서 최소 거리 (m)
-#     grid_step  : 격자 간격 (m)
-#     반환: (N, 3) numpy array
-#     """
-#     from shapely.geometry import Point, Polygon
+# 가구 높이 범위
+MIN_FURNITURE_HEIGHT = 0.3   # 30cm
+MAX_FURNITURE_HEIGHT = 1.0   # 100cm
 
-#     floor_corners = extract_floor_polygon(walls)
-#     poly = Polygon(floor_corners.tolist()).buffer(-wall_margin)  # 마진 적용
+# 스피커-가구 마진
+FURNITURE_SIZE_MARGIN = 0.03  # 3cm
 
-#     x_min, y_min, x_max, y_max = poly.bounds
-#     xs = np.arange(x_min, x_max, grid_step)
-#     ys = np.arange(y_min, y_max, grid_step)
-
-#     candidates = []
-#     for x in xs:
-#         for y in ys:
-#             if poly.contains(Point(x, y)):
-#                 candidates.append([x, y, speaker_height])
-
-#     return np.array(candidates, dtype=np.float32)
-
+def extract_speaker_friendly_furniture(objects, spk_width_m, spk_depth_m):
+    """
+    스피커 올릴 수 있는 가구만 추출
+    
+    Args:
+        objects: roomplan JSON의 "objects" 리스트
+        spk_width_m: 스피커 가로 (m)
+        spk_depth_m: 스피커 깊이 (m)
+    
+    Returns:
+        list of dict: [{"polygon": Polygon, "height": float, "centroid": (x,y), "category": str}]
+    """
+    from shapely.geometry import Polygon as ShapelyPolygon
+    
+    furniture_list = []
+    
+    for obj in objects:
+        category = obj.get("category", "")
+        
+        # 카테고리 필터
+        if category not in SPEAKER_FRIENDLY_CATEGORIES:
+            continue
+        
+        if "transform" not in obj or "dimensions" not in obj:
+            continue
+        
+        dims = obj["dimensions"]
+        furn_w = float(dims[0])  # 가로
+        furn_h = float(dims[1])  # 높이
+        furn_d = float(dims[2])  # 깊이
+        
+        # 높이 범위 체크
+        if not (MIN_FURNITURE_HEIGHT <= furn_h <= MAX_FURNITURE_HEIGHT):
+            continue
+        
+        # 윗면 크기 체크 (가로/세로 각각 스피커보다 큼 + 마진)
+        required_w = spk_width_m + FURNITURE_SIZE_MARGIN * 2
+        required_d = spk_depth_m + FURNITURE_SIZE_MARGIN * 2
+        if furn_w < required_w or furn_d < required_d:
+            continue
+        
+        # 폴리곤 생성 (xRIR 좌표계 x-y 평면)
+        m = np.array(obj["transform"], dtype=float).reshape(4, 4, order="F")
+        half_w = furn_w * 0.5
+        half_d = furn_d * 0.5
+        
+        local_corners = np.array([
+            [-half_w, 0.0, -half_d, 1.0],
+            [+half_w, 0.0, -half_d, 1.0],
+            [+half_w, 0.0, +half_d, 1.0],
+            [-half_w, 0.0, +half_d, 1.0],
+        ])
+        world_corners = (m @ local_corners.T).T[:, :3]
+        
+        xy_corners = []
+        for wc in world_corners:
+            xrir = roomplan_to_xrir_coords(*wc)
+            xy_corners.append([xrir[0], xrir[1]])
+        
+        try:
+            poly = ShapelyPolygon(xy_corners)
+            if not poly.is_valid or poly.area < 1e-6:
+                continue
+            
+            centroid = poly.centroid
+            furniture_list.append({
+                "polygon": poly,
+                "height": furn_h,
+                "centroid": (centroid.x, centroid.y),
+                "category": category,
+            })
+        except:
+            continue
+    
+    return furniture_list
 
 # ── 메인 변환 함수 ───────────────────────────────────────────────
 

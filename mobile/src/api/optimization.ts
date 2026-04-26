@@ -107,7 +107,11 @@ export async function startXRirOptimization(
   initialSpeakerPosition: SpeakerPosition,  // 녹음 시 스피커를 놓았던 임시 위치
   options?: {
     listener_height_m?: number;
-    speaker_height_m?: number;
+    speaker_dimensions?: {
+        width_cm: number;
+        height_cm: number;
+        depth_cm: number;
+    };
     top_k?: number;
   },
 ): Promise<StartOptimizationResponse> {
@@ -144,8 +148,10 @@ export async function startXRirOptimization(
   if (options?.listener_height_m !== undefined) {
     formData.append('listener_height_m', String(options.listener_height_m));
   }
-  if (options?.speaker_height_m !== undefined) {
-    formData.append('speaker_height_m', String(options.speaker_height_m));
+  if (options?.speaker_dimensions !== undefined) {
+    formData.append('speaker_width_cm', String(options.speaker_dimensions.width_cm));
+    formData.append('speaker_height_cm', String(options.speaker_dimensions.height_cm));
+    formData.append('speaker_depth_cm', String(options.speaker_dimensions.depth_cm));
   }
   if (options?.top_k !== undefined) {
     formData.append('top_k', String(options.top_k));

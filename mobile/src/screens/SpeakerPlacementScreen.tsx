@@ -113,7 +113,7 @@ export default function SpeakerPlacementScreen() {
       const pos = await getInitialSpeakerPosition({
         roomplan_scan: scanned,
         listener_height_m: 1.2,
-        speaker_height_m: 1.2,
+        // speaker_height_m: 1.2,
       });
       if (!mountedRef.current) return;
       safe(setInitialPos)(pos);
@@ -172,8 +172,8 @@ export default function SpeakerPlacementScreen() {
         initialPos.initial_speaker_position,
         {
           listener_height_m: 1.2,
-          speaker_height_m: 1.2,
-          top_k: 5,
+          speaker_dimensions: speakerDimensions,
+          top_k: 2,
         },
       );
 

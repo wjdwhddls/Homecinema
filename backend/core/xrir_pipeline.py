@@ -262,6 +262,92 @@ def _generate_stereo_candidates_custom(
     
     return candidates
 
+# ── 가구 위 후보 생성 ────────────────────────────────────────────
+
+HEIGHT_TOLERANCE_M = 0.1  # L/R 가구 높이 차이 허용(10cm만)
+
+def generate_furniture_top_candidates(
+    listener_pos,
+    initial_speaker_pos,
+    speaker_friendly_furniture,
+    spk_height_m,
+):
+    """
+    좌우 가구 페어링해서 가구 위 L/R 후보 쌍 생성
+    
+    Args:
+        listener_pos: 청취자 위치 [x, y, z]
+        initial_speaker_pos: 임시 스피커 위치 (정면 방향 판단용)
+        speaker_friendly_furniture: extract_speaker_friendly_furniture 결과
+        spk_height_m: 스피커 자체 높이 (m)
+    
+    Returns:
+        list of (left_pos, right_pos, "furniture", furn_height)
+    """
+    listener_xy = np.array(listener_pos[:2])
+    
+    # 정면 방향 벡터
+    forward = np.array(initial_speaker_pos[:2]) - listener_xy
+    dist = np.linalg.norm(forward)
+    if dist < 1e-6:
+        forward = np.array([1.0, 0.0])
+    else:
+        forward = forward / dist
+    
+    # 좌우 판단: 정면 기준 외적
+    perp = np.array([-forward[1], forward[0]])  # 왼쪽 방향 vector
+    
+    # 좌/우 가구 분류
+    left_furniture = []
+    right_furniture = []
+    
+    for furn in speaker_friendly_furniture:
+        cx, cy = furn["centroid"]
+        offset = np.array([cx, cy]) - listener_xy
+        
+        # 정면 거리 (앞쪽이어야 함)
+        forward_dist = np.dot(offset, forward)
+        if forward_dist < 0.3:  # 청취자 뒤쪽 또는 너무 가까운 가구 제외
+            continue
+        
+        # 좌우 판단
+        side = np.dot(offset, perp)
+        if side > 0:
+            left_furniture.append(furn)
+        else:
+            right_furniture.append(furn)
+    
+    print(f"  좌측 가구: {len(left_furniture)}개, 우측 가구: {len(right_furniture)}개")
+    
+    # L/R 페어링 (높이 비슷한 것끼리)
+    candidates = []
+    
+    for left_furn in left_furniture:
+        for right_furn in right_furniture:
+            height_diff = abs(left_furn["height"] - right_furn["height"])
+            if height_diff > HEIGHT_TOLERANCE_M:
+                continue
+            
+            # 스피커는 가구 윗면 중앙에 음향 중심
+            avg_furn_height = (left_furn["height"] + right_furn["height"]) / 2
+            spk_z = avg_furn_height + spk_height_m / 2
+            
+            left_pos = np.array([
+                left_furn["centroid"][0],
+                left_furn["centroid"][1],
+                spk_z,
+            ], dtype=np.float32)
+            
+            right_pos = np.array([
+                right_furn["centroid"][0],
+                right_furn["centroid"][1],
+                spk_z,
+            ], dtype=np.float32)
+            
+            candidates.append((left_pos, right_pos, "furniture", avg_furn_height))
+    
+    return candidates
+
 # ── depth.npy 기반 장애물 체크 ───────────────────────────────────
 
 def check_obstacle_depth(
@@ -295,13 +381,18 @@ def run_xrir_pipeline(
     ref_rir_bytes: bytes,
     ref_src_pos: np.ndarray,
     initial_speaker_pos: np.ndarray,
+    speaker_dimensions: dict,
     top_k: int = 2,
     listener_height: float = 1.2,
-    speaker_height: float = 1.2,
     wall_margin: float = 0.1,
     furniture_margin: float = 0.1,
     mesh_bin_path: str = None,
 ) -> list:
+    """
+    speaker_dimensions: {"width_cm": float, "height_cm": float, "depth_cm": float}
+    """
+    from core.roomplan_to_numpy import extract_speaker_friendly_furniture
+    
     imps = _load_xrir_imports()
     torch = imps["torch"]
     convert_equirect_to_camera_coord = imps["convert_equirect_to_camera_coord"]
@@ -309,6 +400,14 @@ def run_xrir_pipeline(
     score_position = imps["score_position"]
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+    # 스피커 크기 (cm → m)
+    spk_w = speaker_dimensions["width_cm"] / 100
+    spk_h = speaker_dimensions["height_cm"] / 100
+    spk_d = speaker_dimensions["depth_cm"] / 100
+    
+    # 바닥 배치 시 스피커 음향 중심 높이
+    speaker_height_floor = spk_h / 2
 
     with tempfile.TemporaryDirectory() as tmpdir:
         tmpdir = Path(tmpdir)
@@ -326,13 +425,18 @@ def run_xrir_pipeline(
             roomplan_json=roomplan_json,
             output_dir=str(tmpdir),
             listener_height=listener_height,
-            speaker_height=speaker_height,
+            speaker_height=speaker_height_floor,
         )
         listener_pos = listener.astype(np.float32)
 
-        # ── 3. depth.npy 생성 ────────────────────────────────────
+        # ── 3. 가구 폴리곤 추출 ──────────────────────────────────
+        # 충돌 검사용 (모든 가구)
         object_polygons = extract_object_polygons(objects, margin=furniture_margin)
-        print(f"가구 {len(object_polygons)}개 감지됨")
+        print(f"가구 {len(object_polygons)}개 감지됨 (충돌 검사용)")
+        
+        # 스피커 올릴 수 있는 가구
+        speaker_friendly = extract_speaker_friendly_furniture(objects, spk_w, spk_d)
+        print(f"스피커 올릴 수 있는 가구 {len(speaker_friendly)}개")
 
         # ── 4. depth.npy 생성 ────────────────────────────────────
         depth_np = convert_roomplan_to_depth(
@@ -342,23 +446,48 @@ def run_xrir_pipeline(
             mesh_bin_path=mesh_bin_path,
         )
 
-        # ── 5. 스테레오 후보 위치 생성 ───────────────────────────
+        # ── 5-A. 바닥 후보 생성 ──────────────────────────────────
         floor_polygon = extract_floor_polygon(walls)
-        valid_candidates, stage_used = generate_candidates_with_fallback(
+        floor_candidates, stage_used = generate_candidates_with_fallback(
             listener_pos=listener_pos,
             initial_speaker_pos=initial_speaker_pos,
             floor_polygon=floor_polygon,
             object_polygons=object_polygons,
             depth_np=depth_np,
-            speaker_height=speaker_height,
+            speaker_height=speaker_height_floor,
             min_candidates=5,
         )
+        print(f"\n바닥 후보 ({stage_used}): {len(floor_candidates)}쌍")
+        
+        # ── 5-B. 가구 위 후보 생성 ──────────────────────────────
+        furniture_candidates = generate_furniture_top_candidates(
+            listener_pos=listener_pos,
+            initial_speaker_pos=initial_speaker_pos,
+            speaker_friendly_furniture=speaker_friendly,
+            spk_height_m=spk_h,
+        )
+        print(f"가구 위 후보: {len(furniture_candidates)}쌍")
 
-        if not valid_candidates:
+        # ── 5-C. 후보 통합 ───────────────────────────────────────
+        all_candidates = []
+        for l, r, d, ang in floor_candidates:
+            all_candidates.append({
+                "left": l, "right": r,
+                "placement": "floor",
+                "d": d, "angle": ang, "furn_height": 0.0,
+            })
+        for l, r, _, furn_h in furniture_candidates:
+            all_candidates.append({
+                "left": l, "right": r,
+                "placement": "furniture",
+                "d": None, "angle": None, "furn_height": furn_h,
+            })
+        
+        if not all_candidates:
             print("유효한 후보 없음")
             return []
 
-        print(f"\n최종 사용: {stage_used}, 후보 {len(valid_candidates)}쌍")
+        print(f"\n총 후보: {len(all_candidates)}쌍 (바닥 {len(floor_candidates)} + 가구 위 {len(furniture_candidates)})")
 
         # ── 6. xRIR 추론 ─────────────────────────────────────────
         depth_tensor = torch.from_numpy(depth_np.astype(np.float32))
@@ -366,37 +495,33 @@ def run_xrir_pipeline(
         model = _get_model(str(device))
 
         raw_results = []
-        print(f"{len(valid_candidates)}쌍 음향 점수 예측 중...")
+        print(f"{len(all_candidates)}쌍 음향 점수 예측 중...")
 
-        for i, (left, right, d, angle) in enumerate(valid_candidates):
+        for i, cand in enumerate(all_candidates):
             rir_L = predict_rir(
                 model, depth_coord, ref_rir_np,
-                ref_src_pos, left, listener_pos, device=str(device)
+                ref_src_pos, cand["left"], listener_pos, device=str(device)
             )
             rir_R = predict_rir(
                 model, depth_coord, ref_rir_np,
-                ref_src_pos, right, listener_pos, device=str(device)
+                ref_src_pos, cand["right"], listener_pos, device=str(device)
             )
 
             score_L = score_position(rir_L, sr=sr)
             score_R = score_position(rir_R, sr=sr)
-
             pair_score = (score_L["total"] + score_R["total"]) / 2
 
             raw_results.append({
-                "left":       left,
-                "right":      right,
-                "d":          d,
-                "angle":      angle,
-                "score_L":    score_L,
-                "score_R":    score_R,
+                **cand,
+                "score_L": score_L,
+                "score_R": score_R,
                 "pair_score": pair_score,
             })
 
             if (i + 1) % 10 == 0:
-                print(f"  {i+1}/{len(valid_candidates)} 완료...")
+                print(f"  {i+1}/{len(all_candidates)} 완료...")
 
-        # ── 6. 정렬 후 상위 K개 반환 ─────────────────────────────
+        # ── 7. 정렬 후 상위 K개 반환 ─────────────────────────────
         raw_results.sort(key=lambda x: x["pair_score"], reverse=True)
         top_raw = raw_results[:top_k]
 
@@ -408,6 +533,7 @@ def run_xrir_pipeline(
             sR    = r["score_R"]
 
             result = {
+                "placement_type": r["placement"],
                 "placement": {
                     "left": {
                         "x": round(float(left[0]), 3),
@@ -434,15 +560,17 @@ def run_xrir_pipeline(
                     "c50_score":   round((sL["c50_score"] + sR["c50_score"]) / 2, 3),
                     "t60_score":   round((sL["t60_score"] + sR["t60_score"]) / 2, 3),
                 },
-                "angle_deg":  r["angle"],
-                "distance_m": r["d"],
+                "angle_deg":          r.get("angle"),
+                "distance_m":         r.get("d"),
+                "furniture_height_m": round(r.get("furn_height", 0.0), 2),
                 "rank": rank,
             }
             results.append(result)
 
-            print(f"{rank+1}위: L({left[0]:.2f}, {left[1]:.2f}) "
-                  f"R({right[0]:.2f}, {right[1]:.2f}) "
-                  f"협각={r['angle']}° d={r['d']}m "
+            placement_str = "가구 위" if r["placement"] == "furniture" else "바닥"
+            print(f"{rank+1}위 [{placement_str}]: "
+                  f"L({left[0]:.2f}, {left[1]:.2f}, {left[2]:.2f}) "
+                  f"R({right[0]:.2f}, {right[1]:.2f}, {right[2]:.2f}) "
                   f"| score={r['pair_score']:.3f}")
 
         return results
