@@ -40,6 +40,14 @@ import {
 } from '../api/optimization';
 import {RootStackParamList} from '../types';
 
+function xrirToRoomPlan(p: {x: number; y: number; z: number}) {
+  return {
+    x: p.x,
+    y: p.z,    // 높이 (xRIR z → RoomPlan y)
+    z: -p.y,   // 깊이 (xRIR y → RoomPlan -z)
+  };
+}
+
 type SpeakerPlacementRouteProp = RouteProp<RootStackParamList, 'SpeakerPlacement'>;
 
 type Step =
@@ -248,7 +256,7 @@ export default function SpeakerPlacementScreen() {
               <View style={styles.noticeText}>
                 <Text style={styles.noticeTitle}>스캔 시작 위치 = 청취 위치</Text>
                 <Text style={styles.noticeDesc}>
-                  평소 감상하는 자리에 앉아서 버튼을 눌러주세요.
+                  평소 감상하는 자리에 앉아 스크린(TV)을 바라보며 시작해주세요.
                 </Text>
               </View>
             </View>
@@ -308,12 +316,12 @@ export default function SpeakerPlacementScreen() {
                   try {
                     await showRoomPreview({
                       usdzUri: room.usdzUri!,
-                      listener: initialPos.listener_position,
+                      listener: xrirToRoomPlan(initialPos.listener_position),
                       speakers: [
                         {
                           label: '임시 스피커',
                           color: PREVIEW_COLORS.initial,
-                          ...initialPos.initial_speaker_position,
+                          ...xrirToRoomPlan(initialPos.initial_speaker_position),
                         },
                       ],
                     });
