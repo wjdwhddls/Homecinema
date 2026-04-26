@@ -24,7 +24,7 @@ from core.roomplan_to_numpy import (
 from core.roomplan_to_depth import convert_roomplan_to_depth, ray_triangle_intersect, extract_wall_triangles
 
 XRIR_REPO_PATH  = os.environ.get("XRIR_REPO_PATH",  "/home/piai/AcousticRooms/xRIR_code-main")
-CHECKPOINT_PATH = os.environ.get("XRIR_CHECKPOINT_PATH", f"{XRIR_REPO_PATH}/checkpoints/xRIR_unseen.pth")
+CHECKPOINT_PATH = os.environ.get("XRIR_CHECKPOINT_PATH", f"{XRIR_REPO_PATH}/ckpt/xRIR_1_shot/ConvNeXT_best.pth")
 
 _model = None
 _xrir_imports = None
@@ -39,7 +39,7 @@ def _load_xrir_imports():
         sys.path.append(XRIR_REPO_PATH)
 
     import torch
-    from model.xRIR import xRIR as xRIRModel
+    from model.xRIR_ConvNeXT import xRIR as xRIRModel
     from inference import (
         convert_equirect_to_camera_coord,
         predict_rir,
@@ -360,43 +360,7 @@ def run_xrir_pipeline(
 
         print(f"\n최종 사용: {stage_used}, 후보 {len(valid_candidates)}쌍")
 
-        # 필터링
-        valid_candidates = []
-        filtered_furniture = 0
-        filtered_obstacle = 0
-        
-        for left, right, d, angle in candidates:
-            # 가구 폴리곤 체크
-            left_pt = Point(left[0], left[1])
-            right_pt = Point(right[0], right[1])
-            
-            in_furniture = False
-            for furn_poly in object_polygons:
-                if furn_poly.contains(left_pt) or furn_poly.contains(right_pt):
-                    in_furniture = True
-                    break
-            if in_furniture:
-                filtered_furniture += 1
-                continue
-            
-            # depth.npy 장애물 체크
-            if not (check_obstacle_depth(listener_pos, left, depth_np) and
-                    check_obstacle_depth(listener_pos, right, depth_np)):
-                filtered_obstacle += 1
-                continue
-            
-            valid_candidates.append((left, right, d, angle))
-
-        print(f"전체 후보: {len(candidates)}쌍")
-        print(f"  가구 충돌 제외: {filtered_furniture}쌍")
-        print(f"  장애물 제외: {filtered_obstacle}쌍")
-        print(f"  유효 후보: {len(valid_candidates)}쌍")
-
-        if not valid_candidates:
-            print("유효한 후보 없음")
-            return []
-
-        # ── 5. xRIR 추론 ─────────────────────────────────────────
+        # ── 6. xRIR 추론 ─────────────────────────────────────────
         depth_tensor = torch.from_numpy(depth_np.astype(np.float32))
         depth_coord  = convert_equirect_to_camera_coord(depth_tensor)
         model = _get_model(str(device))

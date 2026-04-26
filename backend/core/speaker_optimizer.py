@@ -2,7 +2,7 @@
 Phase 3.2: 최적 스피커 배치 탐색.
 
 후보 위치를 음향 휴리스틱으로 생성 → coarse-to-fine 2단계 탐색 →
-가중 점수로 정렬해 best + top-5 대안을 반환한다.
+가중 점수로 정렬해 top-2 배치를 반환한다.
 """
 
 from __future__ import annotations
@@ -280,7 +280,7 @@ class SpeakerOptimizer:
         elapsed = time.time() - start
         return {
             "best": valid[0],
-            "top5": valid[:5],
+            "top2": valid[:2],
             "all_evaluated": valid,
             "elapsed_seconds": float(elapsed),
             "config_type": self.config_type,

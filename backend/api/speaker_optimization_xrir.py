@@ -103,7 +103,7 @@ async def start_optimization(
     mesh: Optional[UploadFile] = File(None),    # LiDAR 메쉬 (없으면 fallback)
     listener_height_m: float = Form(1.2),
     speaker_height_m: float = Form(1.2),
-    top_k: int = Form(5),
+    top_k: int = Form(2),
     initial_speaker_x: float = Form(...),
     initial_speaker_y: float = Form(...),
     initial_speaker_z: float = Form(...),

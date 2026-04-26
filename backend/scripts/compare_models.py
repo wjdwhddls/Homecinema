@@ -33,4 +33,3 @@ def compare_models(name1, name2, results_dir="/home/piai/AcousticRooms/xRIR_code
 # 모든 조합 비교
 compare_models("baseline", "fusion")
 compare_models("baseline", "ConvNeXT")
-compare_models("fusion", "ConvNeXT")

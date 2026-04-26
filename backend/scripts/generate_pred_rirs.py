@@ -27,7 +27,7 @@ from core.sweep_deconvolution import deconvolve_sweep
 
 SCAN_DIR = Path("/home/piai/Homecinema/backend/data/roomplan_scans")
 EXPERIMENT_DIR = Path("/home/piai/Homecinema/backend/data/experiment")
-CHECKPOINT_PATH = "/home/piai/AcousticRooms/xRIR_code-main/checkpoints/xRIR_unseen.pth"
+CHECKPOINT_PATH = "/home/piai/AcousticRooms/xRIR_code-main/ckpt/xRIR_1_shot/ConvNeXT_best.pth"
 
 
 def generate_pred_rirs(job_id, room_name):
