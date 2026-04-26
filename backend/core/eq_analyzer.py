@@ -126,18 +126,30 @@ def compute_transfer_function(
     inverse_sweep = generate_inverse_sweep(y_org, sr)
     ir = signal.fftconvolve(y_rec, inverse_sweep, mode='full')
 
-    center  = int(np.argmax(np.abs(ir)))
-    IR_LEN  = int(sr * 200 / 1000)   # 200ms 게이트
-    end     = min(center + IR_LEN, len(ir))
+    # IR 게이트 — 직접음 위치(center) 앞 5ms ~ 뒤 200ms 만 추출.
+    # 이전 코드는 center/end를 계산만 하고 ir 전체를 FFT해서 잔향/노이즈/pre-ringing이
+    # 모두 spectrum에 섞였고, mid_band median 정규화와 결합해 모든 밴드가 saturation됨.
+    center       = int(np.argmax(np.abs(ir)))
+    pre_samples  = int(sr * 5   / 1000)   # 5 ms
+    post_samples = int(sr * 200 / 1000)   # 200 ms
+    start = max(0, center - pre_samples)
+    end   = min(len(ir), center + post_samples)
+    ir_gated = ir[start:end]
 
-    fade_len = len(ir) // 2
-    window = np.ones(len(ir))
+    if len(ir_gated) < 16:
+        raise ValueError(
+            f"IR 게이트 결과가 너무 짧습니다 ({len(ir_gated)} 샘플). 녹음 정렬에 문제가 있을 수 있습니다."
+        )
+
+    # 꼬리 fade-out (잔향 끝의 cliff 효과 방지)
+    fade_len = max(1, len(ir_gated) // 4)
+    window = np.ones(len(ir_gated))
     window[-fade_len:] = signal.windows.hann(fade_len * 2)[-fade_len:]
-    ir = ir * window
+    ir_gated = ir_gated * window
 
-    fft_ir  = np.fft.rfft(ir)
-    freqs   = np.fft.rfftfreq(len(ir), d=1.0 / sr)
-    mag     = np.abs(fft_ir)
+    fft_ir = np.fft.rfft(ir_gated)
+    freqs  = np.fft.rfftfreq(len(ir_gated), d=1.0 / sr)
+    mag    = np.abs(fft_ir)
 
     mid_band = (freqs > 500) & (freqs < 2000)
     ref = np.median(mag[mid_band]) if np.any(mid_band) else 1.0
@@ -178,7 +190,9 @@ def get_calibration_values(
         response    = float(np.interp(f_target, freqs, H_db))
         theory_gain = -response
         soft_gain   = theory_gain * 0.6
-        actual      = float(np.clip(soft_gain, -6.0, 6.0))
+        # ±6 dB는 BT 스피커+폰 마이크 frequency response 변동(±10 dB+)에 비해 좁아 saturation 발생.
+        # 음향 EQ에서 ±9 dB는 일반적인 보정 범위.
+        actual      = float(np.clip(soft_gain, -9.0, 9.0))
         if abs(actual) < 0.3:
             actual = 0.0
         results.append({
@@ -240,7 +254,7 @@ def generate_parametric_eq(
     result = []
     for p in picks[:max_filters]:
         freq  = p["freq"]
-        gain  = float(np.clip(p["theory_gain_db"], -12.0, 12.0))
+        gain  = float(np.clip(p["theory_gain_db"], -15.0, 15.0))
         Q     = 0.8 if freq < 300 else (1.4 if freq < 2000 else 2.0)
         result.append({"freq": freq, "gain_db": round(gain, 2), "Q": Q})
 
@@ -269,7 +283,9 @@ def apply_eq_and_save(
     """
     y, _ = load_audio_bytes(audio_bytes, target_sr=sr)
 
-    clamped_gain  = np.clip(H_db * -0.6, -6.0, 6.0)
+    # 23밴드/Parametric과 동일한 범위로 통일.
+    # RMS 매칭 + peak normalize가 뒤따르므로 ±9 dB로 늘려도 출력 클리핑 위험 없음.
+    clamped_gain  = np.clip(H_db * -0.6, -9.0, 9.0)
     gain_linear   = 10 ** (clamped_gain / 20.0)
 
     n_fft    = len(y)
@@ -317,6 +333,18 @@ def run_eq_pipeline(
     """
     y_org, _ = load_audio_bytes(sweep_bytes,    target_sr=sr)
     y_rec, _ = load_audio_bytes(recorded_bytes, target_sr=sr)
+
+    min_samples = int(sr * 0.5)
+    if y_org.size < min_samples:
+        raise ValueError(
+            f"sweep 파일이 비어있거나 너무 짧습니다 ({y_org.size} 샘플). "
+            "번들의 sweep.wav가 손상되지 않았는지 확인하세요."
+        )
+    if y_rec.size < min_samples:
+        raise ValueError(
+            f"녹음 파일이 비어있거나 너무 짧습니다 ({y_rec.size} 샘플). "
+            "마이크 권한과 블루투스 스피커 연결을 확인한 뒤 다시 측정해주세요."
+        )
 
     y_rec_aligned = align_audio(y_org, y_rec)
 

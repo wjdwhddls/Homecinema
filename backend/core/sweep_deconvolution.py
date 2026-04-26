@@ -38,15 +38,31 @@ def deconvolve_sweep(
     if sweep.ndim > 1:
         sweep = sweep[:, 0]
 
-    # 샘플레이트 일치 확인
+    # 샘플레이트 일치 — 다르면 recorded를 sweep의 SR로 자동 resample
+    # 마이크 입력 SR(보통 48kHz)이 sweep 번들 SR과 다른 경우가 흔하므로 backend에서 흡수.
     if sr_rec != sr_sw:
-        raise ValueError(
-            f"샘플레이트 불일치: recorded={sr_rec}Hz, sweep={sr_sw}Hz\n"
-            "두 파일의 샘플레이트가 같아야 합니다."
-        )
+        from scipy.signal import resample_poly
+        from math import gcd
+        print(f"SR 불일치: recorded={sr_rec}Hz → sweep={sr_sw}Hz로 resample")
+        g = gcd(sr_sw, sr_rec)
+        recorded = resample_poly(recorded, sr_sw // g, sr_rec // g)
+        sr_rec = sr_sw
 
     sr = sr_rec
     print(f"로드 완료: recorded={len(recorded)/sr:.2f}s, sweep={len(sweep)/sr:.2f}s, sr={sr}Hz")
+
+    # 빈/너무 짧은 입력 가드 — 빈 배열이면 deconvolution이 garbage RIR을 만들기 때문에 이전 단계에서 차단
+    min_samples = int(sr * 0.5)
+    if len(sweep) < min_samples:
+        raise ValueError(
+            f"sweep 파일이 비어있거나 너무 짧습니다 ({len(sweep)} 샘플). "
+            "번들의 sweep.wav가 손상되지 않았는지 확인하세요."
+        )
+    if len(recorded) < min_samples:
+        raise ValueError(
+            f"녹음 파일이 비어있거나 너무 짧습니다 ({len(recorded)} 샘플). "
+            "마이크 권한과 블루투스 스피커 연결을 확인한 뒤 다시 측정해주세요."
+        )
 
     # ── 2. FFT 기반 deconvolution ─────────────────────────────────
     # RIR = IFFT(FFT(recorded) / FFT(sweep))

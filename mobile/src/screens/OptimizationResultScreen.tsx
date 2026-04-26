@@ -3,7 +3,7 @@
  *
  * xRIR 최적 스피커 배치 결과 표시
  * - left/right 스테레오 좌표
- * - 음향 점수 (T60, C50, EDT)  
+ * - 음향 점수 (RT60, C80, DRR)
  * - 대안 위치 목록
  * - EQ 보정 측정으로 이동 버튼
  */
@@ -114,7 +114,7 @@ export default function OptimizationResultScreen() {
           <CoordRow label="오른쪽 스피커 (R)" pos={best.placement.right} />
           <CoordRow label="청취 위치" pos={best.placement.listener} />
           <Text style={styles.coordNote}>
-            * 청취 위치(원점) 기준 상대 좌표 (단위: m)
+            * 방 좌표 (단위: m) — 청취 위치 행을 기준으로 좌우(x)·앞뒤(y)·높이(z) 비교하세요
           </Text>
         </View>
 
@@ -123,39 +123,41 @@ export default function OptimizationResultScreen() {
           <Text style={styles.cardTitle}>예상 음향 특성</Text>
           
           <MetricRow
-            label="초기 감쇠 시간 (EDT)"
-            value={`${best.metrics.edt_seconds.toFixed(2)} 초`}
+            label="잔향 시간 (RT60)"
+            value={`${best.metrics.rt60_seconds.toFixed(2)} 초`}
             badge={
-              best.metrics.edt_seconds < 0.3 ? '양호'
-              : best.metrics.edt_seconds < 0.6 ? '보통'
+              best.metrics.rt60_seconds < 0.3 ? '짧음'
+              : best.metrics.rt60_seconds < 0.5 ? '양호'
+              : best.metrics.rt60_seconds < 0.7 ? '보통'
               : '길음'
             }
           />
           <MetricRow
-            label="음성 명료도 (C50)"
-            value={`${best.metrics.c50_db.toFixed(1)} dB`}
+            label="명료도 (C80)"
+            value={`${best.metrics.c80_db.toFixed(1)} dB`}
             badge={
-              best.metrics.c50_db >= 2 ? '양호'
-              : best.metrics.c50_db >= 0 ? '보통'
-              : '낮음'
+              best.metrics.c80_db >= 3  ? '매우 명료'
+              : best.metrics.c80_db >= 0  ? '양호'
+              : best.metrics.c80_db >= -3 ? '보통'
+              : '흐림'
             }
           />
           <MetricRow
-            label="잔향 시간 (T60)"
-            value={`${best.metrics.t60_seconds.toFixed(2)} 초`}
+            label="직접음 비율 (DRR)"
+            value={`${best.metrics.drr_db.toFixed(1)} dB`}
             badge={
-              best.metrics.t60_seconds < 0.4 ? '양호'
-              : best.metrics.t60_seconds < 0.7 ? '보통'
-              : '길음'
+              best.metrics.drr_db >= 6 ? '강함'
+              : best.metrics.drr_db >= 0 ? '양호'
+              : '잔향 우세'
             }
           />
-          
+
           <View style={styles.scoreBreakdown}>
             <Text style={styles.breakdownTitle}>세부 점수</Text>
             <View style={styles.breakdownRow}>
-              <ScoreBar label="EDT" value={best.metrics.edt_score} />
-              <ScoreBar label="C50" value={best.metrics.c50_score} />
-              <ScoreBar label="T60" value={best.metrics.t60_score} />
+              <ScoreBar label="RT60" value={best.metrics.rt60_score} />
+              <ScoreBar label="C80"  value={best.metrics.c80_score} />
+              <ScoreBar label="DRR"  value={best.metrics.drr_score} />
             </View>
           </View>
         </View>
@@ -179,7 +181,7 @@ export default function OptimizationResultScreen() {
                     R: ({alt.placement.right.x.toFixed(2)}, {alt.placement.right.y.toFixed(2)}) m
                   </Text>
                   <Text style={styles.altScore}>
-                    점수: {Math.round((alt.score ?? 0) * 100)} · T60 {alt.metrics.t60_seconds.toFixed(2)}s
+                    점수: {Math.round((alt.score ?? 0) * 100)} · RT60 {alt.metrics.rt60_seconds.toFixed(2)}s
                   </Text>
                 </View>
               </View>

@@ -180,8 +180,11 @@ def generate_candidates_with_fallback(
         # (단계 이름, wall_margin, distances, angles)
         ("1단계: 기본", 0.1, [0.1, 0.2, 0.3, 0.5], [40, 50, 60, 70, 80]),
         ("2단계: 마진 완화", 0.05, [0.1, 0.2, 0.3, 0.5], [40, 50, 60, 70, 80]),
-        ("3단계: 격자 촘촘", 0.05, [0.1, 0.15, 0.2, 0.25, 0.3, 0.4, 0.5], 
+        ("3단계: 격자 촘촘", 0.05, [0.1, 0.15, 0.2, 0.25, 0.3, 0.4, 0.5],
          [40, 45, 50, 55, 60, 65, 70, 75, 80]),
+        # 4단계: 작은 방 / 짧은 정면 대응 — 청취자에 더 가까운 base + 좁은 stereo 허용
+        ("4단계: 작은 방 대응", 0.05, [0.7, 1.0, 1.3, 1.6, 2.0],
+         [25, 30, 35, 40, 50]),
     ]
     
     for stage_name, margin, distances, angles in fallback_configs:
@@ -281,7 +284,11 @@ def _generate_stereo_candidates_custom(
 
 # ── 가구 위 후보 생성 ────────────────────────────────────────────
 
-HEIGHT_TOLERANCE_M = 0.1  # L/R 가구 높이 차이 허용(10cm만)
+HEIGHT_TOLERANCE_M = 0.1            # L/R 가구 높이 차이 허용
+MIN_LR_DISTANCE_M = 1.5             # L↔R 사이 최소 거리 (좁은 stereo 하한)
+MAX_LR_DISTANCE_M = 3.5             # L↔R 사이 최대 거리 (넓은 stereo 상한)
+MAX_LISTENER_DIST_DIFF_M = 1.0      # 청취자→L vs 청취자→R 거리 차이 허용
+MAX_DEPTH_DIFF_M = 0.5              # 정면 방향 깊이 차이 허용 (좌우 정렬)
 
 def generate_furniture_top_candidates(
     listener_pos,
@@ -335,34 +342,55 @@ def generate_furniture_top_candidates(
             right_furniture.append(furn)
     
     print(f"  좌측 가구: {len(left_furniture)}개, 우측 가구: {len(right_furniture)}개")
-    
-    # L/R 페어링 (높이 비슷한 것끼리)
+
+    # L/R 페어링 — 높이/거리/대칭성 검증
     candidates = []
-    
+    rejected = {"height": 0, "lr_distance": 0, "asymmetry": 0, "depth": 0}
+
     for left_furn in left_furniture:
         for right_furn in right_furniture:
+            # (1) 높이 차이
             height_diff = abs(left_furn["height"] - right_furn["height"])
             if height_diff > HEIGHT_TOLERANCE_M:
+                rejected["height"] += 1
                 continue
-            
+
+            l_xy = np.array(left_furn["centroid"], dtype=np.float64)
+            r_xy = np.array(right_furn["centroid"], dtype=np.float64)
+
+            # (2) L↔R 거리 (일반 stereo 권장 1.5~3.5m)
+            lr_distance = np.linalg.norm(l_xy - r_xy)
+            if lr_distance < MIN_LR_DISTANCE_M or lr_distance > MAX_LR_DISTANCE_M:
+                rejected["lr_distance"] += 1
+                continue
+
+            # (3) 청취자 거리 비대칭 (좌/우 한쪽이 더 멀면 음상이 한쪽으로 끌림)
+            l_dist = np.linalg.norm(l_xy - listener_xy)
+            r_dist = np.linalg.norm(r_xy - listener_xy)
+            if abs(l_dist - r_dist) > MAX_LISTENER_DIST_DIFF_M:
+                rejected["asymmetry"] += 1
+                continue
+
+            # (4) 정면 방향 깊이 차이 (한쪽이 앞 다른쪽이 뒤)
+            l_depth = float(np.dot(l_xy - listener_xy, forward))
+            r_depth = float(np.dot(r_xy - listener_xy, forward))
+            if abs(l_depth - r_depth) > MAX_DEPTH_DIFF_M:
+                rejected["depth"] += 1
+                continue
+
             # 스피커는 가구 윗면 중앙에 음향 중심
             avg_furn_height = (left_furn["height"] + right_furn["height"]) / 2
             spk_z = avg_furn_height + spk_height_m / 2
-            
-            left_pos = np.array([
-                left_furn["centroid"][0],
-                left_furn["centroid"][1],
-                spk_z,
-            ], dtype=np.float32)
-            
-            right_pos = np.array([
-                right_furn["centroid"][0],
-                right_furn["centroid"][1],
-                spk_z,
-            ], dtype=np.float32)
-            
+
+            left_pos = np.array([l_xy[0], l_xy[1], spk_z], dtype=np.float32)
+            right_pos = np.array([r_xy[0], r_xy[1], spk_z], dtype=np.float32)
+
             candidates.append((left_pos, right_pos, "furniture", avg_furn_height))
-    
+
+    if any(rejected.values()):
+        print(f"  가구 페어 reject: 높이={rejected['height']}, LR거리={rejected['lr_distance']}, "
+              f"비대칭={rejected['asymmetry']}, 깊이차={rejected['depth']}")
+
     return candidates
 
 # ── depth.npy 기반 장애물 체크 ───────────────────────────────────
