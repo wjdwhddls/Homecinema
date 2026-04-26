@@ -112,7 +112,7 @@ export default function EQMeasurementScreen() {
           <>
             {/* Bass / Mid / Treble 요약 */}
             <View style={styles.card}>
-              <Text style={styles.cardTitle}>📊 EQ 요약</Text>
+              <Text style={styles.cardTitle}>📊 일반 설정</Text>
               <View style={styles.simpleRow}>
                 {(['bass', 'mid', 'treble'] as const).map(band => {
                   const info = result.simple[band];
@@ -138,7 +138,7 @@ export default function EQMeasurementScreen() {
             {/* Parametric EQ */}
             {result.parametric.length > 0 && (
               <View style={styles.card}>
-                <Text style={styles.cardTitle}>🎚️ Parametric EQ</Text>
+                <Text style={styles.cardTitle}>🎚️ 고급 설정</Text>
                 {result.parametric.map((f, i) => (
                   <View key={i} style={styles.paramRow}>
                     <Text style={styles.paramFreq}>{f.freq.toLocaleString()} Hz</Text>
