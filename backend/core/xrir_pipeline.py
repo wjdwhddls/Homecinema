@@ -109,9 +109,9 @@ def _compute_subscore(t60: float, c50: float, edt: float):
     """T60/C50/EDT raw → 0~1 sub-score + 가중 합.
 
     Targets / 분모 / 가중치:
-    - T60: target 0.40 s, denom 0.40, weight 0.4
-    - C50: target  +2 dB, denom 20 dB, weight 0.3
-    - EDT: target 0.35 s, denom 0.35, weight 0.3
+    - C50: target  +2 dB, denom 20 dB, weight 0.40 — 명료도 우선
+    - EDT: target 0.35 s, denom 0.35, weight 0.35 — 초기 잔향 인지
+    - T60: target 0.40 s, denom 0.40, weight 0.25 — 전체 잔향
 
     EDT target은 거실/홈시어터 BR ≈ T60 × 0.85~0.95 가이드라인 기반.
     Returns: (t60_score, c50_score, edt_score, total) — 모두 0~1.
@@ -119,7 +119,7 @@ def _compute_subscore(t60: float, c50: float, edt: float):
     t60_score = max(0.0, 1.0 - abs(t60 - 0.40) / 0.40)
     c50_score = max(0.0, 1.0 - abs(c50 -  2.0) / 20.0)
     edt_score = max(0.0, 1.0 - abs(edt - 0.35) / 0.35)
-    total     = 0.4 * t60_score + 0.3 * c50_score + 0.3 * edt_score
+    total     = 0.4 * c50_score + 0.35 * edt_score + 0.25 * t60_score
     return t60_score, c50_score, edt_score, total
 
 

@@ -52,6 +52,7 @@ def build_timeline_dict(
     model_version: str,
     config: dict,
     include_windows: bool = False,
+    spectrogram: dict | None = None,
 ) -> dict:
     """Assemble the full timeline dict.
 
@@ -139,6 +140,8 @@ def build_timeline_dict(
             "avg_dialogue_density": avg_density,
         },
     }
+    if spectrogram is not None:
+        timeline["spectrogram"] = spectrogram
     return timeline
 
 

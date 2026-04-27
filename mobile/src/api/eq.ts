@@ -20,11 +20,19 @@ export interface ParametricFilter {
   Q:       number;  // Q 팩터
 }
 
+export interface EQCurve {
+  freqs:        number[]; // log-spaced 20~20000 Hz, 96 points
+  measured_db:  number[]; // 측정된 transfer function H(f), 평균 0 정규화
+  corrected_db: number[]; // 보정 게인 적용 후 H'(f)
+  y_range_db:   number;   // 차트 권장 ±범위 (보통 9)
+}
+
 export interface EQAnalysisResponse {
   status:     'success' | 'error';
   bands:      EQBand[];           // 23밴드 보정값
   simple:     SimpleEQ;           // Bass/Mid/Treble 요약
   parametric: ParametricFilter[]; // Parametric EQ 필터 (최대 5개)
+  curve?:     EQCurve;            // 시각화용 곡선 (백엔드 호환성 위해 옵셔널)
 }
 
 /**

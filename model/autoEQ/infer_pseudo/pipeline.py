@@ -68,6 +68,65 @@ def _thread_b_vad_branch(
     return run_vad(work_audio_wav)
 
 
+def compute_spectrogram_for_timeline(
+    audio_16k_wav: Path,
+    hop_ms: int = 100,
+    n_fft: int = 1024,
+    n_freq_bins: int = 64,
+    f_min: float = 20.0,
+    f_max: float = 8000.0,
+) -> dict:
+    """Whole-video STFT → log-spaced freq bins → time×freq dB matrix.
+
+    timeline.json 최상위 'spectrogram' 필드용. 모바일이 currentTime → frame_idx
+    조회로 dual-line 시각화에 사용. peak normalize → 0 dB ceiling, -60 dB floor.
+
+    JSON 크기: duration_sec * (1000/hop_ms) * n_freq_bins floats. round(2)
+    직렬화 시 5분 영상 기준 약 1.1 MB.
+    """
+    import numpy as np
+    import soundfile as sf
+    from scipy.signal import stft
+
+    y, sr = sf.read(str(audio_16k_wav), always_2d=False)
+    if y.ndim > 1:
+        y = y.mean(axis=1)
+
+    hop_samples = max(1, int(sr * hop_ms / 1000))
+    f, _t, Zxx = stft(
+        y,
+        fs=sr,
+        nperseg=n_fft,
+        noverlap=n_fft - hop_samples,
+        window='hann',
+        boundary=None,
+        padded=False,
+    )
+    mag = np.abs(Zxx)  # (n_freqs, n_frames)
+
+    log_freqs = np.logspace(np.log10(f_min), np.log10(f_max), n_freq_bins)
+    valid_idx = f > 0
+
+    n_frames = mag.shape[1]
+    frames_db = np.zeros((n_frames, n_freq_bins), dtype=np.float32)
+    for i in range(n_frames):
+        interp_mag = np.interp(log_freqs, f[valid_idx], mag[valid_idx, i])
+        frames_db[i] = 20.0 * np.log10(interp_mag + 1e-10)
+
+    # Peak normalize → 0 dB ceiling, -60 dB floor
+    peak_db = float(frames_db.max())
+    floor_db = -60.0
+    frames_db = np.clip(frames_db - peak_db, floor_db, 0.0)
+
+    return {
+        "hop_ms":    hop_ms,
+        "freqs":     log_freqs.round(2).tolist(),
+        "frames_db": frames_db.round(2).tolist(),
+        "ref_db":    0.0,
+        "floor_db":  floor_db,
+    }
+
+
 def build_scene_eq_list(
     scene_va_list: list[SceneVA],
     densities: dict[int, float],
@@ -225,6 +284,22 @@ def analyze_video(
             "num_mood_classes": num_mood_classes,
             "batch_size": batch_size,
         }
+
+        # === Spectrogram for mobile dual-line visualization ===
+        # audio_16k_wav는 thread B(VAD) 완료 후 보장됨.
+        spectrogram_data: dict | None = None
+        try:
+            t_spec0 = time.time()
+            spectrogram_data = compute_spectrogram_for_timeline(audio_16k_wav)
+            if verbose:
+                n_frames = len(spectrogram_data["frames_db"])
+                print(f"[info] spectrogram: {n_frames} frames "
+                      f"({time.time() - t_spec0:.1f}s)")
+        except Exception as e:
+            # 시각화 데이터 실패는 분석 자체를 막지 않음
+            if verbose:
+                print(f"[warn] spectrogram failed: {e}")
+
         timeline = build_timeline_dict(
             video_path=str(video_path),
             duration_sec=duration_sec,
@@ -235,6 +310,7 @@ def analyze_video(
             model_version=model_version,
             config=config_used,
             include_windows=include_windows,
+            spectrogram=spectrogram_data,
         )
         write_timeline(output_json, timeline)
 
