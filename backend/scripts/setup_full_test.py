@@ -3,7 +3,7 @@
 """
 
 import sys
-sys.path.append("/home/piai/Homecinema/backend")
+sys.path.append("/Users/jongin/workspace/Homecinema/backend")
 
 import os
 import numpy as np
@@ -14,9 +14,9 @@ from pathlib import Path
 from scipy.signal import chirp
 
 
-SCAN_DIR = Path("/home/piai/Homecinema/backend/data/roomplan_scans")
-EXPERIMENT_DIR = Path("/home/piai/Homecinema/backend/data/experiment")
-FAKE_RECORDINGS_DIR = Path("/home/piai/Homecinema/backend/data/fake_recordings")
+SCAN_DIR = Path("/Users/jongin/workspace/Homecinema/backend/data/roomplan_scans")
+EXPERIMENT_DIR = Path("/Users/jongin/workspace/Homecinema/backend/data/experiment")
+FAKE_RECORDINGS_DIR = Path("/Users/jongin/workspace/Homecinema/backend/data/fake_recordings")
 
 
 def create_fake_sweep(duration=3.0, sr=22050):
@@ -111,7 +111,7 @@ def setup_test_room(job_id, room_name, room_size=(6.0, 5.0, 2.7), n_pairs=20):
 
 def run_pipeline(job_id, room_name):
     """파이프라인 4단계 자동 실행"""
-    scripts_dir = Path("/home/piai/Homecinema/backend/scripts")
+    scripts_dir = Path("/Users/jongin/workspace/Homecinema/backend/scripts")
     
     print(f"\n=== {room_name} 파이프라인 실행 ===")
     
@@ -135,7 +135,7 @@ def run_pipeline(job_id, room_name):
     
     for cmd in commands:
         print(f"\n>>> {' '.join(cmd)}")
-        result = subprocess.run(cmd, cwd="/home/piai/Homecinema/backend", env=env)
+        result = subprocess.run(cmd, cwd="/Users/jongin/workspace/Homecinema/backend", env=env)
         if result.returncode != 0:
             print(f"!! 실패: {cmd}")
             return False
@@ -172,9 +172,9 @@ def main():
     print("STEP 3: Grid Search")
     print("=" * 60)
     subprocess.run([
-        "python", "/home/piai/Homecinema/backend/scripts/grid_search.py",
+        "python", "/Users/jongin/workspace/Homecinema/backend/scripts/grid_search.py",
         "--rooms", "test_room_1", "test_room_2", "test_room_3"
-    ], cwd="/home/piai/Homecinema/backend")
+    ], cwd="/Users/jongin/workspace/Homecinema/backend")
     
     print("\n" + "=" * 60)
     print("전체 파이프라인 완료!")

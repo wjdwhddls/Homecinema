@@ -57,8 +57,11 @@ def generate_topview(
         ax.fill(xs, zs, facecolor='#2a2a4a', edgecolor='#888', linewidth=1, alpha=0.7)
 
     # ── 청취자
+    # 좌표 변환: 백엔드는 xRIR(Z-up, y=앞뒤·부호반전, z=높이),
+    # 벽은 RoomPlan world 그대로 (x, RoomPlan_z) 평면에 그려졌으므로
+    # 마커도 같은 평면에 맞추려면 plot_y = -xRIR_y (= RoomPlan_z)
     lx = float(listener_pos["x"])
-    lz = float(listener_pos["z"])
+    lz = -float(listener_pos["y"])
     ax.plot(lx, lz, 'o', color='#00d4ff', markersize=12, zorder=5)
     ax.annotate('Listener', (lx, lz), textcoords="offset points",
                 xytext=(8, 8), color='#00d4ff', fontsize=8)
@@ -66,7 +69,7 @@ def generate_topview(
     # ── 임시 스피커
     if "initial" in speaker_positions:
         sp = speaker_positions["initial"]
-        sx, sz = float(sp["x"]), float(sp["z"])
+        sx, sz = float(sp["x"]), -float(sp["y"])
         ax.plot(sx, sz, 's', color='#ffd700', markersize=12, zorder=5)
         ax.annotate('Placeholder', (sx, sz), textcoords="offset points",
                     xytext=(8, 8), color='#ffd700', fontsize=8)
@@ -79,7 +82,7 @@ def generate_topview(
     for key, color, label in [("left", "#00ff88", "L"), ("right", "#ff6b6b", "R")]:
         if key in speaker_positions:
             sp = speaker_positions[key]
-            sx, sz = float(sp["x"]), float(sp["z"])
+            sx, sz = float(sp["x"]), -float(sp["y"])
             ax.plot(sx, sz, 's', color=color, markersize=12, zorder=5)
             ax.annotate(f'Speaker {label}', (sx, sz), textcoords="offset points",
                         xytext=(8, 8), color=color, fontsize=8)

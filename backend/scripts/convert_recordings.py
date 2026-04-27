@@ -56,7 +56,7 @@ if __name__ == "__main__":
     parser.add_argument("--room-name", required=True)
     args = parser.parse_args()
     
-    EXPERIMENT_DIR = Path("/home/piai/Homecinema/backend/data/experiment")
+    EXPERIMENT_DIR = Path("/Users/jongin/workspace/Homecinema/backend/data/experiment")
     room_dir = EXPERIMENT_DIR / args.room_name
     
     convert_recordings(

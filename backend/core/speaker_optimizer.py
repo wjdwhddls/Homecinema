@@ -242,31 +242,49 @@ class SpeakerOptimizer:
         if not stage1:
             raise RuntimeError("유효한 후보 위치를 생성하지 못했습니다")
 
+        warnings: List[str] = []
         stage1_evaluated: List[EvaluatedCandidate] = []
         total = len(stage1)
+        stage1_truncated = False
         for idx, cand in enumerate(stage1):
             if (time.time() - start) > self.time_budget:
                 logger.warning("time budget 초과 — stage1 조기 종료")
+                stage1_truncated = True
                 break
             ec = self.evaluate_candidate(cand, max_order=3, ray_tracing=True)
             stage1_evaluated.append(ec)
             if progress_callback:
                 progress_callback(idx + 1, total)
 
+        if stage1_truncated:
+            warnings.append(
+                f"time_budget 초과로 stage1 후보 {len(stage1_evaluated)}/{total}개만 평가됨"
+            )
+
         stage1_evaluated.sort(key=lambda x: x.score)
 
         stage2_evaluated: List[EvaluatedCandidate] = []
         top_seeds = [ec for ec in stage1_evaluated[:5] if ec.score < float("inf")]
+        if len(top_seeds) < 3:
+            warnings.append(
+                f"유효 stage1 후보가 {len(top_seeds)}개로 부족 — stage2 정제가 제한적입니다"
+            )
+        stage2_truncated = False
         for seed in top_seeds:
             if (time.time() - start) > self.time_budget:
                 logger.warning("time budget 초과 — stage2 조기 종료")
+                stage2_truncated = True
                 break
             refined = self._generate_refined_candidates(seed.candidate, n=5)
             for r in refined:
                 if (time.time() - start) > self.time_budget:
+                    stage2_truncated = True
                     break
                 ec = self.evaluate_candidate(r, max_order=5, ray_tracing=True)
                 stage2_evaluated.append(ec)
+
+        if stage2_truncated:
+            warnings.append("time_budget 초과로 stage2 정제가 일부 생략됨")
 
         combined = stage1_evaluated + stage2_evaluated
         combined.sort(key=lambda x: x.score)
@@ -280,8 +298,9 @@ class SpeakerOptimizer:
         elapsed = time.time() - start
         return {
             "best": valid[0],
-            "top2": valid[:2],
+            "top_alts": valid[:5],
             "all_evaluated": valid,
             "elapsed_seconds": float(elapsed),
             "config_type": self.config_type,
+            "warnings": warnings,
         }

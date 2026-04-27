@@ -5,11 +5,14 @@ listener.npy : 청취자 위치 [x, y, z]
 xyzs.npy     : 후보 스피커 위치들 [N, 3]
 """
 
+import logging
 import numpy as np
 import json
 from pathlib import Path
 from scipy.spatial import ConvexHull
 from shapely.geometry import Point, Polygon
+
+logger = logging.getLogger(__name__)
 
 
 # ── 좌표 변환 (RoomPlan y-up → xRIR z-up) ──────────────────────
@@ -146,9 +149,13 @@ def extract_object_polygons(objects, margin=0.0):
                 poly = poly.buffer(margin)
             if poly.is_valid and poly.area > 1e-6:
                 polygons.append(poly)
-        except:
+        except (KeyError, ValueError, TypeError, IndexError) as e:
+            logger.warning(
+                "가구 폴리곤 생성 실패 (id=%s, category=%s): %s",
+                obj.get("id", "?"), obj.get("category", "?"), e,
+            )
             continue
-    
+
     return polygons
 
 # ── 스피커 적합 가구 추출 ────────────────────────────────────────
@@ -226,7 +233,7 @@ def extract_speaker_friendly_furniture(objects, spk_width_m, spk_depth_m):
             poly = ShapelyPolygon(xy_corners)
             if not poly.is_valid or poly.area < 1e-6:
                 continue
-            
+
             centroid = poly.centroid
             furniture_list.append({
                 "polygon": poly,
@@ -234,9 +241,13 @@ def extract_speaker_friendly_furniture(objects, spk_width_m, spk_depth_m):
                 "centroid": (centroid.x, centroid.y),
                 "category": category,
             })
-        except:
+        except (KeyError, ValueError, TypeError, IndexError) as e:
+            logger.warning(
+                "스피커 친화 가구 변환 실패 (id=%s, category=%s): %s",
+                obj.get("id", "?"), category, e,
+            )
             continue
-    
+
     return furniture_list
 
 # ── 메인 변환 함수 ───────────────────────────────────────────────
@@ -270,12 +281,12 @@ def convert_roomplan_to_xrir_inputs(
     # 청취자 위치
     listener = compute_listener_position(walls, listener_height)
     np.save(output_dir / "listener.npy", listener)
-    print(f"listener.npy 저장: {listener}")
+    logger.info("listener.npy 저장: %s", listener)
 
     # 후보 스피커 위치
     xyzs = generate_candidate_positions(walls, speaker_height, grid_step, wall_margin)
     np.save(output_dir / "xyzs.npy", xyzs)
-    print(f"xyzs.npy 저장: {len(xyzs)}개 후보 위치")
+    logger.info("xyzs.npy 저장: %d개 후보 위치", len(xyzs))
 
     return listener, xyzs
 

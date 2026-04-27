@@ -5,7 +5,7 @@
 """
 
 import sys
-sys.path.append("/home/piai/AcousticRooms/xRIR_code-main")
+sys.path.append("/Users/jongin/workspace/xRIR_code-main")
 
 import numpy as np
 import soundfile as sf
@@ -86,7 +86,7 @@ def create_dummy_data(room_dir, n_pairs=10):
 
 
 if __name__ == "__main__":
-    base = Path("/home/piai/Homecinema/backend/data/experiment")
+    base = Path("/Users/jongin/workspace/Homecinema/backend/data/experiment")
     
     create_dummy_data(base / "international_hall", n_pairs=12)
     create_dummy_data(base / "4f_lounge_1", n_pairs=10)

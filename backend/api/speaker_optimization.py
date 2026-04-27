@@ -155,9 +155,9 @@ def _build_response(
         )
 
     best = to_result(result["best"])
-    top5 = [to_result(ec) for ec in result["top5"][1:]]
+    top_alts = [to_result(ec) for ec in result["top_alts"][1:]]
 
-    warnings = []
+    warnings = list(result.get("warnings", []))
     if len(converted.floor_corners_2d) < 4:
         warnings.append("벽이 적어 방 형태 추정이 부정확할 수 있습니다.")
     if result["elapsed_seconds"] > 150.0:
@@ -175,7 +175,7 @@ def _build_response(
         status="success",
         job_id=job_id,
         best=best,
-        top_alternatives=top5,
+        top_alternatives=top_alts,
         room_summary=summary,
         computation_time_seconds=float(result["elapsed_seconds"]),
         warnings=warnings,

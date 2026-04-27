@@ -1,6 +1,12 @@
 # main.py — FastAPI 앱 진입점
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
+from pathlib import Path
+
+from dotenv import load_dotenv
+
+# config / xrir 모듈이 환경변수를 모듈-레벨에서 읽으므로 import 전에 로드.
+load_dotenv(Path(__file__).parent / ".env")
 
 import uvicorn
 from fastapi import FastAPI

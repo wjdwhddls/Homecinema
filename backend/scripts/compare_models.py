@@ -5,7 +5,7 @@ paired t-test로 모델 간 통계적 유의성 검정
 import numpy as np
 from scipy import stats
 
-def compare_models(name1, name2, results_dir="/home/piai/AcousticRooms/xRIR_code-main/results"):
+def compare_models(name1, name2, results_dir="/Users/jongin/workspace/xRIR_code-main/results"):
     data1 = np.load(f"{results_dir}/{name1}_per_sample.npz")
     data2 = np.load(f"{results_dir}/{name2}_per_sample.npz")
     

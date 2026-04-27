@@ -5,8 +5,8 @@
 """
 
 import sys
-sys.path.append("/home/piai/AcousticRooms/xRIR_code-main")
-sys.path.append("/home/piai/Homecinema/backend")
+sys.path.append("/Users/jongin/workspace/xRIR_code-main")
+sys.path.append("/Users/jongin/workspace/Homecinema/backend")
 
 import os
 os.environ['MKL_SERVICE_FORCE_INTEL'] = '1'
@@ -25,9 +25,9 @@ from inference import (
 from core.sweep_deconvolution import deconvolve_sweep
 
 
-SCAN_DIR = Path("/home/piai/Homecinema/backend/data/roomplan_scans")
-EXPERIMENT_DIR = Path("/home/piai/Homecinema/backend/data/experiment")
-CHECKPOINT_PATH = "/home/piai/AcousticRooms/xRIR_code-main/ckpt/xRIR_1_shot/ConvNeXT_best.pth"
+SCAN_DIR = Path("/Users/jongin/workspace/Homecinema/backend/data/roomplan_scans")
+EXPERIMENT_DIR = Path("/Users/jongin/workspace/Homecinema/backend/data/experiment")
+CHECKPOINT_PATH = "/Users/jongin/workspace/checkpoints/xRIR_ConvNeXT/best.pth"
 
 
 def generate_pred_rirs(job_id, room_name):

@@ -27,6 +27,11 @@ type OptimizationResultRouteProp = RouteProp<
   'OptimizationResult'
 >;
 
+const safeNum = (n: unknown, fallback = 0): number =>
+  typeof n === 'number' && Number.isFinite(n) ? n : fallback;
+const clamp = (n: number, lo: number, hi: number) =>
+  Math.max(lo, Math.min(hi, n));
+
 export default function OptimizationResultScreen() {
   const route      = useRoute<OptimizationResultRouteProp>();
   const navigation = useNavigation<any>();
@@ -51,7 +56,13 @@ export default function OptimizationResultScreen() {
   const usdzUri = route.params?.usdzUri;
   const speakerDimensions = route.params?.speakerDimensions;
 
-  const scorePercent = Math.round((best.score ?? 0) * 100);
+  const scorePercent = clamp(Math.round(safeNum(best.score) * 100), 0, 100);
+  const t60 = safeNum(best.metrics?.t60_seconds);
+  const c50 = safeNum(best.metrics?.c50_db);
+  const edt = safeNum(best.metrics?.edt_seconds);
+  const t60Score = safeNum(best.metrics?.t60_score);
+  const c50Score = safeNum(best.metrics?.c50_score);
+  const edtScore = safeNum(best.metrics?.edt_score);
 
   const handleShow3D = async () => {
     if (!usdzUri) {
@@ -123,41 +134,42 @@ export default function OptimizationResultScreen() {
           <Text style={styles.cardTitle}>예상 음향 특성</Text>
           
           <MetricRow
-            label="잔향 시간 (RT60)"
-            value={`${best.metrics.rt60_seconds.toFixed(2)} 초`}
+            label="잔향 시간 (T60)"
+            value={`${t60.toFixed(2)} 초`}
             badge={
-              best.metrics.rt60_seconds < 0.3 ? '짧음'
-              : best.metrics.rt60_seconds < 0.5 ? '양호'
-              : best.metrics.rt60_seconds < 0.7 ? '보통'
+              t60 < 0.30 ? '짧음'
+              : t60 < 0.50 ? '양호'
+              : t60 < 0.70 ? '보통'
               : '길음'
             }
           />
           <MetricRow
-            label="명료도 (C80)"
-            value={`${best.metrics.c80_db.toFixed(1)} dB`}
+            label="명료도 (C50)"
+            value={`${c50.toFixed(1)} dB`}
             badge={
-              best.metrics.c80_db >= 3  ? '매우 명료'
-              : best.metrics.c80_db >= 0  ? '양호'
-              : best.metrics.c80_db >= -3 ? '보통'
+              c50 >= 5  ? '매우 명료'
+              : c50 >= 2  ? '양호'
+              : c50 >= -2 ? '보통'
               : '흐림'
             }
           />
           <MetricRow
-            label="직접음 비율 (DRR)"
-            value={`${best.metrics.drr_db.toFixed(1)} dB`}
+            label="초기 감쇠 (EDT)"
+            value={`${edt.toFixed(2)} 초`}
             badge={
-              best.metrics.drr_db >= 6 ? '강함'
-              : best.metrics.drr_db >= 0 ? '양호'
-              : '잔향 우세'
+              edt < 0.25 ? '매우 짧음'
+              : edt < 0.45 ? '양호'
+              : edt < 0.60 ? '보통'
+              : '길음'
             }
           />
 
           <View style={styles.scoreBreakdown}>
             <Text style={styles.breakdownTitle}>세부 점수</Text>
             <View style={styles.breakdownRow}>
-              <ScoreBar label="RT60" value={best.metrics.rt60_score} />
-              <ScoreBar label="C80"  value={best.metrics.c80_score} />
-              <ScoreBar label="DRR"  value={best.metrics.drr_score} />
+              <ScoreBar label="T60" value={clamp(t60Score, 0, 1)} />
+              <ScoreBar label="C50" value={clamp(c50Score, 0, 1)} />
+              <ScoreBar label="EDT" value={clamp(edtScore, 0, 1)} />
             </View>
           </View>
         </View>
@@ -168,24 +180,32 @@ export default function OptimizationResultScreen() {
             <Text style={styles.cardTitle}>
               대안 위치 ({top_alternatives.length}개)
             </Text>
-            {top_alternatives.map((alt, i) => (
-              <View key={i} style={styles.altRow}>
-                <View style={styles.altRankBadge}>
-                  <Text style={styles.altRankText}>#{alt.rank + 1}</Text>
+            {top_alternatives.map((alt, i) => {
+              const altScore = clamp(Math.round(safeNum(alt.score) * 100), 0, 100);
+              const altT60 = safeNum(alt.metrics?.t60_seconds);
+              const lx = safeNum(alt.placement?.left?.x);
+              const ly = safeNum(alt.placement?.left?.y);
+              const rx = safeNum(alt.placement?.right?.x);
+              const ry = safeNum(alt.placement?.right?.y);
+              return (
+                <View key={i} style={styles.altRow}>
+                  <View style={styles.altRankBadge}>
+                    <Text style={styles.altRankText}>#{(alt.rank ?? i) + 1}</Text>
+                  </View>
+                  <View style={styles.altInfo}>
+                    <Text style={styles.altCoord}>
+                      L: ({lx.toFixed(2)}, {ly.toFixed(2)}) m
+                    </Text>
+                    <Text style={styles.altCoord}>
+                      R: ({rx.toFixed(2)}, {ry.toFixed(2)}) m
+                    </Text>
+                    <Text style={styles.altScore}>
+                      점수: {altScore} · T60 {altT60.toFixed(2)}s
+                    </Text>
+                  </View>
                 </View>
-                <View style={styles.altInfo}>
-                  <Text style={styles.altCoord}>
-                    L: ({alt.placement.left.x.toFixed(2)}, {alt.placement.left.y.toFixed(2)}) m
-                  </Text>
-                  <Text style={styles.altCoord}>
-                    R: ({alt.placement.right.x.toFixed(2)}, {alt.placement.right.y.toFixed(2)}) m
-                  </Text>
-                  <Text style={styles.altScore}>
-                    점수: {Math.round((alt.score ?? 0) * 100)} · RT60 {alt.metrics.rt60_seconds.toFixed(2)}s
-                  </Text>
-                </View>
-              </View>
-            ))}
+              );
+            })}
           </View>
         )}
 
