@@ -8,9 +8,12 @@ mesh.bin이 없으면 roomplan JSON 벽 정보로 ray casting (fallback)
 각 방향의 벽까지 거리를 계산 → (256, 512) 파노라마 depth 이미지 생성
 """
 
+import logging
 import numpy as np
 import struct
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 
 # ── 좌표 변환 ────────────────────────────────────────────────────
@@ -59,7 +62,7 @@ def load_mesh_bin(mesh_bin_path):
         v2 = roomplan_to_xrir_coords(*vertices[face[2]])
         triangles.append((v0, v1, v2))
 
-    print(f"mesh.bin 로드 완료: 버텍스 {vertex_count}개, 페이스 {face_count}개 → 삼각형 {len(triangles)}개")
+    logger.info(f"mesh.bin 로드 완료: 버텍스 {vertex_count}개, 페이스 {face_count}개 → 삼각형 {len(triangles)}개")
     return triangles
 
 
@@ -170,7 +173,7 @@ def render_depth_map_fast(triangles, listener_pos, img_h=256, img_w=512, max_dis
     
     depth_map = np.full(img_h * img_w, max_dist, dtype=np.float32)
     
-    print(f"벡터화 ray casting 시작... ({len(ray_dirs):,}개 ray × {len(triangles)}개 삼각형)")
+    logger.info(f"벡터화 ray casting 시작... ({len(ray_dirs):,}개 ray × {len(triangles)}개 삼각형)")
     
     # 각 삼각형에 대해 모든 ray와 한 번에 계산
     for i in range(len(triangles)):
@@ -229,25 +232,25 @@ def convert_roomplan_to_depth(
 
     # ── 삼각형 소스 선택 ──────────────────────────────────────────
     if mesh_bin_path and Path(mesh_bin_path).exists():
-        print("mesh.bin 감지 → LiDAR 메쉬 기반 ray casting (정확)")
+        logger.info("mesh.bin 감지 → LiDAR 메쉬 기반 ray casting (정확)")
         triangles = load_mesh_bin(mesh_bin_path)
     else:
-        print("mesh.bin 없음 → roomplan JSON 기반 ray casting (fallback)")
+        logger.info("mesh.bin 없음 → roomplan JSON 기반 ray casting (fallback)")
         walls = roomplan_json.get("walls", [])
         triangles = extract_wall_triangles(walls)
-        print(f"벽 삼각형: {len(triangles)}개")
+        logger.info(f"벽 삼각형: {len(triangles)}개")
 
         from core.roomplan_to_numpy import extract_floor_polygon, compute_room_height
         floor_corners = extract_floor_polygon(walls)
         height = compute_room_height(walls)
         triangles += extract_floor_ceiling_triangles(floor_corners, height)
-        print(f"전체 삼각형 (바닥/천장 포함): {len(triangles)}개")
+        logger.info(f"전체 삼각형 (바닥/천장 포함): {len(triangles)}개")
 
     # ── Ray casting ───────────────────────────────────────────────
     depth_map = render_depth_map_fast(triangles, listener_pos, img_h, img_w, max_dist)
 
     # ── 저장 ──────────────────────────────────────────────────────
     np.save(output_dir / "depth.npy", depth_map)
-    print(f"depth.npy 저장 완료: shape={depth_map.shape}, min={depth_map.min():.2f}m, max={depth_map.max():.2f}m")
+    logger.info(f"depth.npy 저장 완료: shape={depth_map.shape}, min={depth_map.min():.2f}m, max={depth_map.max():.2f}m")
 
     return depth_map

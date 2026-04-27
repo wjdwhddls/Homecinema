@@ -53,5 +53,9 @@
 	<false/>
 	<key>LSApplicationCategoryType</key>
 	<string></string>
+	<key>BACKEND_MODE</key>
+	<string>local</string>
+	<key>BACKEND_URL</key>
+	<string>https://mark-investigative-equinely.ngrok-free.dev</string>
 </dict>
 </plist>

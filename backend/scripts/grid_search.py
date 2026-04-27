@@ -5,8 +5,8 @@
 """
 
 import sys
-sys.path.append("/home/piai/AcousticRooms/xRIR_code-main")
-sys.path.append("/home/piai/Homecinema/backend")
+sys.path.append("/Users/jongin/workspace/xRIR_code-main")
+sys.path.append("/Users/jongin/workspace/Homecinema/backend")
 
 import numpy as np
 import soundfile as sf
@@ -157,7 +157,7 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
     
-    EXPERIMENT_DIR = Path("/home/piai/Homecinema/backend/data/experiment")
+    EXPERIMENT_DIR = Path("/Users/jongin/workspace/Homecinema/backend/data/experiment")
     room_dirs = [str(EXPERIMENT_DIR / r) for r in args.rooms]
     
     rooms_data = {}

@@ -19,7 +19,7 @@ experiment/방이름/
 """
 
 import sys
-sys.path.append("/home/piai/Homecinema/backend")
+sys.path.append("/Users/jongin/workspace/Homecinema/backend")
 
 import json
 from pathlib import Path
@@ -27,8 +27,8 @@ from pathlib import Path
 from core.sweep_deconvolution import deconvolve_sweep
 
 
-SCAN_DIR = Path("/home/piai/Homecinema/backend/data/roomplan_scans")
-EXPERIMENT_DIR = Path("/home/piai/Homecinema/backend/data/experiment")
+SCAN_DIR = Path("/Users/jongin/workspace/Homecinema/backend/data/roomplan_scans")
+EXPERIMENT_DIR = Path("/Users/jongin/workspace/Homecinema/backend/data/experiment")
 
 
 def generate_gt_rirs(job_id, room_name):

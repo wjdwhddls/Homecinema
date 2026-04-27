@@ -8,12 +8,14 @@ roomplan JSON + ref_rir.wav (+ 선택: mesh.bin)
 → 최적 스테레오 스피커 위치 반환
 """
 
+import logging
 import os
 import sys
 import numpy as np
 import soundfile as sf
 import tempfile
 from pathlib import Path
+from scipy.stats import linregress
 from shapely.geometry import Point, Polygon, LineString
 
 from core.roomplan_to_numpy import (
@@ -23,11 +25,15 @@ from core.roomplan_to_numpy import (
 )
 from core.roomplan_to_depth import convert_roomplan_to_depth, ray_triangle_intersect, extract_wall_triangles
 
-XRIR_REPO_PATH  = os.environ.get("XRIR_REPO_PATH",  "/Users/jongin/workspace/xRIR_code-main")
-CHECKPOINT_PATH = os.environ.get(
-    "XRIR_CHECKPOINT_PATH",
-    "/Users/jongin/workspace/checkpoints/xRIR_ConvNeXT/best.pth",
-)
+logger = logging.getLogger(__name__)
+
+XRIR_REPO_PATH  = os.environ.get("XRIR_REPO_PATH")
+CHECKPOINT_PATH = os.environ.get("XRIR_CHECKPOINT_PATH")
+if not XRIR_REPO_PATH or not CHECKPOINT_PATH:
+    raise RuntimeError(
+        "XRIR_REPO_PATH 와 XRIR_CHECKPOINT_PATH 환경변수가 설정되어야 합니다 "
+        "(backend/.env 확인)"
+    )
 
 
 def _select_device() -> str:
@@ -42,22 +48,79 @@ _model = None
 _xrir_imports = None
 
 
-def _compute_subscore(rt60: float, c80: float, drr: float):
-    """
-    score_position이 반환한 raw rt60/c80/drr (round된 값)에서 우리 식 sub-score 재계산.
+# ── 음향 지표 계산 (T60 / C50 / EDT) ───────────────────────────
+# RIR 한 개에서 직접 계산. 외부 inference.score_position 의존 제거.
 
-    외부 inference.py의 score_position과의 차이:
-    - c80_score 분모 8.0 → 20.0  (현장 C80은 ±15 dB까지 변동, 기존은 ±8에서 saturation)
-    - drr_score 분모 30/base -10 → 분모 50/base -20  (현장 DRR이 음수쪽 변동 큼)
-    - 결과를 round하지 않음  (float64 정밀도 유지로 인접 후보 동률 방지)
+def _schroeder_edc_db(rir: np.ndarray) -> np.ndarray:
+    """Schroeder 역적분 EDC를 dB로 (peak를 0 dB 기준)."""
+    energy = np.asarray(rir, dtype=np.float64).squeeze() ** 2
+    schroeder = np.cumsum(energy[::-1])[::-1]
+    peak = float(np.max(schroeder))
+    if peak <= 0:
+        return np.zeros_like(schroeder)
+    return 10.0 * np.log10(schroeder / peak + 1e-20)
 
-    Returns: (rt60_score, c80_score, drr_score, total)  — 모두 0~1
+
+def _decay_time_from_edc(edc_db: np.ndarray, sr: int,
+                          start_db: float, end_db: float) -> float:
+    """EDC에서 [start_db, end_db] 구간 선형회귀 → 60 dB 외삽."""
+    t = np.arange(len(edc_db)) / sr
+    mask = (edc_db <= start_db) & (edc_db >= end_db)
+    if mask.sum() < 5:
+        return 0.5  # fallback
+    slope = linregress(t[mask], edc_db[mask]).slope
+    if slope >= 0:
+        return 0.5
+    return float(np.clip(-60.0 / slope, 0.05, 5.0))
+
+
+def _compute_t60(rir: np.ndarray, sr: int) -> float:
+    """T60 — Schroeder EDC, -5 ~ -35 dB 구간 회귀(=T30식)."""
+    return _decay_time_from_edc(_schroeder_edc_db(rir), sr, -5.0, -35.0)
+
+
+def _compute_edt(rir: np.ndarray, sr: int) -> float:
+    """EDT — Schroeder EDC, 0 ~ -10 dB 구간 회귀를 -60 dB로 외삽.
+    초기 감쇠만 보므로 RIR 길이/SNR 영향 큼 → linregress 사용해 안정성 확보."""
+    return _decay_time_from_edc(_schroeder_edc_db(rir), sr, 0.0, -10.0)
+
+
+def _compute_c50(rir: np.ndarray, sr: int) -> float:
+    """C50 — early(0~50 ms) / late(50 ms~) 에너지 비 (dB)."""
+    rir = np.asarray(rir, dtype=np.float64).squeeze()
+    split = int(0.050 * sr)
+    early = float(np.sum(rir[:split] ** 2))
+    late  = float(np.sum(rir[split:] ** 2))
+    if late < 1e-10:
+        return 20.0
+    return float(10.0 * np.log10(early / late))
+
+
+def _compute_metrics(rir: np.ndarray, sr: int) -> dict:
+    """RIR 한 개의 (t60, c50, edt) 묶음."""
+    return {
+        "t60": _compute_t60(rir, sr),
+        "c50": _compute_c50(rir, sr),
+        "edt": _compute_edt(rir, sr),
+    }
+
+
+def _compute_subscore(t60: float, c50: float, edt: float):
+    """T60/C50/EDT raw → 0~1 sub-score + 가중 합.
+
+    Targets / 분모 / 가중치:
+    - T60: target 0.40 s, denom 0.40, weight 0.4
+    - C50: target  +2 dB, denom 20 dB, weight 0.3
+    - EDT: target 0.35 s, denom 0.35, weight 0.3
+
+    EDT target은 거실/홈시어터 BR ≈ T60 × 0.85~0.95 가이드라인 기반.
+    Returns: (t60_score, c50_score, edt_score, total) — 모두 0~1.
     """
-    rt60_score = max(0.0, 1.0 - abs(rt60 - 0.4) / 0.4)
-    c80_score  = max(0.0, 1.0 - abs(c80  - 4.0) / 20.0)
-    drr_score  = max(0.0, min(1.0, (drr + 20.0) / 50.0))
-    total      = 0.4 * rt60_score + 0.3 * c80_score + 0.3 * drr_score
-    return rt60_score, c80_score, drr_score, total
+    t60_score = max(0.0, 1.0 - abs(t60 - 0.40) / 0.40)
+    c50_score = max(0.0, 1.0 - abs(c50 -  2.0) / 20.0)
+    edt_score = max(0.0, 1.0 - abs(edt - 0.35) / 0.35)
+    total     = 0.4 * t60_score + 0.3 * c50_score + 0.3 * edt_score
+    return t60_score, c50_score, edt_score, total
 
 
 def _load_xrir_imports():
@@ -73,7 +136,6 @@ def _load_xrir_imports():
     from inference import (
         convert_equirect_to_camera_coord,
         predict_rir,
-        score_position,
     )
 
     _xrir_imports = {
@@ -81,7 +143,6 @@ def _load_xrir_imports():
         "xRIR": xRIRModel,
         "convert_equirect_to_camera_coord": convert_equirect_to_camera_coord,
         "predict_rir": predict_rir,
-        "score_position": score_position,
     }
     return _xrir_imports
 
@@ -99,7 +160,7 @@ def _get_model(device: str | None = None):
         m.to(device)
         m.eval()
         _model = m
-        print(f"xRIR 모델 로드 완료 (device={device})")
+        logger.info(f"xRIR 모델 로드 완료 (device={device})")
     return _model
 
 
@@ -149,7 +210,7 @@ def generate_stereo_candidates(
 
     wall_point = find_front_wall_point(listener_xy, forward, floor_polygon)
     if wall_point is None:
-        print("정면 벽 교점을 찾지 못했습니다. initial_speaker_pos 방향으로 fallback.")
+        logger.info("정면 벽 교점을 찾지 못했습니다. initial_speaker_pos 방향으로 fallback.")
         wall_point = initial_speaker_pos[:2]
 
     distances  = [0.1, 0.2, 0.3, 0.5]
@@ -206,7 +267,7 @@ def generate_candidates_with_fallback(
     ]
     
     for stage_name, margin, distances, angles in fallback_configs:
-        print(f"\n{stage_name} (margin={margin}, d={len(distances)}개, angle={len(angles)}개)")
+        logger.info(f"\n{stage_name} (margin={margin}, d={len(distances)}개, angle={len(angles)}개)")
         
         candidates = _generate_stereo_candidates_custom(
             listener_pos, initial_speaker_pos, floor_polygon,
@@ -242,15 +303,15 @@ def generate_candidates_with_fallback(
             
             valid.append((left, right, d, angle))
         
-        print(f"  전체: {len(candidates)}쌍 / 가구 제외: {filtered_furniture} / 장애물 제외: {filtered_obstacle} / 유효: {len(valid)}쌍")
+        logger.info(f"  전체: {len(candidates)}쌍 / 가구 제외: {filtered_furniture} / 장애물 제외: {filtered_obstacle} / 유효: {len(valid)}쌍")
         
         if len(valid) >= min_candidates:
-            print(f"  → {stage_name}에서 충분한 후보 확보. 진행.")
+            logger.info(f"  → {stage_name}에서 충분한 후보 확보. 진행.")
             return valid, stage_name
     
-    # 3단계도 부족하면 그대로 반환 (0일 수도 있음)
-    print(f"\n경고: 3단계 fallback 후에도 후보 {len(valid)}쌍만 있음")
-    return valid, "3단계 (부족)"
+    # 모든 fallback 단계도 부족하면 그대로 반환 (0일 수도 있음)
+    logger.warning("4단계 fallback 후에도 후보 %d쌍만 확보됨", len(valid))
+    return valid, f"4단계 fallback 후 {len(valid)}쌍 (부족)"
 
 # ── depth.npy 기반 장애물 체크 ───────────────────────────────────
 
@@ -359,7 +420,7 @@ def generate_furniture_top_candidates(
         else:
             right_furniture.append(furn)
     
-    print(f"  좌측 가구: {len(left_furniture)}개, 우측 가구: {len(right_furniture)}개")
+    logger.info(f"  좌측 가구: {len(left_furniture)}개, 우측 가구: {len(right_furniture)}개")
 
     # L/R 페어링 — 높이/거리/대칭성 검증
     candidates = []
@@ -406,7 +467,7 @@ def generate_furniture_top_candidates(
             candidates.append((left_pos, right_pos, "furniture", avg_furn_height))
 
     if any(rejected.values()):
-        print(f"  가구 페어 reject: 높이={rejected['height']}, LR거리={rejected['lr_distance']}, "
+        logger.info(f"  가구 페어 reject: 높이={rejected['height']}, LR거리={rejected['lr_distance']}, "
               f"비대칭={rejected['asymmetry']}, 깊이차={rejected['depth']}")
 
     return candidates
@@ -450,9 +511,12 @@ def run_xrir_pipeline(
     wall_margin: float = 0.1,
     furniture_margin: float = 0.1,
     mesh_bin_path: str = None,
-) -> list:
+) -> tuple[list, str]:
     """
-    speaker_dimensions: {"width_cm": float, "height_cm": float, "depth_cm": float}
+    Returns:
+        (results, no_results_reason)
+        - results: top-K placements list (empty if 0 valid candidates)
+        - no_results_reason: results 비어있을 때 사유 문자열, 정상이면 ""
     """
     from core.roomplan_to_numpy import extract_speaker_friendly_furniture
     
@@ -460,7 +524,6 @@ def run_xrir_pipeline(
     torch = imps["torch"]
     convert_equirect_to_camera_coord = imps["convert_equirect_to_camera_coord"]
     predict_rir = imps["predict_rir"]
-    score_position = imps["score_position"]
 
     device = torch.device(_select_device())
 
@@ -495,11 +558,11 @@ def run_xrir_pipeline(
         # ── 3. 가구 폴리곤 추출 ──────────────────────────────────
         # 충돌 검사용 (모든 가구)
         object_polygons = extract_object_polygons(objects, margin=furniture_margin)
-        print(f"가구 {len(object_polygons)}개 감지됨 (충돌 검사용)")
+        logger.info(f"가구 {len(object_polygons)}개 감지됨 (충돌 검사용)")
         
         # 스피커 올릴 수 있는 가구
         speaker_friendly = extract_speaker_friendly_furniture(objects, spk_w, spk_d)
-        print(f"스피커 올릴 수 있는 가구 {len(speaker_friendly)}개")
+        logger.info(f"스피커 올릴 수 있는 가구 {len(speaker_friendly)}개")
 
         # ── 4. depth.npy 생성 ────────────────────────────────────
         depth_np = convert_roomplan_to_depth(
@@ -520,7 +583,7 @@ def run_xrir_pipeline(
             speaker_height=speaker_height_floor,
             min_candidates=5,
         )
-        print(f"\n바닥 후보 ({stage_used}): {len(floor_candidates)}쌍")
+        logger.info(f"\n바닥 후보 ({stage_used}): {len(floor_candidates)}쌍")
         
         # ── 5-B. 가구 위 후보 생성 ──────────────────────────────
         furniture_candidates = generate_furniture_top_candidates(
@@ -529,7 +592,7 @@ def run_xrir_pipeline(
             speaker_friendly_furniture=speaker_friendly,
             spk_height_m=spk_h,
         )
-        print(f"가구 위 후보: {len(furniture_candidates)}쌍")
+        logger.info(f"가구 위 후보: {len(furniture_candidates)}쌍")
 
         # ── 5-C. 후보 통합 ───────────────────────────────────────
         all_candidates = []
@@ -547,10 +610,15 @@ def run_xrir_pipeline(
             })
         
         if not all_candidates:
-            print("유효한 후보 없음")
-            return []
+            # fallback 단계와 가구 정보를 사유로 묶어 반환
+            reason = (
+                f"바닥 후보 0쌍 (마지막 fallback={stage_used}), "
+                f"가구 위 후보 0쌍 (스피커 친화 가구 {len(speaker_friendly)}개 중 페어 가능한 쌍 없음)"
+            )
+            logger.warning("유효한 후보 없음 — %s", reason)
+            return [], reason
 
-        print(f"\n총 후보: {len(all_candidates)}쌍 (바닥 {len(floor_candidates)} + 가구 위 {len(furniture_candidates)})")
+        logger.info(f"\n총 후보: {len(all_candidates)}쌍 (바닥 {len(floor_candidates)} + 가구 위 {len(furniture_candidates)})")
 
         # ── 6. xRIR 추론 ─────────────────────────────────────────
         depth_tensor = torch.from_numpy(depth_np.astype(np.float32))
@@ -558,7 +626,7 @@ def run_xrir_pipeline(
         model = _get_model(str(device))
 
         raw_results = []
-        print(f"{len(all_candidates)}쌍 음향 점수 예측 중...")
+        logger.info(f"{len(all_candidates)}쌍 음향 점수 예측 중...")
 
         for i, cand in enumerate(all_candidates):
             rir_L = predict_rir(
@@ -570,26 +638,24 @@ def run_xrir_pipeline(
                 ref_src_pos, cand["right"], listener_pos, device=str(device)
             )
 
-            score_L = score_position(rir_L, sr=sr)
-            score_R = score_position(rir_R, sr=sr)
+            metrics_L = _compute_metrics(rir_L, sr=sr)
+            metrics_R = _compute_metrics(rir_R, sr=sr)
 
-            # 외부 round(3)된 total/sub-score 대신 raw rt60/c80/drr로 우리 식 재계산.
-            # C80/DRR saturation 완화 + float64 정밀도 유지.
-            sub_L = _compute_subscore(score_L["rt60"], score_L["c80"], score_L["drr"])
-            sub_R = _compute_subscore(score_R["rt60"], score_R["c80"], score_R["drr"])
+            sub_L = _compute_subscore(metrics_L["t60"], metrics_L["c50"], metrics_L["edt"])
+            sub_R = _compute_subscore(metrics_R["t60"], metrics_R["c50"], metrics_R["edt"])
             pair_score = (sub_L[3] + sub_R[3]) / 2
 
             raw_results.append({
                 **cand,
-                "score_L":   score_L,
-                "score_R":   score_R,
+                "metrics_L": metrics_L,
+                "metrics_R": metrics_R,
                 "sub_L":     sub_L,
                 "sub_R":     sub_R,
                 "pair_score": pair_score,
             })
 
             if (i + 1) % 10 == 0:
-                print(f"  {i+1}/{len(all_candidates)} 완료...")
+                logger.info(f"  {i+1}/{len(all_candidates)} 완료...")
 
         # ── 7. 정렬 후 상위 K개 반환 ─────────────────────────────
         raw_results.sort(key=lambda x: x["pair_score"], reverse=True)
@@ -599,8 +665,8 @@ def run_xrir_pipeline(
         for rank, r in enumerate(top_raw):
             left  = r["left"]
             right = r["right"]
-            sL    = r["score_L"]
-            sR    = r["score_R"]
+            mL    = r["metrics_L"]
+            mR    = r["metrics_R"]
             sub_L = r["sub_L"]
             sub_R = r["sub_R"]
 
@@ -625,13 +691,12 @@ def run_xrir_pipeline(
                 },
                 "score": round(float(r["pair_score"]), 4),
                 "metrics": {
-                    "rt60_seconds": round((sL["rt60"] + sR["rt60"]) / 2, 3),
-                    "c80_db":       round((sL["c80"] + sR["c80"]) / 2, 2),
-                    "drr_db":       round((sL["drr"] + sR["drr"]) / 2, 2),
-                    # sub-score는 우리 식 _compute_subscore 결과 사용 (외부 라이브러리의 saturation 완화)
-                    "rt60_score":   round((sub_L[0] + sub_R[0]) / 2, 4),
-                    "c80_score":    round((sub_L[1] + sub_R[1]) / 2, 4),
-                    "drr_score":    round((sub_L[2] + sub_R[2]) / 2, 4),
+                    "t60_seconds": round((mL["t60"] + mR["t60"]) / 2, 3),
+                    "c50_db":      round((mL["c50"] + mR["c50"]) / 2, 2),
+                    "edt_seconds": round((mL["edt"] + mR["edt"]) / 2, 3),
+                    "t60_score":   round((sub_L[0] + sub_R[0]) / 2, 4),
+                    "c50_score":   round((sub_L[1] + sub_R[1]) / 2, 4),
+                    "edt_score":   round((sub_L[2] + sub_R[2]) / 2, 4),
                 },
                 "angle_deg":          r.get("angle"),
                 "distance_m":         r.get("d"),
@@ -641,9 +706,9 @@ def run_xrir_pipeline(
             results.append(result)
 
             placement_str = "가구 위" if r["placement"] == "furniture" else "바닥"
-            print(f"{rank+1}위 [{placement_str}]: "
+            logger.info(f"{rank+1}위 [{placement_str}]: "
                   f"L({left[0]:.2f}, {left[1]:.2f}, {left[2]:.2f}) "
                   f"R({right[0]:.2f}, {right[1]:.2f}, {right[2]:.2f}) "
                   f"| score={r['pair_score']:.3f}")
 
-        return results
+        return results, ""

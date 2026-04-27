@@ -32,12 +32,12 @@ export interface StereoPlacements {
 
 
 export interface AcousticMetrics {
-    rt60_seconds: number;   // 잔향 시간 (Reverberation Time, 60dB 감쇠)
-    c80_db:       number;   // 명료도 (Clarity, 80ms 기준)
-    drr_db:       number;   // 직접음 대 잔향 비율 (Direct-to-Reverberant Ratio)
-    rt60_score:   number;   // 0~1 정규화 점수
-    c80_score:    number;
-    drr_score:    number;
+    t60_seconds: number;   // T60 잔향 시간 (60dB 감쇠, Schroeder EDC -5~-35dB 회귀)
+    c50_db:      number;   // C50 명료도 (50ms 기준 early/late 비)
+    edt_seconds: number;   // EDT (Early Decay Time, 0~-10dB 회귀를 -60dB로 외삽)
+    t60_score:   number;   // 0~1 정규화 점수 (target 0.40s)
+    c50_score:   number;   // (target +2 dB)
+    edt_score:   number;   // (target 0.35s)
 }
 
 export interface OptimalResult {
@@ -215,10 +215,11 @@ export async function waitForXRirOptimization(
     }
 
     if (status.status === 'completed' && status.result) {
-      if (status.result.status !== 'success') {
-        throw new Error(status.result.error_message ?? '최적화를 완료하지 못했습니다.');
+      const r = status.result;
+      if (r.status !== 'success' || r.best == null) {
+        throw new Error(r.error_message ?? '최적화를 완료하지 못했습니다.');
       }
-      return status.result;
+      return r;
     }
 
     if (status.status === 'failed') {

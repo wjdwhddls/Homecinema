@@ -5,9 +5,13 @@ recorded.wav (마이크 녹음) + sweep.wav (원본 신호)
 → deconvolution → ref_rir.wav (실제 Room Impulse Response)
 """
 
+import logging
+
 import numpy as np
 import soundfile as sf
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 
 def deconvolve_sweep(
@@ -43,13 +47,13 @@ def deconvolve_sweep(
     if sr_rec != sr_sw:
         from scipy.signal import resample_poly
         from math import gcd
-        print(f"SR 불일치: recorded={sr_rec}Hz → sweep={sr_sw}Hz로 resample")
+        logger.info(f"SR 불일치: recorded={sr_rec}Hz → sweep={sr_sw}Hz로 resample")
         g = gcd(sr_sw, sr_rec)
         recorded = resample_poly(recorded, sr_sw // g, sr_rec // g)
         sr_rec = sr_sw
 
     sr = sr_rec
-    print(f"로드 완료: recorded={len(recorded)/sr:.2f}s, sweep={len(sweep)/sr:.2f}s, sr={sr}Hz")
+    logger.info(f"로드 완료: recorded={len(recorded)/sr:.2f}s, sweep={len(sweep)/sr:.2f}s, sr={sr}Hz")
 
     # 빈/너무 짧은 입력 가드 — 빈 배열이면 deconvolution이 garbage RIR을 만들기 때문에 이전 단계에서 차단
     min_samples = int(sr * 0.5)
@@ -94,7 +98,7 @@ def deconvolve_sweep(
     end   = min(len(rir_full), max_idx + post_samples)
     ref_rir = rir_full[start:end].astype(np.float32)
 
-    print(f"RIR 추출 완료: {len(ref_rir)/sr:.3f}s ({len(ref_rir)} samples)")
+    logger.info(f"RIR 추출 완료: {len(ref_rir)/sr:.3f}s ({len(ref_rir)} samples)")
 
     # ── 4. 정규화 ─────────────────────────────────────────────────
     if normalize:
@@ -105,6 +109,6 @@ def deconvolve_sweep(
     # ── 5. 저장 ───────────────────────────────────────────────────
     Path(output_path).parent.mkdir(parents=True, exist_ok=True)
     sf.write(output_path, ref_rir, sr, subtype="FLOAT")
-    print(f"ref_rir.wav 저장 완료: {output_path}")
+    logger.info(f"ref_rir.wav 저장 완료: {output_path}")
 
     return ref_rir

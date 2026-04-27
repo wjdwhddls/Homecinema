@@ -5,8 +5,12 @@
 정면 방향은 RoomKit 시작 시 카메라가 본 방향(-z) → xRIR 좌표계 +y로 고정.
 """
 
+import logging
+
 import numpy as np
 from shapely.geometry import Point, Polygon, LineString
+
+logger = logging.getLogger(__name__)
 
 
 def compute_initial_speaker_position(
@@ -52,10 +56,10 @@ def compute_initial_speaker_position(
         float(speaker_height),
     ], dtype=np.float32)
 
-    print(f"청취자 위치: {listener_xy}")
-    print(f"정면 방향: {direction}")
-    print(f"정면 벽: {wall_point}")
-    print(f"임시 스피커 위치: {initial_pos}")
+    logger.info("청취자 위치: %s", listener_xy)
+    logger.info("정면 방향: %s", direction)
+    logger.info("정면 벽: %s", wall_point)
+    logger.info("임시 스피커 위치: %s", initial_pos)
 
     return initial_pos
 

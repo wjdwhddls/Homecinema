@@ -5,13 +5,17 @@ const PORT = 8000;
 
 // ── 백엔드 모드 선택 ────────────────────────────────────────────────
 // 'local'  : 본인 Mac 서버 (Metro IP 자동 감지). xRIR 추론 제외한 모든 기능 동작.
-// 'remote' : 원격 서버 (dohyeon ngrok URL). xRIR 포함 전체 기능.
+// 'remote' : 원격 서버 (도현 ngrok URL). xRIR 포함 전체 기능.
 //
-// 개발 중엔 'local' 사용. xRIR 최적화 결과가 필요할 때만 'remote' 로 변경 후 Metro 재기동.
+// 모드 전환은 아래 BACKEND_MODE 상수를 직접 수정하고 앱 재빌드.
+// (Info.plist 기반 동적 전환은 NativeModules.SettingsManager가 임의 plist 키를
+//  노출하지 않아 동작하지 않음 — 네이티브 브릿지 추가 전엔 이 파일 직접 수정.)
 type BackendMode = 'local' | 'remote';
-const BACKEND_MODE = 'remote' as BackendMode;
 
-// 'remote' 모드에서 사용할 URL (MoodEQ dual-layer 파이프라인이 없는 서버).
+const BACKEND_MODE = 'local' as BackendMode;
+
+// 'remote' 모드에서 사용할 ngrok URL.
+// ngrok URL이 바뀌면 이 상수를 갱신 후 재빌드.
 const REMOTE_BACKEND_URL = 'https://mark-investigative-equinely.ngrok-free.dev';
 
 // 'local' 모드 iOS 폴백 IP (Metro 호스트 감지 실패 시 사용).

@@ -110,6 +110,18 @@ async def start_optimization(
     initial_speaker_y: float = Form(...),
     initial_speaker_z: float = Form(...),
 ) -> dict:
+    # ── 입력 파라미터 검증 ─────────────────────────────────────
+    if not (1 <= top_k <= 10):
+        raise HTTPException(400, f"top_k는 1~10 사이여야 합니다 (입력: {top_k})")
+    if not (0 < speaker_width_cm <= 200):
+        raise HTTPException(400, f"speaker_width_cm는 0~200cm 범위여야 합니다 (입력: {speaker_width_cm})")
+    if not (0 < speaker_height_cm <= 250):
+        raise HTTPException(400, f"speaker_height_cm는 0~250cm 범위여야 합니다 (입력: {speaker_height_cm})")
+    if not (0 < speaker_depth_cm <= 200):
+        raise HTTPException(400, f"speaker_depth_cm는 0~200cm 범위여야 합니다 (입력: {speaker_depth_cm})")
+    if not (0.5 <= listener_height_m <= 2.0):
+        raise HTTPException(400, f"listener_height_m는 0.5~2.0m 범위여야 합니다 (입력: {listener_height_m})")
+
     try:
         roomplan_json = json.loads(roomplan_scan)
     except json.JSONDecodeError as e:
@@ -119,9 +131,15 @@ async def start_optimization(
     sweep_bytes = await sweep.read()
     mesh_bytes = await mesh.read() if mesh else None
 
+    # WAV 헤더 가드: RIFF 시그니처 + 최소 길이 (44바이트 헤더 + 0.5초 분량 추정 ≈ 44KB 이상)
+    if not recorded_bytes.startswith(b"RIFF") or len(recorded_bytes) < 44_000:
+        raise HTTPException(400, "recorded.wav가 유효한 WAV이 아니거나 너무 짧습니다 (최소 0.5초 필요)")
+    if not sweep_bytes.startswith(b"RIFF") or len(sweep_bytes) < 44_000:
+        raise HTTPException(400, "sweep.wav가 유효한 WAV이 아니거나 너무 짧습니다")
+
     job_id = _job_store.create_job()
     ref_src_pos = np.array([initial_speaker_x, initial_speaker_y, initial_speaker_z], dtype=np.float32)
-    
+
     speaker_dimensions = {
         "width_cm": speaker_width_cm,
         "height_cm": speaker_height_cm,
@@ -213,7 +231,7 @@ def _run_task(
             import soundfile as sf
             ref_rir_bytes = Path(ref_rir_path).read_bytes()
 
-            results = run_xrir_pipeline(
+            results, no_results_reason = run_xrir_pipeline(
                 roomplan_json=roomplan_json,
                 ref_rir_bytes=ref_rir_bytes,
                 ref_src_pos=ref_src_pos,
@@ -239,6 +257,7 @@ def _run_task(
                 "warnings": [],
                 "error_message": (
                     "유효한 후보 위치를 찾지 못했습니다. "
+                    f"({no_results_reason}) "
                     "스캔 시작 시 본 방향이 거실의 정면(스크린)이 맞는지, "
                     "방의 좌우 폭이 충분한지 확인해주세요."
                 ),

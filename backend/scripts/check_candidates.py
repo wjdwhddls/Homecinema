@@ -4,7 +4,7 @@ backend/data/roomplan_scans/scan_{job_id}.json 사용
 """
 
 import sys
-sys.path.append("/home/piai/Homecinema/backend")
+sys.path.append("/Users/jongin/workspace/Homecinema/backend")
 
 import numpy as np
 import json
@@ -20,8 +20,8 @@ from core.roomplan_to_depth import convert_roomplan_to_depth
 from core.initial_speaker_position import compute_initial_speaker_position
 
 
-SCAN_DIR = Path("/home/piai/Homecinema/backend/data/roomplan_scans")
-EXPERIMENT_DIR = Path("/home/piai/Homecinema/backend/data/experiment")
+SCAN_DIR = Path("/Users/jongin/workspace/Homecinema/backend/data/roomplan_scans")
+EXPERIMENT_DIR = Path("/Users/jongin/workspace/Homecinema/backend/data/experiment")
 
 
 def check_candidates(job_id, room_name,

@@ -252,7 +252,8 @@ export default function SpeakerPlacementScreen() {
               <View style={styles.noticeText}>
                 <Text style={styles.noticeTitle}>스캔 시작 위치 = 청취 위치</Text>
                 <Text style={styles.noticeDesc}>
-                  평소 감상하는 자리에 앉아 스크린(TV)을 바라보며 시작해주세요.
+                  평소 감상하는 자리에 앉아 스크린(TV)을 정확히 바라보며 시작해주세요.
+                  {"\n"}시작 시 본 방향이 정면(스크린)으로 인식되며, 이 방향이 어긋나면 최적 위치가 부정확해집니다.
                 </Text>
               </View>
             </View>
