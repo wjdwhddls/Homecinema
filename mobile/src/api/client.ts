@@ -7,6 +7,7 @@ export const apiClient = axios.create({
   timeout: API_TIMEOUT,
   headers: {
     Accept: 'application/json',
+    'ngrok-skip-browser-warning': 'true',
   },
 });
 

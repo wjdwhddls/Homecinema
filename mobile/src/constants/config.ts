@@ -9,7 +9,7 @@ const PORT = 8000;
 //
 // 개발 중엔 'local' 사용. xRIR 최적화 결과가 필요할 때만 'remote' 로 변경 후 Metro 재기동.
 type BackendMode = 'local' | 'remote';
-const BACKEND_MODE = 'local' as BackendMode;
+const BACKEND_MODE = 'remote' as BackendMode;
 
 // 'remote' 모드에서 사용할 URL (MoodEQ dual-layer 파이프라인이 없는 서버).
 const REMOTE_BACKEND_URL = 'https://mark-investigative-equinely.ngrok-free.dev';
