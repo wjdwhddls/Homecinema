@@ -44,6 +44,7 @@ import {useDownloadJob} from '../hooks/useDownloadJob';
 import {deleteJob, getJobTimeline} from '../api/jobs';
 import {deleteLocalJob} from '../utils/localStorage';
 import SceneEQChart from '../components/SceneEQChart';
+import EQResponseCurve from '../components/EQResponseCurve';
 
 const BG = '#000000';
 const CARD_BG = 'rgba(255,255,255,0.04)';
@@ -301,6 +302,15 @@ export default function PlaybackScreen({route, navigation}: Props) {
         {/* 10-band EQ Bar Chart */}
         {currentScene && (
           <SceneEQChart
+            bands={currentScene.eq_preset.effective_bands}
+            moodName={currentScene.mood.name}
+            mode={currentSource}
+          />
+        )}
+
+        {/* 전문 EQ 주파수 응답 곡선 (Pro-Q4 풍, biquad peaking 합성) */}
+        {currentScene && (
+          <EQResponseCurve
             bands={currentScene.eq_preset.effective_bands}
             moodName={currentScene.mood.name}
             mode={currentSource}
