@@ -1,5 +1,6 @@
 """
 roomplan JSON → 탑뷰 PNG (base64)
+좌표계: xRIR (x: 가로, y: 앞뒤, z: 높이)
 """
 from __future__ import annotations
 import base64
@@ -8,13 +9,8 @@ import numpy as np
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-import matplotlib.patches as patches
 
-def generate_topview(
-    roomplan_json: dict,
-    listener_pos: dict,
-    speaker_positions: dict,
-) -> str:
+def generate_topview(roomplan_json, listener_pos, speaker_positions):
     walls   = roomplan_json.get("walls", [])
     objects = roomplan_json.get("objects", [])
 
@@ -22,7 +18,7 @@ def generate_topview(
     ax.set_facecolor('#1a1a2e')
     ax.set_aspect('equal')
 
-    # ── 벽 그리기
+    # ── 벽 (RoomPlan x-z → xRIR x-y 변환: y = -z)
     for wall in walls:
         m = np.array(wall["transform"], dtype=float).reshape(4, 4, order="F")
         dims = wall["dimensions"]
@@ -32,19 +28,16 @@ def generate_topview(
             [+half_w, 0.0, 0.0, 1.0],
         ])
         world_pts = (m @ local_pts.T).T[:, :3]
-        xs = [world_pts[0][0], world_pts[1][0]]
-        ys = [world_pts[0][2], world_pts[1][2]]
+        xs = [world_pts[0][0],  world_pts[1][0]]
+        ys = [-world_pts[0][2], -world_pts[1][2]]
         ax.plot(xs, ys, color='#e0e0e0', linewidth=3, solid_capstyle='round')
 
-    # ── 가구 그리기
+    # ── 가구 (마찬가지로 변환)
     for obj in objects:
         m = np.array(obj["transform"], dtype=float).reshape(4, 4, order="F")
         dims = obj["dimensions"]
         hw = float(dims[0]) * 0.5
         hd = float(dims[2]) * 0.5
-        cx, cz = float(m[0, 3]), float(m[2, 3])
-
-        # 가구 4개 모서리 (로컬 좌표)
         local_corners = np.array([
             [-hw, 0.0, -hd, 1.0],
             [+hw, 0.0, -hd, 1.0],
@@ -53,51 +46,48 @@ def generate_topview(
         ])
         world_corners = (m @ local_corners.T).T[:, :3]
         xs = list(world_corners[:, 0]) + [world_corners[0, 0]]
-        zs = list(world_corners[:, 2]) + [world_corners[0, 2]]
-        ax.fill(xs, zs, facecolor='#2a2a4a', edgecolor='#888', linewidth=1, alpha=0.7)
+        ys = [-c for c in world_corners[:, 2]] + [-world_corners[0, 2]]
+        ax.fill(xs, ys, facecolor='#2a2a4a', edgecolor='#888', linewidth=1, alpha=0.7)
 
-    # ── 청취자
-    # 좌표 변환: 백엔드는 xRIR(Z-up, y=앞뒤·부호반전, z=높이),
-    # 벽은 RoomPlan world 그대로 (x, RoomPlan_z) 평면에 그려졌으므로
-    # 마커도 같은 평면에 맞추려면 plot_y = -xRIR_y (= RoomPlan_z)
+    # ── 청취자 (xRIR 좌표 그대로, z=높이는 무시)
     lx = float(listener_pos["x"])
-    lz = -float(listener_pos["y"])
-    ax.plot(lx, lz, 'o', color='#00d4ff', markersize=12, zorder=5)
-    ax.annotate('Listener', (lx, lz), textcoords="offset points",
+    ly = float(listener_pos["y"])
+    ax.plot(lx, ly, 'o', color='#00d4ff', markersize=12, zorder=5)
+    ax.annotate('Listener', (lx, ly), textcoords="offset points",
                 xytext=(8, 8), color='#00d4ff', fontsize=8)
 
     # ── 임시 스피커
     if "initial" in speaker_positions:
         sp = speaker_positions["initial"]
-        sx, sz = float(sp["x"]), -float(sp["y"])
-        ax.plot(sx, sz, 's', color='#ffd700', markersize=12, zorder=5)
-        ax.annotate('Placeholder', (sx, sz), textcoords="offset points",
+        sx, sy = float(sp["x"]), float(sp["y"])
+        ax.plot(sx, sy, 's', color='#ffd700', markersize=12, zorder=5)
+        ax.annotate('Placeholder', (sx, sy), textcoords="offset points",
                     xytext=(8, 8), color='#ffd700', fontsize=8)
-        ax.plot([lx, sx], [lz, sz], '--', color='#ffd700', alpha=0.5, linewidth=1)
-        dist = np.sqrt((sx - lx)**2 + (sz - lz)**2)
-        ax.annotate(f'{dist:.1f}m', ((lx+sx)/2, (lz+sz)/2),
+        ax.plot([lx, sx], [ly, sy], '--', color='#ffd700', alpha=0.5, linewidth=1)
+        dist = np.sqrt((sx - lx)**2 + (sy - ly)**2)
+        ax.annotate(f'{dist:.1f}m', ((lx+sx)/2, (ly+sy)/2),
                     color='#ffd700', fontsize=7, ha='center')
 
-    # ── 최적 스피커 (좌/우)
+    # ── 최적 스피커
     for key, color, label in [("left", "#00ff88", "L"), ("right", "#ff6b6b", "R")]:
         if key in speaker_positions:
             sp = speaker_positions[key]
-            sx, sz = float(sp["x"]), -float(sp["y"])
-            ax.plot(sx, sz, 's', color=color, markersize=12, zorder=5)
-            ax.annotate(f'Speaker {label}', (sx, sz), textcoords="offset points",
+            sx, sy = float(sp["x"]), float(sp["y"])
+            ax.plot(sx, sy, 's', color=color, markersize=12, zorder=5)
+            ax.annotate(f'Speaker {label}', (sx, sy), textcoords="offset points",
                         xytext=(8, 8), color=color, fontsize=8)
-            ax.plot([lx, sx], [lz, sz], '--', color=color, alpha=0.5, linewidth=1)
-            dist = np.sqrt((sx - lx)**2 + (sz - lz)**2)
-            ax.annotate(f'{dist:.1f}m', ((lx+sx)/2, (lz+sz)/2),
+            ax.plot([lx, sx], [ly, sy], '--', color=color, alpha=0.5, linewidth=1)
+            dist = np.sqrt((sx - lx)**2 + (sy - ly)**2)
+            ax.annotate(f'{dist:.1f}m', ((lx+sx)/2, (ly+sy)/2),
                         color=color, fontsize=7, ha='center')
 
     ax.tick_params(colors='#888')
     for spine in ax.spines.values():
         spine.set_color('#444')
     ax.set_xlabel('x (m)', color='#888', fontsize=8)
-    ax.set_ylabel('z (m)', color='#888', fontsize=8)
-    plt.tight_layout(pad=0.5)
+    ax.set_ylabel('y (m)', color='#888', fontsize=8)
 
+    plt.tight_layout(pad=0.5)
     buf = io.BytesIO()
     plt.savefig(buf, format='png', dpi=100, bbox_inches='tight', facecolor='#1a1a2e')
     plt.close(fig)
