@@ -55,7 +55,8 @@ const MOOD_LABELS_KO: Record<MoodName, string> = {
 // ── 수학 ────────────────────────────────────────────────────────
 // RBJ Audio Cookbook 의 biquad peaking filter 응답을 dB 로 반환.
 // dBgain≈0 이면 응답은 거의 0이므로 빠른 경로로 단축.
-function biquadPeakingDb(
+// SpectrumDualLine.tsx에서 EQ 적용 후 곡선 계산에 재사용.
+export function biquadPeakingDb(
   f: number,
   fc: number,
   gainDb: number,

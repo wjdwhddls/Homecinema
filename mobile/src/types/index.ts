@@ -112,6 +112,14 @@ export interface TimelineScene {
   };
 }
 
+export interface SpectrogramData {
+  hop_ms: number;          // 프레임 간격 (예: 100ms)
+  freqs: number[];         // log-spaced 주파수 축 (Hz)
+  frames_db: number[][];   // (n_frames, freqs.length) — peak 정규화된 dB
+  ref_db: number;          // 0dB ceiling
+  floor_db: number;        // -60dB floor
+}
+
 export interface TimelineData {
   schema_version: string;
   metadata: {
@@ -135,6 +143,7 @@ export interface TimelineData {
     mood_distribution: Partial<Record<MoodName, number>>;
     avg_dialogue_density: number;
   };
+  spectrogram?: SpectrogramData;
 }
 
 // 파일 정보 타입 (DocumentPicker 결과)

@@ -168,11 +168,8 @@ def compute_transfer_function(
 
 # ── 5. 보정값 계산 ───────────────────────────────────────────────
 
-# ISO 1/3 옥타브 23개 밴드 중심 주파수
-ISO_BANDS = [
-    100, 125, 160, 200, 250, 315, 400, 500, 630, 800, 1000,
-    1250, 1600, 2000, 2500, 3150, 4000, 5000, 6300, 8000, 10000, 12500, 16000,
-]
+# EQ 밴드 — 8개 (사용자 지정 표준 옥타브 그리드)
+ISO_BANDS = [125, 250, 500, 1000, 2000, 4000, 6000, 8000]
 
 
 def get_calibration_values(
@@ -261,7 +258,26 @@ def generate_parametric_eq(
     return result
 
 
-# ── 8. EQ 적용 후 WAV 저장 ───────────────────────────────────────
+# ── 8. 시각화용 곡선 다운샘플 ─────────────────────────────────────
+
+def downsample_curve_log(
+    freqs: np.ndarray,
+    H_db: np.ndarray,
+    n_points: int = 96,
+    f_min: float = 20.0,
+    f_max: float = 20000.0,
+) -> Tuple[List[float], List[float]]:
+    """
+    transfer function을 log-spaced n_points로 다운샘플링.
+    DC bin (freqs<=0) 제거 후 np.interp.
+    """
+    log_axis = np.logspace(np.log10(f_min), np.log10(f_max), n_points)
+    valid = freqs > 0
+    interp_db = np.interp(log_axis, freqs[valid], H_db[valid])
+    return log_axis.round(2).tolist(), interp_db.round(3).tolist()
+
+
+# ── 9. EQ 적용 후 WAV 저장 ───────────────────────────────────────
 
 def apply_eq_and_save(
     audio_bytes: bytes,
@@ -360,8 +376,22 @@ def run_eq_pipeline(
     simple     = generate_simple_settings(bands)
     parametric = generate_parametric_eq(bands)
 
+    # 시각화용 곡선: 측정 H(f)와 보정 적용 후 H'(f).
+    # 보정 게인 공식은 apply_eq_and_save와 정확히 동일 (단일 진실원).
+    applied_gain_full = np.clip(H_db * -0.6, -9.0, 9.0)
+    corrected_full    = H_db + applied_gain_full
+
+    curve_freqs, curve_measured  = downsample_curve_log(freqs, H_db,         n_points=96)
+    _,           curve_corrected = downsample_curve_log(freqs, corrected_full, n_points=96)
+
     return {
         "bands":      bands,
         "simple":     simple,
         "parametric": parametric,
+        "curve": {
+            "freqs":        curve_freqs,
+            "measured_db":  curve_measured,
+            "corrected_db": curve_corrected,
+            "y_range_db":   9.0,
+        },
     }

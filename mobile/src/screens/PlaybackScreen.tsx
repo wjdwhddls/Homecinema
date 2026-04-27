@@ -24,6 +24,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
+  Modal,
   StyleSheet,
   ScrollView,
   StatusBar,
@@ -44,7 +45,7 @@ import {useDownloadJob} from '../hooks/useDownloadJob';
 import {deleteJob, getJobTimeline} from '../api/jobs';
 import {deleteLocalJob} from '../utils/localStorage';
 import SceneEQChart from '../components/SceneEQChart';
-import EQResponseCurve from '../components/EQResponseCurve';
+import SpectrumDualLine from '../components/SpectrumDualLine';
 
 const BG = '#000000';
 const CARD_BG = 'rgba(255,255,255,0.04)';
@@ -90,6 +91,7 @@ export default function PlaybackScreen({route, navigation}: Props) {
   );
   const [currentTime, setCurrentTime] = useState(0);
   const [paused, setPaused] = useState(false);
+  const [spectrumZoomVisible, setSpectrumZoomVisible] = useState(false);
   const videoRef = useRef<VideoRef>(null);
   // A/B 토글 시 react-native-video 가 새 source 로딩 동안 onProgress=0 을
   // transient 하게 방출하는 것을 차단. onLoad 후 seek 하며 해제.
@@ -308,12 +310,15 @@ export default function PlaybackScreen({route, navigation}: Props) {
           />
         )}
 
-        {/* 전문 EQ 주파수 응답 곡선 (Pro-Q4 풍, biquad peaking 합성) */}
-        {currentScene && (
-          <EQResponseCurve
+        {/* 실시간 오디오 스펙트럼 dual-line (원본 + EQ 적용 후) — 탭하면 풀스크린 확대 */}
+        {currentScene && timeline?.spectrogram && (
+          <SpectrumDualLine
+            spectrogram={timeline.spectrogram}
+            currentTime={currentTime}
             bands={currentScene.eq_preset.effective_bands}
             moodName={currentScene.mood.name}
             mode={currentSource}
+            onPress={() => setSpectrumZoomVisible(true)}
           />
         )}
 
@@ -366,6 +371,43 @@ export default function PlaybackScreen({route, navigation}: Props) {
           </TouchableOpacity>
         </View>
       </ScrollView>
+
+      {/* 스펙트럼 풀스크린 확대 모달 — 같은 데이터/축/색상, 더 큰 캔버스 */}
+      <Modal
+        visible={spectrumZoomVisible}
+        animationType="fade"
+        transparent={false}
+        statusBarTranslucent
+        onRequestClose={() => setSpectrumZoomVisible(false)}>
+        <SafeAreaView style={styles.zoomModalRoot}>
+          <View style={styles.zoomHeader}>
+            <Text style={styles.zoomTitle}>Spectrum · 확대 보기</Text>
+            <TouchableOpacity
+              onPress={() => setSpectrumZoomVisible(false)}
+              style={styles.zoomCloseBtn}
+              hitSlop={12}>
+              <Text style={styles.zoomCloseText}>✕  닫기</Text>
+            </TouchableOpacity>
+          </View>
+
+          {currentScene && timeline?.spectrogram && (
+            <View style={styles.zoomChartWrap}>
+              <SpectrumDualLine
+                spectrogram={timeline.spectrogram}
+                currentTime={currentTime}
+                bands={currentScene.eq_preset.effective_bands}
+                moodName={currentScene.mood.name}
+                mode={currentSource}
+                variant="expanded"
+              />
+            </View>
+          )}
+
+          <Text style={styles.zoomHint}>
+            영상 재생을 따라 실시간으로 곡선이 갱신됩니다. 화면 밖을 탭하거나 ✕로 닫기.
+          </Text>
+        </SafeAreaView>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -564,6 +606,51 @@ const styles = StyleSheet.create({
   },
   headerButtonText: {
     fontSize: 20,
+  },
+  // 풀스크린 확대 모달
+  zoomModalRoot: {
+    flex: 1,
+    backgroundColor: BG,
+  },
+  zoomHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: CARD_BORDER,
+  },
+  zoomTitle: {
+    color: TEXT_PRIMARY,
+    fontSize: 17,
+    fontWeight: '700',
+    letterSpacing: 0.3,
+  },
+  zoomCloseBtn: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.12)',
+  },
+  zoomCloseText: {
+    color: TEXT_PRIMARY,
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  zoomChartWrap: {
+    flex: 1,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+  },
+  zoomHint: {
+    color: TEXT_SECONDARY,
+    fontSize: 12,
+    textAlign: 'center',
+    paddingHorizontal: 20,
+    paddingBottom: 20,
   },
 });
 

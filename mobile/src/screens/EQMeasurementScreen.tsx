@@ -24,6 +24,7 @@ import {useNavigation, useRoute, RouteProp} from '@react-navigation/native';
 import {recordSweep, getSweepUri} from '../native/SweepRecorder';
 import {analyzeEQ, EQAnalysisResponse} from '../api/eq';
 import {RootStackParamList} from '../types';
+import MeasuredResponseCurve from '../components/MeasuredResponseCurve';
 
 type EQRouteProp = RouteProp<RootStackParamList, 'EQMeasurement'>;
 
@@ -110,6 +111,56 @@ export default function EQMeasurementScreen() {
         {/* 결과 표시 */}
         {step === 'done' && result && (
           <>
+            {/* 8밴드 보정값 — 사용자가 직접 EQ에 적용할 권장값. 가장 먼저 표시. */}
+            <View style={styles.card}>
+              <Text style={styles.cardTitle}>🎯 8밴드 보정값 (권장)</Text>
+              <Text style={styles.bandsHint}>
+                아래 값을 EQ 앱/리시버에 직접 입력해 보세요.
+              </Text>
+              <View style={styles.bandsRow}>
+                {result.bands.map(b => (
+                  <View key={b.freq} style={styles.bandCell}>
+                    <Text style={styles.bandFreqLabel}>
+                      {b.freq >= 1000 ? `${b.freq / 1000}k` : `${b.freq}`}
+                    </Text>
+                    <Text
+                      style={[
+                        styles.bandGain,
+                        b.actual_gain_db > 0.3
+                          ? styles.gainPos
+                          : b.actual_gain_db < -0.3
+                          ? styles.gainNeg
+                          : styles.gainZero,
+                      ]}>
+                      {b.actual_gain_db > 0 ? '+' : ''}
+                      {b.actual_gain_db.toFixed(1)}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+              <Text style={styles.bandsCaption}>Hz / dB</Text>
+            </View>
+
+            {/* 주파수 응답 곡선 (측정 → 보정 후 비교) */}
+            {result.curve && (
+              <>
+                <MeasuredResponseCurve
+                  freqs={result.curve.freqs}
+                  values_db={result.curve.measured_db}
+                  title="📈 측정된 주파수 응답"
+                  variant="measured"
+                  yRangeDb={result.curve.y_range_db}
+                />
+                <MeasuredResponseCurve
+                  freqs={result.curve.freqs}
+                  values_db={result.curve.corrected_db}
+                  title="✨ EQ 보정 후 (예상)"
+                  variant="corrected"
+                  yRangeDb={result.curve.y_range_db}
+                />
+              </>
+            )}
+
             {/* Bass / Mid / Treble 요약 */}
             <View style={styles.card}>
               <Text style={styles.cardTitle}>📊 일반 설정</Text>
@@ -205,4 +256,10 @@ const styles = StyleSheet.create({
   paramFreq:   {fontSize: 14, color: '#374151', width: 90},
   paramGain:   {fontSize: 14, fontWeight: '600', width: 70, textAlign: 'center'},
   paramQ:      {fontSize: 14, color: '#6b7280', width: 50, textAlign: 'right'},
+  bandsHint:     {fontSize: 12, color: '#6b7280', marginBottom: 8, marginTop: -4},
+  bandsRow:      {flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginVertical: 6},
+  bandCell:      {alignItems: 'center', flex: 1, minWidth: 0},
+  bandFreqLabel: {fontSize: 11, color: '#6b7280', marginBottom: 4},
+  bandGain:      {fontSize: 13, fontWeight: '700'},
+  bandsCaption:  {fontSize: 10, color: '#9ca3af', textAlign: 'right', marginTop: 4},
 });
