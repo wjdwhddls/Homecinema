@@ -144,7 +144,7 @@ export default function UploadScreen({navigation}: Props) {
       <SafeAreaView style={styles.safe}>
         {/* ── Header ── */}
         <Animated.View style={[styles.header, {opacity: fade}]}>
-          <Text style={styles.eyebrow}>E Q   S E T T I N G S</Text>
+          <Text style={styles.eyebrow}>EQ SETTINGS</Text>
           <Text style={styles.hero}>
             영상의 감정을{'\n'}주파수로 번역합니다
           </Text>

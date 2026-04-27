@@ -1,18 +1,22 @@
-// components/MeasuredResponseCurve.tsx
+// components/MeasuredResponseCurve.tsx — 시네마틱 다크 리스킨
 //
-// sweep 측정 결과의 transfer function H(f) 곡선 시각화 (light 테마).
+// sweep 측정 결과의 transfer function H(f) 곡선 시각화.
 // 입력: 백엔드 run_eq_pipeline의 curve.{freqs, measured_db | corrected_db}
 // - 단일 곡선 polyline (96 log-spaced points)
 // - 0dB = 평탄한 이상적 응답 (sweep 자체)
-// - variant='measured' (빨강) 또는 'corrected' (시안)
+// - variant='measured' (오렌지) 또는 'corrected' (시안)
+// - 곡선 아래쪽으로 fade fill (광채 느낌)
 // - 우상단 라벨에 max abs dB 표기
-//
-// EQResponseCurve.tsx의 fxLog/fyDb/SVG 그리드 패턴을 차용하되
-// EQMeasurementScreen의 light 테마(흰 카드)에 맞춰 색상을 재구성함.
 
 import React, {useMemo} from 'react';
 import {StyleSheet, Text, View} from 'react-native';
-import Svg, {Line, Path} from 'react-native-svg';
+import Svg, {
+  Defs,
+  LinearGradient as SvgLinearGradient,
+  Stop,
+  Line,
+  Path,
+} from 'react-native-svg';
 
 const F_MIN = 20;
 const F_MAX = 20000;
@@ -21,10 +25,11 @@ const VB_H = 180;
 const ZERO_Y = VB_H / 2;
 const Y_AXIS_WIDTH = 28;
 
-const MEASURED_COLOR = '#FF6B6B';
-const CORRECTED_COLOR = '#0EA5A4';
-const GRID_LINE = '#e5e7eb';
-const ZERO_LINE = '#6b7280';
+const MEASURED_COLOR = '#FF8A5B'; // 오렌지 (시네마틱 액센트)
+const CORRECTED_COLOR = '#3DC8FF'; // 시안
+
+const GRID_LINE = 'rgba(245,245,247,0.07)';
+const ZERO_LINE = 'rgba(245,245,247,0.32)';
 
 function fxLog(f: number): number {
   return (Math.log10(f / F_MIN) / Math.log10(F_MAX / F_MIN)) * VB_W;
@@ -46,6 +51,8 @@ export default function MeasuredResponseCurve({
   yRangeDb = 9,
 }: Props) {
   const color = variant === 'measured' ? MEASURED_COLOR : CORRECTED_COLOR;
+  const gradientId =
+    variant === 'measured' ? 'measuredGlow' : 'correctedGlow';
 
   // dB → viewBox y 좌표 (위쪽이 양수)
   const fyDb = useMemo(() => {
@@ -55,7 +62,7 @@ export default function MeasuredResponseCurve({
     };
   }, [yRangeDb]);
 
-  // 곡선 path
+  // 곡선 stroke path
   const curvePath = useMemo(() => {
     const n = Math.min(freqs.length, values_db.length);
     if (n === 0) {
@@ -65,6 +72,20 @@ export default function MeasuredResponseCurve({
     for (let i = 1; i < n; i++) {
       d += ` L ${fxLog(freqs[i]).toFixed(2)} ${fyDb(values_db[i]).toFixed(2)}`;
     }
+    return d;
+  }, [freqs, values_db, fyDb]);
+
+  // 곡선 + 0dB 기준선 사이 area fill path
+  const areaPath = useMemo(() => {
+    const n = Math.min(freqs.length, values_db.length);
+    if (n === 0) {
+      return '';
+    }
+    let d = `M ${fxLog(freqs[0]).toFixed(2)} ${ZERO_Y}`;
+    for (let i = 0; i < n; i++) {
+      d += ` L ${fxLog(freqs[i]).toFixed(2)} ${fyDb(values_db[i]).toFixed(2)}`;
+    }
+    d += ` L ${fxLog(freqs[n - 1]).toFixed(2)} ${ZERO_Y} Z`;
     return d;
   }, [freqs, values_db, fyDb]);
 
@@ -78,9 +99,8 @@ export default function MeasuredResponseCurve({
     return m;
   }, [values_db]);
 
-  // ±yRangeDb 기준의 그리드 라인 위치 (정수 dB 기준 동적 생성)
+  // ±yRangeDb 안에서 3 단위 그리드
   const gridDbs = useMemo(() => {
-    // ±yRangeDb 안에서 3 단위 그리드 (예: ±9 → -6, -3, +3, +6)
     const out: number[] = [];
     const step = 3;
     for (let v = -yRangeDb + step; v < yRangeDb; v += step) {
@@ -95,9 +115,14 @@ export default function MeasuredResponseCurve({
     <View style={styles.card}>
       {/* 헤더 */}
       <View style={styles.headerRow}>
-        <Text style={styles.title}>{title}</Text>
-        <View style={[styles.tag, {borderColor: color}]}>
-          <Text style={[styles.tagText, {color}]}>±{maxAbsDb.toFixed(1)} dB</Text>
+        <View style={styles.titleRow}>
+          <View style={[styles.dot, {backgroundColor: color, shadowColor: color}]} />
+          <Text style={styles.title}>{title}</Text>
+        </View>
+        <View style={[styles.tag, {borderColor: color + '66'}]}>
+          <Text style={[styles.tagText, {color}]}>
+            ±{maxAbsDb.toFixed(1)} dB
+          </Text>
         </View>
       </View>
 
@@ -115,11 +140,37 @@ export default function MeasuredResponseCurve({
             height={VB_H}
             viewBox={`0 0 ${VB_W} ${VB_H}`}
             preserveAspectRatio="none">
-            {/* 위/아래 경계 */}
-            <Line x1="0" y1="0" x2={VB_W} y2="0" stroke={GRID_LINE} strokeWidth={0.5} />
-            <Line x1="0" y1={VB_H} x2={VB_W} y2={VB_H} stroke={GRID_LINE} strokeWidth={0.5} />
+            <Defs>
+              <SvgLinearGradient
+                id={gradientId}
+                x1="0%"
+                y1="0%"
+                x2="0%"
+                y2="100%">
+                <Stop offset="0%" stopColor={color} stopOpacity="0.28" />
+                <Stop offset="100%" stopColor={color} stopOpacity="0" />
+              </SvgLinearGradient>
+            </Defs>
 
-            {/* 보조 그리드 (±3, ±6 등) */}
+            {/* 위/아래 경계 */}
+            <Line
+              x1="0"
+              y1="0"
+              x2={VB_W}
+              y2="0"
+              stroke={GRID_LINE}
+              strokeWidth={0.5}
+            />
+            <Line
+              x1="0"
+              y1={VB_H}
+              x2={VB_W}
+              y2={VB_H}
+              stroke={GRID_LINE}
+              strokeWidth={0.5}
+            />
+
+            {/* 보조 그리드 (±3, ±6) */}
             {gridDbs.map(db => (
               <Line
                 key={db}
@@ -143,6 +194,9 @@ export default function MeasuredResponseCurve({
               strokeDasharray="4 4"
             />
 
+            {/* Area glow */}
+            <Path d={areaPath} fill={`url(#${gradientId})`} />
+
             {/* 측정/보정 곡선 */}
             <Path
               d={curvePath}
@@ -151,7 +205,7 @@ export default function MeasuredResponseCurve({
               strokeLinejoin="round"
               strokeLinecap="round"
               fill="none"
-              opacity={0.92}
+              opacity={0.95}
             />
           </Svg>
         </View>
@@ -182,38 +236,52 @@ export default function MeasuredResponseCurve({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#fff',
+    backgroundColor: 'rgba(255,255,255,0.03)',
     padding: 16,
-    borderRadius: 12,
+    borderRadius: 14,
     marginBottom: 16,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    shadowOffset: {width: 0, height: 2},
+    borderWidth: StyleSheet.hairlineWidth * 2,
+    borderColor: 'rgba(245,245,247,0.12)',
   },
   headerRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 14,
+  },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    gap: 10,
+  },
+  dot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    shadowOffset: {width: 0, height: 0},
+    shadowOpacity: 0.95,
+    shadowRadius: 5,
+    elevation: 5,
   },
   title: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: '#1f2937',
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#F5F5F7',
+    letterSpacing: 0.3,
     flex: 1,
   },
   tag: {
     paddingHorizontal: 10,
     paddingVertical: 3,
-    borderRadius: 10,
+    borderRadius: 100,
     borderWidth: 1,
-    backgroundColor: '#f9fafb',
+    backgroundColor: 'rgba(255,255,255,0.03)',
   },
   tagText: {
-    fontSize: 12,
-    fontWeight: '600',
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 0.4,
   },
   chartArea: {
     flexDirection: 'row',
@@ -227,17 +295,19 @@ const styles = StyleSheet.create({
     paddingRight: 4,
   },
   yAxisLabel: {
-    fontSize: 10,
-    color: '#9ca3af',
+    fontSize: 9.5,
+    color: 'rgba(245,245,247,0.42)',
     lineHeight: 11,
     marginTop: -5,
+    fontVariant: ['tabular-nums'],
   },
   yAxisLabelZero: {
-    fontSize: 10,
-    color: '#374151',
+    fontSize: 9.5,
+    color: '#F5F5F7',
     fontWeight: '600',
     lineHeight: 11,
     marginTop: -5,
+    fontVariant: ['tabular-nums'],
   },
   plot: {
     flex: 1,
@@ -260,13 +330,15 @@ const styles = StyleSheet.create({
   xLabel: {
     position: 'absolute',
     fontSize: 9,
-    color: '#9ca3af',
+    color: 'rgba(245,245,247,0.4)',
     transform: [{translateX: -10}],
+    letterSpacing: 0.3,
   },
   caption: {
-    marginTop: 8,
-    fontSize: 11,
-    color: '#9ca3af',
+    marginTop: 10,
+    fontSize: 10.5,
+    color: 'rgba(245,245,247,0.4)',
     textAlign: 'center',
+    letterSpacing: 0.3,
   },
 });
