@@ -57,22 +57,46 @@ export default function AppNavigator() {
       <Stack.Screen
         name="SpeakerSize"
         component={SpeakerSizeScreen}
-        options={{title: '스피커 정보 입력'}}
+        options={{
+          title: '',
+          headerStyle: {backgroundColor: '#000'},
+          headerTintColor: '#F5F5F7',
+          headerShadowVisible: false,
+          headerTransparent: true,
+        }}
       />
       <Stack.Screen
         name="SpeakerPlacement"
         component={SpeakerPlacementScreen}
-        options={{title: '스피커 위치 자동 배정'}}
+        options={{
+          title: '',
+          headerStyle: {backgroundColor: '#000'},
+          headerTintColor: '#F5F5F7',
+          headerShadowVisible: false,
+          headerTransparent: true,
+        }}
       />
       <Stack.Screen
         name="OptimizationResult"
         component={OptimizationResultScreen}
-        options={{title: '최적 배치 결과'}}
+        options={{
+          title: '',
+          headerStyle: {backgroundColor: '#000'},
+          headerTintColor: '#F5F5F7',
+          headerShadowVisible: false,
+          headerTransparent: true,
+        }}
       />
       <Stack.Screen
         name="EQMeasurement"
         component={EQMeasurementScreen}
-        options={{title: 'EQ 자동 보정'}}
+        options={{
+          title: '',
+          headerStyle: {backgroundColor: '#000'},
+          headerTintColor: '#F5F5F7',
+          headerShadowVisible: false,
+          headerTransparent: true,
+        }}
       />
     </Stack.Navigator>
   );

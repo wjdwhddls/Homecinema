@@ -84,7 +84,7 @@ export default function HomeScreen({navigation}: Props) {
       <SafeAreaView style={styles.safe}>
         {/* ── Header ── */}
         <Animated.View style={[styles.header, {opacity: fade}]}>
-          <Text style={styles.eyebrow}>H O M E C I N E M A</Text>
+          <Text style={styles.eyebrow}>HOMECINEMA</Text>
           <Text style={styles.hero}>공간의 파형을{'\n'}깨우다</Text>
         </Animated.View>
 

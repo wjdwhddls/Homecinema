@@ -178,7 +178,7 @@ export default function ResultScreen({route, navigation}: Props) {
         {/* ── Header */}
         <Animated.View style={[styles.header, {opacity: fade}]}>
           <Text style={[styles.eyebrow, isFailed && styles.eyebrowFailed]}>
-            {isFailed ? 'F A I L E D' : 'A N A L Y Z I N G'}
+            {isFailed ? 'FAILED' : 'ANALYZING'}
           </Text>
           <Text style={styles.hero}>{heroText}</Text>
           {isFailed && errorMessage ? (
