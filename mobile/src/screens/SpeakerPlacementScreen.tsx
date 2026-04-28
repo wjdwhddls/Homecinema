@@ -53,6 +53,7 @@ import {
   InitialPositionResponse,
 } from '../api/optimization';
 import {RootStackParamList} from '../types';
+import SweepRippleOverlay from '../components/SweepRippleOverlay';
 
 type SpeakerPlacementRouteProp = RouteProp<RootStackParamList, 'SpeakerPlacement'>;
 
@@ -150,6 +151,8 @@ export default function SpeakerPlacementScreen() {
   };
 
   // ── STEP 3: sweep 재생 + 녹음 ───────────────────────────────
+  // SweepRippleOverlay 가 'recording' 동안 표시되므로 Alert 없이
+  // resolve 즉시 cross-fade 로 다음 단계(optimize)로 진입.
   const handleRecord = async () => {
     try {
       safe(setStep)('recording');
@@ -157,12 +160,7 @@ export default function SpeakerPlacementScreen() {
       if (!mountedRef.current) return;
       const sweepUri = await getSweepUri();
       if (!mountedRef.current) return;
-
-      Alert.alert(
-        '녹음 완료',
-        '이제 AI가 최적 위치를 계산합니다.',
-        [{text: '계산 시작', onPress: () => handleOptimize(recordedUri, sweepUri)}],
-      );
+      handleOptimize(recordedUri, sweepUri);
     } catch (e: any) {
       if (!mountedRef.current) return;
       safe(setStep)('waitPlacement');
@@ -446,6 +444,15 @@ export default function SpeakerPlacementScreen() {
           </Animated.View>
         </ScrollView>
       </SafeAreaView>
+
+      {/* sweep 재생 + 녹음 중 풀스크린 ripple 오버레이 (스피커 1개) */}
+      <SweepRippleOverlay
+        visible={step === 'recording'}
+        caption="측정 중"
+        subcaption="스피커에서 소리가 나오면 움직이지 마세요"
+        speakerCount={1}
+        speakerDimensions={speakerDimensions}
+      />
     </View>
   );
 }

@@ -345,6 +345,7 @@ export default function OptimizationResultScreen() {
               onPress={() =>
                 navigation.navigate('EQMeasurement', {
                   optimalPosition: best.placement,
+                  speakerDimensions,
                 })
               }>
               <View style={styles.eqBtnInner}>

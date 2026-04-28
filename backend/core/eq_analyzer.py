@@ -171,6 +171,11 @@ def compute_transfer_function(
 # EQ 밴드 — 8개 (사용자 지정 표준 옥타브 그리드)
 ISO_BANDS = [125, 250, 500, 1000, 2000, 4000, 6000, 8000]
 
+# 보정 강도 단일 진실원.
+# get_calibration_values / apply_eq_and_save / run_eq_pipeline(시각화) 세 곳이 공유.
+EQ_SOFT_GAIN_SCALE = 0.75   # 너무 높이면 측정 위치 외 청취점에서 응답이 틀어짐. 0.65~0.85 사이가 적정.
+EQ_GAIN_CLIP_DB    = 9.0    # ±9 dB hard limit (BT 스피커+폰 마이크 변동 감안한 안전장치)
+
 
 def get_calibration_values(
     freqs: np.ndarray,          # ← 버그 수정: 전역변수 대신 파라미터로 명시
@@ -186,10 +191,10 @@ def get_calibration_values(
     for f_target in ISO_BANDS:
         response    = float(np.interp(f_target, freqs, H_db))
         theory_gain = -response
-        soft_gain   = theory_gain * 0.6
+        soft_gain   = theory_gain * EQ_SOFT_GAIN_SCALE
         # ±6 dB는 BT 스피커+폰 마이크 frequency response 변동(±10 dB+)에 비해 좁아 saturation 발생.
         # 음향 EQ에서 ±9 dB는 일반적인 보정 범위.
-        actual      = float(np.clip(soft_gain, -9.0, 9.0))
+        actual      = float(np.clip(soft_gain, -EQ_GAIN_CLIP_DB, EQ_GAIN_CLIP_DB))
         if abs(actual) < 0.3:
             actual = 0.0
         results.append({
@@ -301,7 +306,7 @@ def apply_eq_and_save(
 
     # 23밴드/Parametric과 동일한 범위로 통일.
     # RMS 매칭 + peak normalize가 뒤따르므로 ±9 dB로 늘려도 출력 클리핑 위험 없음.
-    clamped_gain  = np.clip(H_db * -0.6, -9.0, 9.0)
+    clamped_gain  = np.clip(H_db * -EQ_SOFT_GAIN_SCALE, -EQ_GAIN_CLIP_DB, EQ_GAIN_CLIP_DB)
     gain_linear   = 10 ** (clamped_gain / 20.0)
 
     n_fft    = len(y)
@@ -370,7 +375,8 @@ def run_eq_pipeline(
     y_rec_n = y_rec_aligned / scale
 
     freqs, H_db = compute_transfer_function(y_org_n, y_rec_n, sr=sr)
-    H_db = H_db - float(np.mean(H_db))    # 평균 0 정규화
+    # mid_band median(eq_analyzer.py:155-156)에서 이미 0dB 정규화됨.
+    # 여기서 추가로 평균 0을 빼면 곡선이 이중 압축되어 보정량이 청감 한계 미만으로 줄어듦.
 
     bands      = get_calibration_values(freqs, H_db)
     simple     = generate_simple_settings(bands)
@@ -378,7 +384,7 @@ def run_eq_pipeline(
 
     # 시각화용 곡선: 측정 H(f)와 보정 적용 후 H'(f).
     # 보정 게인 공식은 apply_eq_and_save와 정확히 동일 (단일 진실원).
-    applied_gain_full = np.clip(H_db * -0.6, -9.0, 9.0)
+    applied_gain_full = np.clip(H_db * -EQ_SOFT_GAIN_SCALE, -EQ_GAIN_CLIP_DB, EQ_GAIN_CLIP_DB)
     corrected_full    = H_db + applied_gain_full
 
     curve_freqs, curve_measured  = downsample_curve_log(freqs, H_db,         n_points=96)
@@ -392,6 +398,6 @@ def run_eq_pipeline(
             "freqs":        curve_freqs,
             "measured_db":  curve_measured,
             "corrected_db": curve_corrected,
-            "y_range_db":   9.0,
+            "y_range_db":   EQ_GAIN_CLIP_DB,
         },
     }

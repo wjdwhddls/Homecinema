@@ -35,6 +35,7 @@ import {recordSweep, getSweepUri} from '../native/SweepRecorder';
 import {analyzeEQ, EQAnalysisResponse} from '../api/eq';
 import {RootStackParamList} from '../types';
 import MeasuredResponseCurve from '../components/MeasuredResponseCurve';
+import SweepRippleOverlay from '../components/SweepRippleOverlay';
 
 type EQRouteProp = RouteProp<RootStackParamList, 'EQMeasurement'>;
 
@@ -52,7 +53,7 @@ const GAIN_FLAT = 'rgba(245,245,247,0.55)';
 export default function EQMeasurementScreen() {
   const navigation = useNavigation<any>();
   const route = useRoute<EQRouteProp>();
-  const {optimalPosition} = route.params;
+  const {optimalPosition, speakerDimensions} = route.params;
 
   const [step, setStep] = useState<Step>('ready');
   const [result, setResult] = useState<EQAnalysisResponse | null>(null);
@@ -307,6 +308,15 @@ export default function EQMeasurementScreen() {
           </Animated.View>
         </ScrollView>
       </SafeAreaView>
+
+      {/* sweep 재생 + 녹음 중 풀스크린 ripple 오버레이 (스피커 2개 — L/R) */}
+      <SweepRippleOverlay
+        visible={step === 'recording'}
+        caption="EQ 측정 중"
+        subcaption="스피커에서 소리가 나오면 움직이지 마세요"
+        speakerCount={2}
+        speakerDimensions={speakerDimensions}
+      />
     </View>
   );
 }
