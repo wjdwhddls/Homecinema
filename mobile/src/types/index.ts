@@ -26,6 +26,7 @@ export type RootStackParamList = {
       left:  {x: number; y: number; z: number};
       right: {x: number; y: number; z: number};
     };
+    speakerDimensions?: SpeakerDimensions;            // ripple overlay 박스 모양용 (선택)
   };
 };
 
